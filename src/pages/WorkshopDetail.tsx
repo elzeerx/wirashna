@@ -16,6 +16,7 @@ import BackToWorkshopsLink from "@/components/workshop/BackToWorkshopsLink";
 import { fetchWorkshopById, fetchWorkshops } from "@/services/workshopService";
 import { useToast } from "@/hooks/use-toast";
 import { Workshop } from "@/types/supabase";
+import { workshopToCardProps } from "@/components/WorkshopCard";
 import { workshopObjectives, targetAudience } from "@/data/workshopSections";
 
 const WorkshopDetail = () => {
@@ -151,7 +152,7 @@ const WorkshopDetail = () => {
             </div>
           </div>
 
-          <RelatedWorkshops workshops={relatedWorkshops} />
+          <RelatedWorkshops workshops={relatedWorkshops.map(workshopToCardProps)} />
         </div>
       </main>
       

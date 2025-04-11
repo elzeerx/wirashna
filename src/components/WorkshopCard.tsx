@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Calendar, MapPin, Users } from "lucide-react";
+import { Workshop } from "@/types/supabase";
 
 interface WorkshopCardProps {
   id: string;
@@ -13,6 +14,7 @@ interface WorkshopCardProps {
   image: string;
 }
 
+// This component receives props in a different format than the Supabase Workshop type
 const WorkshopCard = ({
   id,
   title,
@@ -58,6 +60,20 @@ const WorkshopCard = ({
       </div>
     </div>
   );
+};
+
+// Helper to convert from Supabase Workshop type to WorkshopCardProps
+export const workshopToCardProps = (workshop: Workshop): WorkshopCardProps => {
+  return {
+    id: workshop.id,
+    title: workshop.title,
+    description: workshop.short_description,
+    date: workshop.date,
+    time: workshop.time,
+    venue: workshop.venue,
+    availableSeats: workshop.available_seats,
+    image: workshop.image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
+  };
 };
 
 export default WorkshopCard;
