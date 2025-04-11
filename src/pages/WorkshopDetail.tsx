@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { Target, UserRound, Award, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -16,7 +15,6 @@ import BackToWorkshopsLink from "@/components/workshop/BackToWorkshopsLink";
 import { fetchWorkshopById, fetchWorkshops } from "@/services/workshopService";
 import { useToast } from "@/hooks/use-toast";
 import { Workshop } from "@/types/supabase";
-import { workshopToCardProps } from "@/components/WorkshopCard";
 import { workshopObjectives, targetAudience } from "@/data/workshopSections";
 
 const WorkshopDetail = () => {
@@ -152,7 +150,7 @@ const WorkshopDetail = () => {
             </div>
           </div>
 
-          <RelatedWorkshops workshops={relatedWorkshops.map(workshopToCardProps)} />
+          <RelatedWorkshops workshops={relatedWorkshops} />
         </div>
       </main>
       

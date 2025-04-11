@@ -1,8 +1,10 @@
 
-import WorkshopCard, { WorkshopCardProps } from "@/components/WorkshopCard";
+import WorkshopCard from "@/components/WorkshopCard";
+import { Workshop } from "@/types/supabase";
+import { workshopToCardProps } from "@/components/WorkshopCard";
 
 interface RelatedWorkshopsProps {
-  workshops: WorkshopCardProps[];
+  workshops: Workshop[];
 }
 
 const RelatedWorkshops = ({ workshops }: RelatedWorkshopsProps) => {
@@ -17,7 +19,7 @@ const RelatedWorkshops = ({ workshops }: RelatedWorkshopsProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {workshops.map((workshop) => (
           <div key={workshop.id}>
-            <WorkshopCard {...workshop} />
+            <WorkshopCard {...workshopToCardProps(workshop)} />
           </div>
         ))}
       </div>

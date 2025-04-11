@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Workshop } from "@/types/supabase";
 
-interface WorkshopCardProps {
+export interface WorkshopCardProps {
   id: string;
   title: string;
   description: string;
