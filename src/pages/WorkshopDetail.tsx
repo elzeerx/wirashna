@@ -1,6 +1,7 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Target, UserRound, Award, BookOpen } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WorkshopGallery from "@/components/workshop/WorkshopGallery";
@@ -130,6 +131,21 @@ const WorkshopDetail = () => {
         .slice(0, 3)
     : [];
   
+  // Mock data for our new sections
+  const workshopObjectives = [
+    "فهم الأساسيات والمفاهيم الرئيسية للذكاء الاصطناعي",
+    "تعلم كيفية استخدام أدوات الذكاء الاصطناعي في العمل اليومي",
+    "اكتساب مهارات تطبيقية في مجال صناعة المحتوى باستخدام الذكاء الاصطناعي",
+    "التعرف على أحدث التقنيات والاتجاهات في مجال الذكاء الاصطناعي"
+  ];
+  
+  const targetAudience = [
+    "المسوقين الرقميين الذين يرغبون في تحسين استراتيجيات المحتوى",
+    "أصحاب الأعمال الصغيرة الذين يسعون لزيادة كفاءة أعمالهم",
+    "المصممين والمبدعين الباحثين عن أدوات جديدة لتعزيز إبداعاتهم",
+    "المهتمين بالتكنولوجيا والراغبين في استكشاف فرص الذكاء الاصطناعي"
+  ];
+  
   if (!workshop) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -178,13 +194,27 @@ const WorkshopDetail = () => {
               </div>
 
               <CollapsibleSection 
+                title="أهداف الورشة"
+                items={workshopObjectives}
+                icon={<Target size={20} />}
+              />
+
+              <CollapsibleSection 
+                title="لمن تناسب الورشة"
+                items={targetAudience}
+                icon={<UserRound size={20} />}
+              />
+
+              <CollapsibleSection 
                 title="متطلبات الورشة"
                 items={workshop.requirements || []}
+                icon={<BookOpen size={20} />}
               />
 
               <CollapsibleSection 
                 title="مميزات الورشة"
                 items={workshop.benefits || []}
+                icon={<Award size={20} />}
               />
               
               <InstructorCard 
