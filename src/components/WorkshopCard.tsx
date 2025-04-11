@@ -24,7 +24,7 @@ const WorkshopCard = ({
   image,
 }: WorkshopCardProps) => {
   return (
-    <div className="wirashna-card group overflow-hidden">
+    <div className="wirashna-card group overflow-hidden flex flex-col h-full">
       <div className="relative h-48 mb-4 overflow-hidden rounded-md">
         <img
           src={image}
@@ -51,9 +51,11 @@ const WorkshopCard = ({
         <span className="text-sm">{availableSeats} مقعد متبقي</span>
       </div>
       
-      <Link to={`/workshops/${id}`} className="wirashna-btn-primary block text-center">
-        سجل الآن
-      </Link>
+      <div className="mt-auto">
+        <Link to={`/workshops/${id}`} className="wirashna-btn-primary block text-center">
+          سجل الآن
+        </Link>
+      </div>
     </div>
   );
 };
