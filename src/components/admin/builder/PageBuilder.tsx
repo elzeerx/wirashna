@@ -11,7 +11,11 @@ import { PageSection, PageData } from "@/types/page";
 import { useToast } from "@/hooks/use-toast";
 import { fetchPageById, savePage } from "@/services/pageService";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { 
+  SortableContext, 
+  verticalListSortingStrategy, 
+  useSortable 
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Heading, Type, Image, LayoutGrid, TextIcon, SaveIcon, EyeIcon, GripVertical, Plus, Trash2 } from "lucide-react";
 import { generateSlug } from "@/lib/utils";

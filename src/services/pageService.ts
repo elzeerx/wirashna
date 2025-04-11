@@ -1,6 +1,19 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { PageData } from "@/types/page";
+import { PageData, PageSection } from "@/types/page";
+import { Json } from "@/integrations/supabase/types";
+
+// Helper functions to convert between PageSection[] and Json
+const convertJsonToPageSections = (jsonData: Json): PageSection[] => {
+  if (Array.isArray(jsonData)) {
+    return jsonData as PageSection[];
+  }
+  return [];
+};
+
+const convertPageSectionsToJson = (sections: PageSection[]): Json => {
+  return sections as unknown as Json;
+};
 
 export const fetchPages = async (): Promise<PageData[]> => {
   const { data, error } = await supabase
@@ -13,7 +26,13 @@ export const fetchPages = async (): Promise<PageData[]> => {
     throw error;
   }
 
-  return data as PageData[] || [];
+  // Convert the Json content to PageSection[]
+  const pagesData = data.map(page => ({
+    ...page,
+    content: convertJsonToPageSections(page.content)
+  })) as PageData[];
+
+  return pagesData || [];
 };
 
 export const fetchPageById = async (id: string): Promise<PageData> => {
@@ -28,7 +47,11 @@ export const fetchPageById = async (id: string): Promise<PageData> => {
     throw error;
   }
 
-  return data as PageData;
+  // Convert the Json content to PageSection[]
+  return {
+    ...data,
+    content: convertJsonToPageSections(data.content)
+  } as PageData;
 };
 
 export const fetchPageByPath = async (path: string): Promise<PageData> => {
@@ -43,21 +66,31 @@ export const fetchPageByPath = async (path: string): Promise<PageData> => {
     throw error;
   }
 
-  return data as PageData;
+  // Convert the Json content to PageSection[]
+  return {
+    ...data,
+    content: convertJsonToPageSections(data.content)
+  } as PageData;
 };
 
 export const savePage = async (page: PageData): Promise<PageData> => {
+  // Convert PageSection[] to Json before saving
+  const pageToSave = {
+    ...page,
+    content: convertPageSectionsToJson(page.content)
+  };
+
   // If the page has an ID, update it, otherwise insert a new page
   const { data, error } = page.id
     ? await supabase
         .from('pages')
-        .update(page)
+        .update(pageToSave)
         .eq('id', page.id)
         .select()
         .single()
     : await supabase
         .from('pages')
-        .insert(page)
+        .insert(pageToSave)
         .select()
         .single();
 
@@ -66,7 +99,11 @@ export const savePage = async (page: PageData): Promise<PageData> => {
     throw error;
   }
 
-  return data as PageData;
+  // Convert the Json content back to PageSection[] before returning
+  return {
+    ...data,
+    content: convertJsonToPageSections(data.content)
+  } as PageData;
 };
 
 export const deletePage = async (id: string): Promise<void> => {
