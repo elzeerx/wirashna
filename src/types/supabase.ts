@@ -37,4 +37,22 @@ export type UserProfile = {
   full_name?: string;
   created_at: string;
   is_admin: boolean;
+  role: 'admin' | 'supervisor' | 'subscriber';
+};
+
+export type WorkshopCertificate = {
+  id: string;
+  workshop_id: string;
+  user_id: string;
+  certificate_url?: string;
+  created_at: string;
+};
+
+export type WorkshopMaterial = {
+  id: string;
+  workshop_id: string;
+  title: string;
+  description?: string;
+  file_url: string;
+  created_at: string;
 };

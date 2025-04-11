@@ -10,6 +10,9 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isAdmin: boolean;
+  isSupervisor: boolean;
+  userRole: 'admin' | 'supervisor' | 'subscriber' | null;
+  userProfile: UserProfile | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -22,6 +25,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSupervisor, setIsSupervisor] = useState(false);
+  const [userRole, setUserRole] = useState<'admin' | 'supervisor' | 'subscriber' | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -35,10 +41,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Check if user is admin after auth state changes
         if (newSession?.user) {
           setTimeout(() => {
-            checkAdminStatus(newSession.user.id);
+            fetchUserProfile(newSession.user.id);
           }, 0);
         } else {
           setIsAdmin(false);
+          setIsSupervisor(false);
+          setUserRole(null);
+          setUserProfile(null);
         }
       }
     );
@@ -49,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(initialSession?.user ?? null);
       
       if (initialSession?.user) {
-        checkAdminStatus(initialSession.user.id);
+        fetchUserProfile(initialSession.user.id);
       }
       
       setIsLoading(false);
@@ -58,29 +67,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId: string) => {
+  const fetchUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('is_admin')
+        .select('*')
         .eq('id', userId)
         .single();
       
       if (error) {
-        console.error("Error checking admin status:", error);
+        console.error("Error fetching user profile:", error);
         setIsAdmin(false);
+        setIsSupervisor(false);
+        setUserRole(null);
+        setUserProfile(null);
         return;
       }
       
-      // If we have user data and is_admin flag, use it
+      // If we have user data
       if (data) {
-        setIsAdmin(data.is_admin || false);
+        setUserProfile(data as UserProfile);
+        setIsAdmin(data.is_admin || data.role === 'admin');
+        setIsSupervisor(data.role === 'supervisor');
+        setUserRole(data.role);
       } else {
         setIsAdmin(false);
+        setIsSupervisor(false);
+        setUserRole(null);
+        setUserProfile(null);
       }
     } catch (error) {
-      console.error("Could not check admin status:", error);
+      console.error("Could not fetch user profile:", error);
       setIsAdmin(false);
+      setIsSupervisor(false);
+      setUserRole(null);
+      setUserProfile(null);
     }
   };
 
@@ -160,6 +181,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         isLoading,
         isAdmin,
+        isSupervisor,
+        userRole,
+        userProfile,
         signIn,
         signUp,
         signOut,

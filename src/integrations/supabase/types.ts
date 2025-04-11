@@ -15,20 +15,90 @@ export type Database = {
           full_name: string | null
           id: string
           is_admin: boolean | null
+          role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
           created_at?: string | null
           full_name?: string | null
           id: string
           is_admin?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
           created_at?: string | null
           full_name?: string | null
           id?: string
           is_admin?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
+      }
+      workshop_certificates: {
+        Row: {
+          certificate_url: string | null
+          created_at: string | null
+          id: string
+          user_id: string
+          workshop_id: string
+        }
+        Insert: {
+          certificate_url?: string | null
+          created_at?: string | null
+          id?: string
+          user_id: string
+          workshop_id: string
+        }
+        Update: {
+          certificate_url?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_certificates_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshop_materials: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_url: string
+          id: string
+          title: string
+          workshop_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_url: string
+          id?: string
+          title: string
+          workshop_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_url?: string
+          id?: string
+          title?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_materials_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workshop_registrations: {
         Row: {
@@ -145,7 +215,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "supervisor" | "subscriber"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -260,6 +330,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "supervisor", "subscriber"],
+    },
   },
 } as const

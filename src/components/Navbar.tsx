@@ -1,14 +1,14 @@
 
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, isSupervisor, userRole, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -19,6 +19,13 @@ const Navbar = () => {
     if (isMenuOpen) {
       setIsMenuOpen(false);
     }
+  };
+
+  // Get the dashboard link based on user role
+  const getDashboardLink = () => {
+    if (isAdmin) return "/admin";
+    if (isSupervisor) return "/supervisor";
+    return "/dashboard";
   };
 
   return (
@@ -52,11 +59,17 @@ const Navbar = () => {
                   <Link to="/contact" className="text-lg font-medium" onClick={toggleMenu}>
                     تواصل معنا
                   </Link>
-                  {isAdmin && (
-                    <Link to="/admin" className="text-lg font-medium" onClick={toggleMenu}>
-                      لوحة الإدارة
+                  
+                  {user && (
+                    <Link 
+                      to={getDashboardLink()} 
+                      className="text-lg font-medium" 
+                      onClick={toggleMenu}
+                    >
+                      لوحة التحكم
                     </Link>
                   )}
+                  
                   {user ? (
                     <button
                       onClick={handleSignOut}
@@ -93,11 +106,16 @@ const Navbar = () => {
             <Link to="/contact" className="text-foreground hover:text-wirashna-accent transition-colors">
               تواصل معنا
             </Link>
-            {isAdmin && (
-              <Link to="/admin" className="text-foreground hover:text-wirashna-accent transition-colors">
-                لوحة الإدارة
+            
+            {user && (
+              <Link 
+                to={getDashboardLink()} 
+                className="text-foreground hover:text-wirashna-accent transition-colors"
+              >
+                لوحة التحكم
               </Link>
             )}
+            
             {user ? (
               <button
                 onClick={handleSignOut}

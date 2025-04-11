@@ -4,11 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
-  requireAdmin?: boolean;
+  allowedRoles?: ('admin' | 'supervisor' | 'subscriber')[];
 };
 
-const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, isLoading, isAdmin } = useAuth();
+const ProtectedRoute = ({ children, allowedRoles = [] }: ProtectedRouteProps) => {
+  const { user, isLoading, userRole } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -25,12 +25,19 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
-    // Redirect to home if not an admin
-    return <Navigate to="/" replace />;
+  // If roles are specified, check if user has the required role
+  if (allowedRoles.length > 0 && userRole && !allowedRoles.includes(userRole)) {
+    // Redirect to dashboard or home based on role
+    if (userRole === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (userRole === 'supervisor') {
+      return <Navigate to="/supervisor" replace />;
+    } else {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
-  // User is authenticated (and is admin if required)
+  // User is authenticated and has the required role (if specified)
   return <>{children}</>;
 };
 

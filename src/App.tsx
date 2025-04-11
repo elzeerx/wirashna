@@ -17,6 +17,12 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import AdminDashboard from "./pages/AdminDashboard";
 import WorkshopRegistration from "./pages/WorkshopRegistration";
+import SubscriberDashboard from "./pages/SubscriberDashboard";
+import SubscriberWorkshops from "./pages/SubscriberWorkshops";
+import SubscriberCertificates from "./pages/SubscriberCertificates";
+import SubscriberMaterials from "./pages/SubscriberMaterials";
+import SupervisorDashboard from "./pages/SupervisorDashboard";
+import AdminUserManagement from "./pages/AdminUserManagement";
 
 const queryClient = new QueryClient();
 
@@ -37,11 +43,48 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
+            
+            {/* Admin Routes */}
             <Route path="/admin" element={
-              <ProtectedRoute requireAdmin={true}>
+              <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminUserManagement />
+              </ProtectedRoute>
+            } />
+            
+            {/* Supervisor Routes */}
+            <Route path="/supervisor" element={
+              <ProtectedRoute allowedRoles={['supervisor']}>
+                <SupervisorDashboard />
+              </ProtectedRoute>
+            } />
+            
+            {/* Subscriber Routes */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute allowedRoles={['subscriber']}>
+                <SubscriberDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/workshops" element={
+              <ProtectedRoute allowedRoles={['subscriber']}>
+                <SubscriberWorkshops />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/certificates" element={
+              <ProtectedRoute allowedRoles={['subscriber']}>
+                <SubscriberCertificates />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/materials" element={
+              <ProtectedRoute allowedRoles={['subscriber']}>
+                <SubscriberMaterials />
+              </ProtectedRoute>
+            } />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
