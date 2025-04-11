@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -19,7 +20,7 @@ const Login = () => {
     name: "",
   });
   const [error, setError] = useState<string | null>(null);
-  const { signIn, signUp, isLoading, user } = useAuth();
+  const { signIn, signUp, signInWithGoogle, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -64,6 +65,16 @@ const Login = () => {
       }
     } catch (error: any) {
       console.error("Authentication error:", error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
+      console.error("Google authentication error:", error);
+      setError("حدث خطأ أثناء تسجيل الدخول بواسطة جوجل");
     }
   };
 
@@ -150,7 +161,7 @@ const Login = () => {
                   )}
                 </Button>
                 
-                <div className="text-center">
+                <div className="text-center mb-4">
                   <Button 
                     type="button" 
                     variant="link"
@@ -160,6 +171,23 @@ const Login = () => {
                     {isLogin ? "ليس لديك حساب؟ إنشاء حساب جديد" : "لديك حساب بالفعل؟ تسجيل الدخول"}
                   </Button>
                 </div>
+                
+                <div className="flex items-center gap-3 my-4">
+                  <Separator className="flex-grow" />
+                  <span className="text-muted-foreground text-sm">أو</span>
+                  <Separator className="flex-grow" />
+                </div>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  <LogIn className="mr-2" size={18} />
+                  <span>تسجيل الدخول بواسطة جوجل</span>
+                </Button>
               </form>
             </div>
           </div>
