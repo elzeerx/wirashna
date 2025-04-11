@@ -6,7 +6,21 @@ import { Json } from "@/integrations/supabase/types";
 // Helper functions to convert between PageSection[] and Json
 const convertJsonToPageSections = (jsonData: Json): PageSection[] => {
   if (Array.isArray(jsonData)) {
-    return jsonData as PageSection[];
+    // Properly map each JSON object to a PageSection object
+    return jsonData.map(item => {
+      // Ensure the item has all required properties of PageSection
+      if (typeof item === 'object' && item !== null && 
+          'id' in item && 'type' in item && 
+          'content' in item && 'settings' in item) {
+        return {
+          id: String(item.id),
+          type: String(item.type),
+          content: String(item.content),
+          settings: item.settings as Record<string, any>
+        };
+      }
+      return null;
+    }).filter((item): item is PageSection => item !== null);
   }
   return [];
 };
