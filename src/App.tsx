@@ -11,6 +11,8 @@ import WorkshopDetail from "./pages/WorkshopDetail";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsConditions from "./pages/TermsConditions";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/workshops/:id" element={<WorkshopDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
