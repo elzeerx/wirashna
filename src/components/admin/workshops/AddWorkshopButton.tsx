@@ -1,15 +1,18 @@
 
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
-interface AddWorkshopButtonProps {
-  onClick: () => void;
-}
+const AddWorkshopButton = () => {
+  const navigate = useNavigate();
+  
+  const handleClick = () => {
+    navigate("/admin/workshops/create");
+  };
 
-const AddWorkshopButton = ({ onClick }: AddWorkshopButtonProps) => {
   return (
     <Button 
-      onClick={onClick}
+      onClick={handleClick}
       className="bg-[#512b81] hover:bg-[#512b81]/90"
     >
       <Plus size={16} className="ml-2" />

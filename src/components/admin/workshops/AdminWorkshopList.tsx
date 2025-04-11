@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Workshop } from "@/types/supabase";
-import CreateWorkshopDialog from "./CreateWorkshopDialog";
 import EditWorkshopDialog from "./EditWorkshopDialog";
 import DeleteWorkshopDialog from "./DeleteWorkshopDialog";
 import WorkshopTable from "./WorkshopTable";
@@ -15,22 +14,14 @@ interface AdminWorkshopListProps {
 }
 
 const AdminWorkshopList = ({ workshops, onWorkshopsUpdated }: AdminWorkshopListProps) => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const navigate = useNavigate();
   
-  const { isLoading, handleCreate, handleUpdate, handleDelete } = useWorkshopOperations({
+  const { isLoading, handleUpdate, handleDelete } = useWorkshopOperations({
     onWorkshopsUpdated
   });
-
-  const handleCreateWorkshop = async (workshopData: any) => {
-    const success = await handleCreate(workshopData);
-    if (success) {
-      setIsCreateDialogOpen(false);
-    }
-  };
 
   const handleEditWorkshop = async (workshopData: any) => {
     if (!selectedWorkshop) return;
@@ -67,7 +58,7 @@ const AdminWorkshopList = ({ workshops, onWorkshopsUpdated }: AdminWorkshopListP
   return (
     <>
       <div className="flex justify-end mb-6">
-        <AddWorkshopButton onClick={() => setIsCreateDialogOpen(true)} />
+        <AddWorkshopButton />
       </div>
 
       <WorkshopTable 
@@ -75,12 +66,6 @@ const AdminWorkshopList = ({ workshops, onWorkshopsUpdated }: AdminWorkshopListP
         onView={handleViewWorkshop}
         onEdit={handleOpenEditDialog}
         onDelete={handleOpenDeleteDialog}
-      />
-
-      <CreateWorkshopDialog 
-        isOpen={isCreateDialogOpen} 
-        onOpenChange={setIsCreateDialogOpen}
-        onSubmit={handleCreateWorkshop}
       />
       
       <EditWorkshopDialog 

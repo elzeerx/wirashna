@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import CreateWorkshopPage from "./pages/admin/CreateWorkshopPage";
 import WorkshopRegistration from "./pages/WorkshopRegistration";
 import SubscriberDashboard from "./pages/SubscriberDashboard";
 import SubscriberWorkshops from "./pages/SubscriberWorkshops";
@@ -48,6 +49,11 @@ const App = () => (
             <Route path="/admin" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboardPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/workshops/create" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <CreateWorkshopPage />
               </ProtectedRoute>
             } />
             <Route path="/admin/users" element={
