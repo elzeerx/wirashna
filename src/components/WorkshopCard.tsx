@@ -25,11 +25,14 @@ const WorkshopCard = ({
   availableSeats,
   image,
 }: WorkshopCardProps) => {
+  // Default image fallback if no image is provided
+  const imageUrl = image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
+  
   return (
     <div className="wirashna-card group overflow-hidden flex flex-col h-full">
       <div className="relative h-48 mb-4 overflow-hidden rounded-md">
         <img
-          src={image}
+          src={imageUrl}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />

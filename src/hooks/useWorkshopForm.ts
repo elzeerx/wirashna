@@ -27,6 +27,7 @@ export const useWorkshopForm = ({ initialData, onSubmit }: UseWorkshopFormProps)
       instructor: initialData?.instructor || "",
       instructor_bio: initialData?.instructor_bio || "",
       image: initialData?.image || "",
+      gallery: initialData?.gallery || [],
       benefits: initialData?.benefits || [],
       requirements: initialData?.requirements || [],
     },
