@@ -80,7 +80,7 @@ const WorkshopDetail = () => {
                 bio={workshop.instructorBio} 
               />
 
-              <MobileRegistration />
+              <MobileRegistration workshopId={workshop.id} />
             </div>
             
             <div className="lg:col-span-1">
@@ -92,6 +92,7 @@ const WorkshopDetail = () => {
                 availableSeats={workshop.availableSeats}
                 totalSeats={workshop.totalSeats}
                 price={workshop.price}
+                workshopId={workshop.id}
               />
             </div>
           </div>

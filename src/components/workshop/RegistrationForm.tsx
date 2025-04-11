@@ -5,9 +5,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Phone, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "الرجاء إدخال الاسم الكامل" }),
@@ -20,34 +21,45 @@ const formSchema = z.object({
 
 type RegistrationFormProps = {
   compact?: boolean;
+  workshopId?: string;
+  userEmail?: string;
 };
 
-const RegistrationForm = ({ compact = false }: RegistrationFormProps) => {
+const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: RegistrationFormProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
+      fullName: user?.user_metadata?.full_name || "",
+      email: userEmail,
       phone: "",
       paymentMethod: "credit",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("Registration values:", values, "Workshop ID:", workshopId);
+    
+    // In a real app, this would send data to an API/database
     toast({
       title: "تم تسجيل طلبك بنجاح",
       description: "سنتواصل معك قريبًا لتأكيد حجزك",
     });
     
     form.reset();
+    
+    // Redirect to workshops page after successful registration
+    setTimeout(() => {
+      navigate("/workshops");
+    }, 2000);
   }
 
   return (
     <>
-      <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
+      {!compact && <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>}
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -77,7 +89,7 @@ const RegistrationForm = ({ compact = false }: RegistrationFormProps) => {
                 <FormControl>
                   <div className="flex">
                     <Mail size={18} className="absolute mt-3 mr-3 text-gray-400" />
-                    <Input className="pr-10" type="email" placeholder="example@example.com" {...field} />
+                    <Input className="pr-10" type="email" placeholder="example@example.com" {...field} readOnly={!!userEmail} />
                   </div>
                 </FormControl>
                 <FormMessage />

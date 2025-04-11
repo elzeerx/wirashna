@@ -11,6 +11,7 @@ interface WorkshopSidebarProps {
   availableSeats: number;
   totalSeats: number;
   price: string;
+  workshopId: string;
 }
 
 const WorkshopSidebar = ({
@@ -21,6 +22,7 @@ const WorkshopSidebar = ({
   availableSeats,
   totalSeats,
   price,
+  workshopId,
 }: WorkshopSidebarProps) => {
   return (
     <div className="wirashna-card sticky top-24">
@@ -69,7 +71,7 @@ const WorkshopSidebar = ({
       <div className="hidden lg:block">
         <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
         <Button asChild className="w-full wirashna-btn-primary">
-          <Link to="/workshop-registration">سجّل الآن</Link>
+          <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
         </Button>
       </div>
     </div>

@@ -1,15 +1,24 @@
 
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { user, isAdmin, signOut } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
   };
 
   return (
@@ -43,13 +52,29 @@ const Navbar = () => {
                   <Link to="/contact" className="text-lg font-medium" onClick={toggleMenu}>
                     تواصل معنا
                   </Link>
-                  <Link
-                    to="/login"
-                    className="wirashna-btn-primary"
-                    onClick={toggleMenu}
-                  >
-                    تسجيل الدخول
-                  </Link>
+                  {isAdmin && (
+                    <Link to="/admin" className="text-lg font-medium" onClick={toggleMenu}>
+                      لوحة الإدارة
+                    </Link>
+                  )}
+                  {user ? (
+                    <button
+                      onClick={handleSignOut}
+                      className="wirashna-btn-primary flex items-center gap-2"
+                    >
+                      <LogOut size={18} />
+                      تسجيل الخروج
+                    </button>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="wirashna-btn-primary flex items-center gap-2"
+                      onClick={toggleMenu}
+                    >
+                      <LogIn size={18} />
+                      تسجيل الدخول
+                    </Link>
+                  )}
                 </div>
               </div>
             )}
@@ -68,9 +93,25 @@ const Navbar = () => {
             <Link to="/contact" className="text-foreground hover:text-wirashna-accent transition-colors">
               تواصل معنا
             </Link>
-            <Link to="/login" className="wirashna-btn-primary">
-              تسجيل الدخول
-            </Link>
+            {isAdmin && (
+              <Link to="/admin" className="text-foreground hover:text-wirashna-accent transition-colors">
+                لوحة الإدارة
+              </Link>
+            )}
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="wirashna-btn-primary flex items-center gap-2"
+              >
+                <LogOut size={18} />
+                تسجيل الخروج
+              </button>
+            ) : (
+              <Link to="/login" className="wirashna-btn-primary flex items-center gap-2">
+                <LogIn size={18} />
+                تسجيل الدخول
+              </Link>
+            )}
           </div>
         )}
       </div>

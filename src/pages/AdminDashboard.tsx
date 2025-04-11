@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Eye, ArrowLeftRight } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,6 +10,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { useToast } from "@/hooks/use-toast";
 import { workshops } from "@/data/workshops";
 import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdminDashboard = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -18,6 +19,7 @@ const AdminDashboard = () => {
   const [selectedWorkshop, setSelectedWorkshop] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const handleCreateWorkshop = (workshopData: any) => {
     // In a real app, this would send data to an API/database
@@ -63,6 +65,11 @@ const AdminDashboard = () => {
     navigate(`/workshops/${id}`);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -70,14 +77,27 @@ const AdminDashboard = () => {
       <main className="flex-grow pt-24">
         <div className="wirashna-container py-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">لوحة إدارة الورش</h1>
-            <Button 
-              onClick={() => setIsCreateDialogOpen(true)}
-              className="bg-[#512b81] hover:bg-[#512b81]/90"
-            >
-              <Plus size={16} className="ml-2" />
-              إضافة ورشة جديدة
-            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">لوحة إدارة الورش</h1>
+              <p className="text-gray-600">مرحبًا {user?.email}</p>
+            </div>
+            <div className="flex gap-4">
+              <Button 
+                variant="outline"
+                onClick={handleSignOut}
+                className="flex items-center gap-2"
+              >
+                <LogOut size={16} />
+                تسجيل الخروج
+              </Button>
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="bg-[#512b81] hover:bg-[#512b81]/90"
+              >
+                <Plus size={16} className="ml-2" />
+                إضافة ورشة جديدة
+              </Button>
+            </div>
           </div>
           
           <div className="bg-white rounded-lg shadow-sm border overflow-hidden">

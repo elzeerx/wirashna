@@ -1,9 +1,14 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,31 +18,53 @@ const Login = () => {
     password: "",
     name: "",
   });
+  const [error, setError] = useState<string | null>(null);
+  const { signIn, signUp, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
-  const [isLoading, setIsLoading] = useState(false);
+  // If the user is already logged in, redirect to the home page
+  // or to the page they were trying to access
+  const from = location.state?.from?.pathname || "/";
+  
+  if (user) {
+    navigate(from, { replace: true });
+  }
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: value }));
+    setError(null);
   };
   
   const toggleView = () => {
     setIsLogin(!isLogin);
+    setError(null);
   };
   
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setError(null);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Navigate to dashboard or show error
-    }, 1500);
+    try {
+      if (isLogin) {
+        await signIn(formState.email, formState.password);
+        navigate(from, { replace: true });
+      } else {
+        if (!formState.name) {
+          setError("الرجاء إدخال الاسم الكامل");
+          return;
+        }
+        await signUp(formState.email, formState.password, formState.name);
+        setIsLogin(true);
+      }
+    } catch (error: any) {
+      console.error("Authentication error:", error);
+    }
   };
 
   return (
@@ -52,46 +79,52 @@ const Login = () => {
                 {isLogin ? "تسجيل الدخول" : "إنشاء حساب جديد"}
               </h1>
               
+              {error && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
               <form onSubmit={handleSubmit}>
                 {!isLogin && (
                   <div className="mb-4">
-                    <label htmlFor="name" className="block font-medium mb-1">الاسم الكامل</label>
-                    <input
+                    <Label htmlFor="name" className="block font-medium mb-1">الاسم الكامل</Label>
+                    <Input
                       type="text"
                       id="name"
                       name="name"
                       required={!isLogin}
                       value={formState.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wirashna-accent"
+                      className="w-full"
                     />
                   </div>
                 )}
                 
                 <div className="mb-4">
-                  <label htmlFor="email" className="block font-medium mb-1">البريد الإلكتروني</label>
-                  <input
+                  <Label htmlFor="email" className="block font-medium mb-1">البريد الإلكتروني</Label>
+                  <Input
                     type="email"
                     id="email"
                     name="email"
                     required
                     value={formState.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wirashna-accent"
+                    className="w-full"
                   />
                 </div>
                 
                 <div className="mb-6">
-                  <label htmlFor="password" className="block font-medium mb-1">كلمة المرور</label>
+                  <Label htmlFor="password" className="block font-medium mb-1">كلمة المرور</Label>
                   <div className="relative">
-                    <input
+                    <Input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
                       required
                       value={formState.password}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wirashna-accent pr-10"
+                      className="w-full pr-10"
                     />
                     <button
                       type="button"
@@ -103,17 +136,9 @@ const Login = () => {
                   </div>
                 </div>
                 
-                {isLogin && (
-                  <div className="mb-6 text-left">
-                    <Link to="/forgot-password" className="text-wirashna-accent hover:underline text-sm">
-                      نسيت كلمة المرور؟
-                    </Link>
-                  </div>
-                )}
-                
-                <button 
+                <Button 
                   type="submit" 
-                  className="wirashna-btn-primary w-full mb-4"
+                  className="w-full mb-4"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -123,16 +148,17 @@ const Login = () => {
                   ) : (
                     <span>إنشاء حساب</span>
                   )}
-                </button>
+                </Button>
                 
                 <div className="text-center">
-                  <button 
+                  <Button 
                     type="button" 
-                    className="text-wirashna-accent hover:underline"
+                    variant="link"
+                    className="text-wirashna-accent"
                     onClick={toggleView}
                   >
                     {isLogin ? "ليس لديك حساب؟ إنشاء حساب جديد" : "لديك حساب بالفعل؟ تسجيل الدخول"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
