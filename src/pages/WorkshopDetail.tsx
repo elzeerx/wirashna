@@ -1,10 +1,19 @@
-
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Calendar, Clock, MapPin, Users, ArrowRight, X } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, ArrowRight, X, User, Mail, Phone, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useToast } from "@/hooks/use-toast";
+import WorkshopCard from "@/components/WorkshopCard";
 
 // Mock workshop data
 const workshops = [
@@ -27,6 +36,25 @@ const workshops = [
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
       "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
       "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
+    ],
+    schedule: [
+      { time: "٥:٠٠ - ٥:٣٠", activity: "تسجيل الحضور والترحيب" },
+      { time: "٥:٣٠ - ٦:٣٠", activity: "مقدمة عن الذكاء الاصطناعي وتطبيقاته" },
+      { time: "٦:٣٠ - ٧:٠٠", activity: "استراحة" },
+      { time: "٧:٠٠ - ٨:٣٠", activity: "تطبيقات عملية على استخدام أدوات الذكاء الاصطناعي" },
+      { time: "٨:٣٠ - ٩:٠٠", activity: "أسئلة ونقاش" }
+    ],
+    requirements: [
+      "جهاز كمبيوتر محمول",
+      "اتصال بالإنترنت",
+      "حساب على منصات الذكاء الاصطناعي المجانية (سيتم تزويدكم بالتفاصيل قبل الورشة)"
+    ],
+    benefits: [
+      "فهم أساسيات الذكاء الاصطناعي وتطبيقاته",
+      "التعرف على أحدث التقنيات والأدوات في المجال",
+      "تطبيق عملي للمهارات المكتسبة",
+      "شهادة حضور معتمدة",
+      "فرصة للتواصل مع المهتمين والخبراء في المجال"
     ]
   },
   {
@@ -94,11 +122,52 @@ const workshops = [
   }
 ];
 
+const formSchema = z.object({
+  fullName: z.string().min(3, { message: "الرجاء إدخال الاسم الكامل" }),
+  email: z.string().email({ message: "الرجاء إدخال بريد إلكتروني صحيح" }),
+  phone: z.string().min(8, { message: "الرجاء إدخال رقم هاتف صحيح" }),
+  paymentMethod: z.enum(["credit", "bank", "cash"], {
+    required_error: "الرجاء اختيار طريقة الدفع",
+  }),
+});
+
 const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isRequirementsOpen, setIsRequirementsOpen] = useState(false);
+  const [isBenefitsOpen, setIsBenefitsOpen] = useState(false);
+  const { toast } = useToast();
   
   const workshop = workshops.find(w => w.id === id);
+  
+  const relatedWorkshops = workshop 
+    ? workshops
+        .filter(w => w.id !== workshop.id)
+        .filter(w => w.venue === workshop.venue || Math.random() > 0.5)
+        .slice(0, 3)
+    : [];
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      paymentMethod: "credit",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    toast({
+      title: "تم تسجيل طلبك بنجاح",
+      description: "سنتواصل معك قريبًا لتأكيد حجزك",
+    });
+    
+    form.reset();
+  }
   
   if (!workshop) {
     return (
@@ -164,6 +233,69 @@ const WorkshopDetail = () => {
                 <h2 className="text-xl font-bold mb-4">وصف الورشة</h2>
                 <p className="text-gray-700 leading-relaxed">{workshop.longDescription}</p>
               </div>
+
+              <Collapsible
+                open={isScheduleOpen}
+                onOpenChange={setIsScheduleOpen}
+                className="mb-8 border rounded-lg overflow-hidden"
+              >
+                <CollapsibleTrigger className="flex justify-between items-center w-full p-4 bg-wirashna-secondary hover:bg-wirashna-secondary/80 transition-colors">
+                  <h2 className="text-xl font-bold">جدول الورشة</h2>
+                  <div className="text-wirashna-accent">
+                    {isScheduleOpen ? <X size={20} /> : <ArrowRight size={20} />}
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4">
+                  <div className="space-y-3">
+                    {workshop.schedule?.map((item, index) => (
+                      <div key={index} className="flex border-b border-gray-200 pb-2 last:border-0">
+                        <div className="w-24 font-bold">{item.time}</div>
+                        <div>{item.activity}</div>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Collapsible
+                open={isRequirementsOpen}
+                onOpenChange={setIsRequirementsOpen}
+                className="mb-8 border rounded-lg overflow-hidden"
+              >
+                <CollapsibleTrigger className="flex justify-between items-center w-full p-4 bg-wirashna-secondary hover:bg-wirashna-secondary/80 transition-colors">
+                  <h2 className="text-xl font-bold">متطلبات الورشة</h2>
+                  <div className="text-wirashna-accent">
+                    {isRequirementsOpen ? <X size={20} /> : <ArrowRight size={20} />}
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4">
+                  <ul className="list-disc list-inside space-y-2">
+                    {workshop.requirements?.map((req, index) => (
+                      <li key={index}>{req}</li>
+                    ))}
+                  </ul>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <Collapsible
+                open={isBenefitsOpen}
+                onOpenChange={setIsBenefitsOpen}
+                className="mb-8 border rounded-lg overflow-hidden"
+              >
+                <CollapsibleTrigger className="flex justify-between items-center w-full p-4 bg-wirashna-secondary hover:bg-wirashna-secondary/80 transition-colors">
+                  <h2 className="text-xl font-bold">مميزات الورشة</h2>
+                  <div className="text-wirashna-accent">
+                    {isBenefitsOpen ? <X size={20} /> : <ArrowRight size={20} />}
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="p-4">
+                  <ul className="list-disc list-inside space-y-2">
+                    {workshop.benefits?.map((benefit, index) => (
+                      <li key={index}>{benefit}</li>
+                    ))}
+                  </ul>
+                </CollapsibleContent>
+              </Collapsible>
               
               <div className="mb-8">
                 <h2 className="text-xl font-bold mb-4">المدرب</h2>
@@ -171,6 +303,92 @@ const WorkshopDetail = () => {
                   <h3 className="text-lg font-bold mb-2">{workshop.instructor}</h3>
                   <p className="text-gray-700">{workshop.instructorBio}</p>
                 </div>
+              </div>
+
+              <div className="lg:hidden">
+                <Card className="mb-8">
+                  <CardContent className="pt-6">
+                    <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
+                    
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="fullName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>الاسم الكامل</FormLabel>
+                              <FormControl>
+                                <Input placeholder="أدخل اسمك الكامل" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>البريد الإلكتروني</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="example@example.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>رقم الهاتف</FormLabel>
+                              <FormControl>
+                                <Input placeholder="+965 XXXX XXXX" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="paymentMethod"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>طريقة الدفع</FormLabel>
+                              <FormControl>
+                                <select
+                                  className="w-full py-2 px-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-wirashna-accent"
+                                  {...field}
+                                >
+                                  <option value="credit">بطاقة ائتمان</option>
+                                  <option value="bank">تحويل بنكي</option>
+                                  <option value="cash">نقداً عند الحضور</option>
+                                </select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button type="submit" className="w-full wirashna-btn-primary">
+                          تأكيد التسجيل
+                        </Button>
+
+                        <p className="text-sm text-gray-500 text-center mt-4">
+                          بالضغط على تأكيد التسجيل، أنت توافق على 
+                          <Link to="/terms-conditions" className="text-wirashna-accent mx-1">الشروط والأحكام</Link>
+                          و
+                          <Link to="/privacy-policy" className="text-wirashna-accent mx-1">سياسة الخصوصية</Link>
+                        </p>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
               </div>
             </div>
             
@@ -218,12 +436,123 @@ const WorkshopDetail = () => {
                   <p className="text-lg font-bold text-wirashna-accent">{workshop.price}</p>
                 </div>
                 
-                <button className="wirashna-btn-primary w-full">
-                  سجل الآن
-                </button>
+                <div className="hidden lg:block">
+                  <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
+                  
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="fullName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>الاسم الكامل</FormLabel>
+                            <FormControl>
+                              <div className="flex">
+                                <User size={18} className="absolute mt-3 mr-3 text-gray-400" />
+                                <Input className="pr-10" placeholder="أدخل اسمك الكامل" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>البريد الإلكتروني</FormLabel>
+                            <FormControl>
+                              <div className="flex">
+                                <Mail size={18} className="absolute mt-3 mr-3 text-gray-400" />
+                                <Input className="pr-10" type="email" placeholder="example@example.com" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>رقم الهاتف</FormLabel>
+                            <FormControl>
+                              <div className="flex">
+                                <Phone size={18} className="absolute mt-3 mr-3 text-gray-400" />
+                                <Input className="pr-10" placeholder="+965 XXXX XXXX" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="paymentMethod"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>طريقة الدفع</FormLabel>
+                            <FormControl>
+                              <div className="flex">
+                                <CreditCard size={18} className="absolute mt-3 mr-3 text-gray-400" />
+                                <select
+                                  className="w-full py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-wirashna-accent"
+                                  {...field}
+                                >
+                                  <option value="credit">بطاقة ائتمان</option>
+                                  <option value="bank">تحويل بنكي</option>
+                                  <option value="cash">نقداً عند الحضور</option>
+                                </select>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button type="submit" className="w-full wirashna-btn-primary">
+                        تأكيد التسجيل
+                      </Button>
+
+                      <p className="text-sm text-gray-500 text-center mt-4">
+                        بالضغط على تأكيد التسجيل، أنت توافق على 
+                        <Link to="/terms-conditions" className="text-wirashna-accent mx-1">الشروط والأحكام</Link>
+                        و
+                        <Link to="/privacy-policy" className="text-wirashna-accent mx-1">سياسة الخصوصية</Link>
+                      </p>
+                    </form>
+                  </Form>
+                </div>
               </div>
             </div>
           </div>
+
+          {relatedWorkshops.length > 0 && (
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold mb-6">ورش ذات صلة</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {relatedWorkshops.map(workshop => (
+                  <WorkshopCard 
+                    key={workshop.id} 
+                    id={workshop.id}
+                    title={workshop.title}
+                    description={workshop.description}
+                    date={workshop.date}
+                    time={workshop.time}
+                    venue={workshop.venue}
+                    availableSeats={workshop.availableSeats}
+                    image={workshop.image}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         
         {selectedImage && (
