@@ -10,6 +10,7 @@ import AdminPagesList from "@/components/admin/pages/AdminPagesList";
 import SiteSettings from "@/components/admin/settings/SiteSettings";
 import PageBuilder from "@/components/admin/builder/PageBuilder";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
+import WorkshopRegistrationsList from "@/components/admin/workshops/WorkshopRegistrationsList";
 import { Workshop } from "@/types/supabase";
 import { fetchWorkshops } from "@/services/workshopService";
 
@@ -18,6 +19,7 @@ const AdminDashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
@@ -64,6 +66,11 @@ const AdminDashboardPage = () => {
     setActiveTab("page-builder");
   };
 
+  const handleWorkshopSelect = (workshopId: string) => {
+    setSelectedWorkshopId(workshopId);
+    setActiveTab("registrations");
+  };
+
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
   };
@@ -77,9 +84,10 @@ const AdminDashboardPage = () => {
   return (
     <AdminDashboardLayout>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 mb-8">
+        <TabsList className="grid grid-cols-6 mb-8">
           <TabsTrigger value="overview">لوحة المعلومات</TabsTrigger>
           <TabsTrigger value="workshops">إدارة الورش</TabsTrigger>
+          <TabsTrigger value="registrations">التسجيلات</TabsTrigger>
           <TabsTrigger value="pages">إدارة الصفحات</TabsTrigger>
           <TabsTrigger value="page-builder">محرر الصفحات</TabsTrigger>
           <TabsTrigger value="settings">إعدادات الموقع</TabsTrigger>
@@ -95,8 +103,19 @@ const AdminDashboardPage = () => {
         <TabsContent value="workshops" className="mt-6">
           <AdminWorkshopList 
             workshops={workshops} 
-            onWorkshopsUpdated={setWorkshops} 
+            onWorkshopsUpdated={setWorkshops}
+            onWorkshopSelect={handleWorkshopSelect}
           />
+        </TabsContent>
+        
+        <TabsContent value="registrations" className="mt-6">
+          {selectedWorkshopId ? (
+            <WorkshopRegistrationsList workshopId={selectedWorkshopId} />
+          ) : (
+            <p className="text-center py-8 text-gray-500">
+              الرجاء اختيار ورشة من قائمة الورش لعرض التسجيلات الخاصة بها
+            </p>
+          )}
         </TabsContent>
         
         <TabsContent value="pages" className="mt-6">

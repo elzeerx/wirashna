@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Workshop, WorkshopRegistration } from "@/types/supabase";
 
@@ -32,12 +31,10 @@ export const fetchWorkshopById = async (id: string): Promise<Workshop | null> =>
 };
 
 export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at' | 'updated_at'>): Promise<Workshop> => {
-  // Make sure gallery is an array
   if (workshop.image && (!workshop.gallery || workshop.gallery.length === 0)) {
     workshop.gallery = [workshop.image];
   }
 
-  // Ensure properties match database columns
   const workshopData = {
     title: workshop.title,
     short_description: workshop.short_description,
@@ -49,7 +46,7 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     venue: workshop.venue,
     location: workshop.location,
     total_seats: workshop.total_seats,
-    available_seats: workshop.available_seats || workshop.total_seats, // Default to total if not provided
+    available_seats: workshop.available_seats || workshop.total_seats,
     price: workshop.price,
     instructor: workshop.instructor,
     instructor_bio: workshop.instructor_bio,
@@ -74,7 +71,6 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
 };
 
 export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): Promise<Workshop> => {
-  // Make sure gallery is an array
   if (workshop.image && (!workshop.gallery || workshop.gallery.length === 0)) {
     workshop.gallery = [workshop.image];
   }
@@ -146,4 +142,19 @@ export const cancelRegistration = async (registrationId: string): Promise<void> 
     console.error(`Error canceling registration ${registrationId}:`, error);
     throw error;
   }
+};
+
+export const fetchWorkshopRegistrations = async (workshopId: string): Promise<WorkshopRegistration[]> => {
+  const { data, error } = await supabase
+    .from('workshop_registrations')
+    .select('*')
+    .eq('workshop_id', workshopId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(`Error fetching registrations for workshop ${workshopId}:`, error);
+    throw error;
+  }
+
+  return data || [];
 };

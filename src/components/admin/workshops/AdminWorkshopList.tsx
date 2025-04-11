@@ -11,9 +11,10 @@ import { useWorkshopOperations } from "@/hooks/useWorkshopOperations";
 interface AdminWorkshopListProps {
   workshops: Workshop[];
   onWorkshopsUpdated: (workshops: Workshop[]) => void;
+  onWorkshopSelect?: (workshopId: string) => void;
 }
 
-const AdminWorkshopList = ({ workshops, onWorkshopsUpdated }: AdminWorkshopListProps) => {
+const AdminWorkshopList = ({ workshops, onWorkshopsUpdated, onWorkshopSelect }: AdminWorkshopListProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
@@ -55,6 +56,12 @@ const AdminWorkshopList = ({ workshops, onWorkshopsUpdated }: AdminWorkshopListP
     setIsDeleteDialogOpen(true);
   };
 
+  const handleViewRegistrations = (workshop: Workshop) => {
+    if (onWorkshopSelect) {
+      onWorkshopSelect(workshop.id);
+    }
+  };
+
   return (
     <>
       <div className="flex justify-end mb-6">
@@ -66,6 +73,7 @@ const AdminWorkshopList = ({ workshops, onWorkshopsUpdated }: AdminWorkshopListP
         onView={handleViewWorkshop}
         onEdit={handleOpenEditDialog}
         onDelete={handleOpenDeleteDialog}
+        onViewRegistrations={onWorkshopSelect ? handleViewRegistrations : undefined}
       />
       
       <EditWorkshopDialog 
