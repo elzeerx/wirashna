@@ -7,6 +7,8 @@ import DeleteWorkshopDialog from "./DeleteWorkshopDialog";
 import WorkshopTable from "./WorkshopTable";
 import AddWorkshopButton from "./AddWorkshopButton";
 import { useWorkshopOperations } from "@/hooks/useWorkshopOperations";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import WorkshopMaterialsManager from "./WorkshopMaterialsManager";
 
 interface AdminWorkshopListProps {
   workshops: Workshop[];
@@ -18,6 +20,7 @@ const AdminWorkshopList = ({ workshops, onWorkshopsUpdated, onWorkshopSelect }: 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
+  const [activeTab, setActiveTab] = useState("workshops");
   const navigate = useNavigate();
   
   const { isLoading, handleUpdate, handleDelete } = useWorkshopOperations({
@@ -62,19 +65,45 @@ const AdminWorkshopList = ({ workshops, onWorkshopsUpdated, onWorkshopSelect }: 
     }
   };
 
+  const handleManageMaterials = (workshop: Workshop) => {
+    setSelectedWorkshop(workshop);
+    setActiveTab("materials");
+  };
+
   return (
     <>
-      <div className="flex justify-end mb-6">
-        <AddWorkshopButton />
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="workshops">قائمة الورش</TabsTrigger>
+          {selectedWorkshop && (
+            <TabsTrigger value="materials">إدارة المواد التعليمية</TabsTrigger>
+          )}
+        </TabsList>
+        
+        <TabsContent value="workshops">
+          <div className="flex justify-end mb-6">
+            <AddWorkshopButton />
+          </div>
 
-      <WorkshopTable 
-        workshops={workshops}
-        onView={handleViewWorkshop}
-        onEdit={handleOpenEditDialog}
-        onDelete={handleOpenDeleteDialog}
-        onViewRegistrations={onWorkshopSelect ? handleViewRegistrations : undefined}
-      />
+          <WorkshopTable 
+            workshops={workshops}
+            onView={handleViewWorkshop}
+            onEdit={handleOpenEditDialog}
+            onDelete={handleOpenDeleteDialog}
+            onViewRegistrations={onWorkshopSelect ? handleViewRegistrations : undefined}
+            onManageMaterials={handleManageMaterials}
+          />
+        </TabsContent>
+        
+        <TabsContent value="materials">
+          {selectedWorkshop && (
+            <div>
+              <h2 className="text-xl font-bold mb-6">إدارة المواد التعليمية - {selectedWorkshop.title}</h2>
+              <WorkshopMaterialsManager workshopId={selectedWorkshop.id} />
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
       
       <EditWorkshopDialog 
         isOpen={isEditDialogOpen} 

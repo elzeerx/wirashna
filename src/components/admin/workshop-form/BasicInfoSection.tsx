@@ -1,11 +1,18 @@
 
 import React from "react";
 import { FormSection } from "./FormSection";
+import { ImageUploader } from "./ImageUploader";
 
 export const BasicInfoSection = () => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">المعلومات الأساسية</h3>
+      
+      <ImageUploader
+        name="image"
+        label="صورة الغلاف"
+        required={true}
+      />
       
       <FormSection
         name="title"
