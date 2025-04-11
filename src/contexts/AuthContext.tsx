@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { UserProfile } from "@/types/supabase";
 
 type AuthContextType = {
   session: Session | null;
@@ -12,14 +13,6 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-};
-
-// Define the user profile type to match our database
-type UserProfile = {
-  id: string;
-  full_name: string | null;
-  created_at: string;
-  is_admin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkAdminStatus = async (userId: string) => {
     try {
-      const { data: userData, error } = await supabase
+      const { data, error } = await supabase
         .from('user_profiles')
         .select('is_admin')
         .eq('id', userId)
@@ -80,8 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       // If we have user data and is_admin flag, use it
-      if (userData) {
-        setIsAdmin(userData.is_admin || false);
+      if (data) {
+        setIsAdmin(data.is_admin || false);
       } else {
         setIsAdmin(false);
       }

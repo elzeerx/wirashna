@@ -9,7 +9,134 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          id: string
+          is_admin: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          is_admin?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean | null
+        }
+        Relationships: []
+      }
+      workshop_registrations: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          user_id: string
+          workshop_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          user_id: string
+          workshop_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          user_id?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workshop_registrations_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workshops: {
+        Row: {
+          available_seats: number
+          benefits: string[] | null
+          created_at: string | null
+          date: string
+          gallery: string[] | null
+          id: string
+          image: string | null
+          instructor: string
+          instructor_bio: string | null
+          location: string
+          long_description: string | null
+          price: number
+          requirements: string[] | null
+          short_description: string
+          time: string
+          title: string
+          total_seats: number
+          updated_at: string | null
+          venue: string
+        }
+        Insert: {
+          available_seats: number
+          benefits?: string[] | null
+          created_at?: string | null
+          date: string
+          gallery?: string[] | null
+          id?: string
+          image?: string | null
+          instructor: string
+          instructor_bio?: string | null
+          location: string
+          long_description?: string | null
+          price: number
+          requirements?: string[] | null
+          short_description: string
+          time: string
+          title: string
+          total_seats: number
+          updated_at?: string | null
+          venue: string
+        }
+        Update: {
+          available_seats?: number
+          benefits?: string[] | null
+          created_at?: string | null
+          date?: string
+          gallery?: string[] | null
+          id?: string
+          image?: string | null
+          instructor?: string
+          instructor_bio?: string | null
+          location?: string
+          long_description?: string | null
+          price?: number
+          requirements?: string[] | null
+          short_description?: string
+          time?: string
+          title?: string
+          total_seats?: number
+          updated_at?: string | null
+          venue?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
