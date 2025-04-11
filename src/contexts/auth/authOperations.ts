@@ -1,7 +1,15 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/types/supabase";
-import { ToastOptions } from "@/hooks/use-toast";
+import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
+
+// Define the ToastOptions type explicitly
+export type ToastOptions = {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: ToastActionElement;
+  variant?: "default" | "destructive";
+};
 
 // Function to fetch user profile
 export const fetchUserProfile = async (userId: string): Promise<{
