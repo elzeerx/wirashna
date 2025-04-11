@@ -1,6 +1,7 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Target, UserRound, Award, BookOpen } from "lucide-react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WorkshopGallery from "@/components/workshop/WorkshopGallery";
@@ -12,20 +13,73 @@ import MobileRegistration from "@/components/workshop/MobileRegistration";
 import WorkshopNotFound from "@/components/workshop/WorkshopNotFound";
 import WorkshopDescription from "@/components/workshop/WorkshopDescription";
 import BackToWorkshopsLink from "@/components/workshop/BackToWorkshopsLink";
-import { workshops } from "@/data/workshops";
+import { fetchWorkshopById, fetchWorkshops } from "@/services/workshopService";
+import { useToast } from "@/hooks/use-toast";
+import { Workshop } from "@/types/supabase";
 import { workshopObjectives, targetAudience } from "@/data/workshopSections";
 
 const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [workshop, setWorkshop] = useState<Workshop | null>(null);
+  const [relatedWorkshops, setRelatedWorkshops] = useState<Workshop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const workshop = workshops.find(w => w.id === id);
+  useEffect(() => {
+    const loadWorkshopData = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      
+      try {
+        // Fetch workshop details
+        const workshopData = await fetchWorkshopById(id);
+        
+        if (!workshopData) {
+          return navigate("/workshops");
+        }
+        
+        setWorkshop(workshopData);
+        
+        // Fetch all workshops for related workshops
+        const allWorkshops = await fetchWorkshops();
+        
+        // Filter related workshops (not including current workshop)
+        const related = allWorkshops
+          .filter(w => w.id !== id)
+          .filter(w => w.venue === workshopData.venue || Math.random() > 0.5)
+          .slice(0, 3);
+        
+        setRelatedWorkshops(related);
+      } catch (error) {
+        console.error("Error loading workshop:", error);
+        toast({
+          title: "خطأ في تحميل الورشة",
+          description: "حدث خطأ أثناء تحميل بيانات الورشة. الرجاء المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadWorkshopData();
+  }, [id, navigate, toast]);
   
-  const relatedWorkshops = workshop 
-    ? workshops
-        .filter(w => w.id !== workshop.id)
-        .filter(w => w.venue === workshop.venue || Math.random() > 0.5)
-        .slice(0, 3)
-    : [];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-24">
+          <div className="wirashna-container py-12 flex justify-center items-center">
+            <div className="wirashna-loader"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   if (!workshop) {
     return <WorkshopNotFound />;
@@ -44,12 +98,12 @@ const WorkshopDetail = () => {
               <h1 className="text-3xl font-bold mb-4">{workshop.title}</h1>
               
               <WorkshopGallery 
-                mainImage={workshop.image} 
-                gallery={workshop.gallery} 
+                mainImage={workshop.image || ""} 
+                gallery={workshop.gallery || []} 
                 title={workshop.title} 
               />
               
-              <WorkshopDescription description={workshop.longDescription} />
+              <WorkshopDescription description={workshop.long_description || workshop.short_description} />
 
               <CollapsibleSection 
                 title="أهداف الورشة"
@@ -77,7 +131,7 @@ const WorkshopDetail = () => {
               
               <InstructorCard 
                 name={workshop.instructor} 
-                bio={workshop.instructorBio} 
+                bio={workshop.instructor_bio || ""} 
               />
 
               <MobileRegistration workshopId={workshop.id} />
@@ -89,8 +143,8 @@ const WorkshopDetail = () => {
                 time={workshop.time}
                 venue={workshop.venue}
                 location={workshop.location}
-                availableSeats={workshop.availableSeats}
-                totalSeats={workshop.totalSeats}
+                availableSeats={workshop.available_seats}
+                totalSeats={workshop.total_seats}
                 price={workshop.price}
                 workshopId={workshop.id}
               />

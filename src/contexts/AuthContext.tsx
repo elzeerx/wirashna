@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,14 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
+};
+
+// Define the user profile type to match our database
+type UserProfile = {
+  id: string;
+  full_name: string | null;
+  created_at: string;
+  is_admin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,31 +66,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const checkAdminStatus = async (userId: string) => {
-    // In a real app, you would check against admin users in the database
-    // For demo purposes, we'll consider specific emails as admins
-    const adminEmails = ["admin@wirashna.com", "test@example.com"];
-    
     try {
-      const { data: userData } = await supabase
+      const { data: userData, error } = await supabase
         .from('user_profiles')
         .select('is_admin')
         .eq('id', userId)
         .single();
       
+      if (error) {
+        console.error("Error checking admin status:", error);
+        setIsAdmin(false);
+        return;
+      }
+      
       // If we have user data and is_admin flag, use it
-      if (userData && userData.is_admin !== undefined) {
-        setIsAdmin(userData.is_admin);
-      } 
-      // Otherwise fallback to checking email (for demo purposes)
-      else if (user?.email) {
-        setIsAdmin(adminEmails.includes(user.email));
+      if (userData) {
+        setIsAdmin(userData.is_admin || false);
+      } else {
+        setIsAdmin(false);
       }
     } catch (error) {
-      // Fallback to email check if table doesn't exist yet
-      if (user?.email) {
-        setIsAdmin(adminEmails.includes(user.email));
-      }
-      console.log("Could not check admin status:", error);
+      console.error("Could not check admin status:", error);
+      setIsAdmin(false);
     }
   };
 

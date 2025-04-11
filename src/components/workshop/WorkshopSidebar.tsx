@@ -10,7 +10,7 @@ interface WorkshopSidebarProps {
   location: string;
   availableSeats: number;
   totalSeats: number;
-  price: string;
+  price: string | number;
   workshopId: string;
 }
 
@@ -24,6 +24,9 @@ const WorkshopSidebar = ({
   price,
   workshopId,
 }: WorkshopSidebarProps) => {
+  const isSoldOut = availableSeats <= 0;
+  const formattedPrice = typeof price === 'number' ? `${price.toFixed(2)} د.ك` : price;
+
   return (
     <div className="wirashna-card sticky top-24">
       <h3 className="text-xl font-bold mb-4">تفاصيل الورشة</h3>
@@ -57,7 +60,7 @@ const WorkshopSidebar = ({
         <Users size={18} className="ml-3 text-wirashna-accent" />
         <div>
           <p className="font-medium">المقاعد المتاحة</p>
-          <p className="text-gray-600">
+          <p className={`text-gray-600 ${availableSeats <= 5 ? 'text-red-500 font-bold' : ''}`}>
             {availableSeats} / {totalSeats}
           </p>
         </div>
@@ -65,14 +68,20 @@ const WorkshopSidebar = ({
       
       <div className="mb-6">
         <p className="font-medium">السعر</p>
-        <p className="text-lg font-bold text-wirashna-accent">{price}</p>
+        <p className="text-lg font-bold text-wirashna-accent">{formattedPrice}</p>
       </div>
       
       <div className="hidden lg:block">
         <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
-        <Button asChild className="w-full wirashna-btn-primary">
-          <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
-        </Button>
+        {isSoldOut ? (
+          <Button disabled className="w-full bg-gray-400">
+            نفذت التذاكر
+          </Button>
+        ) : (
+          <Button asChild className="w-full wirashna-btn-primary">
+            <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
+          </Button>
+        )}
       </div>
     </div>
   );

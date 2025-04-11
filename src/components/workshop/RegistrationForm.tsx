@@ -9,6 +9,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Phone, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { registerForWorkshop } from "@/services/workshopService";
+import { useState } from "react";
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "الرجاء إدخال الاسم الكامل" }),
@@ -29,6 +31,7 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,20 +44,48 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Registration values:", values, "Workshop ID:", workshopId);
-    
-    // In a real app, this would send data to an API/database
-    toast({
-      title: "تم تسجيل طلبك بنجاح",
-      description: "سنتواصل معك قريبًا لتأكيد حجزك",
-    });
-    
-    form.reset();
-    
-    // Redirect to workshops page after successful registration
-    setTimeout(() => {
-      navigate("/workshops");
-    }, 2000);
+    if (!workshopId || !user) {
+      toast({
+        title: "خطأ في التسجيل",
+        description: "يرجى تسجيل الدخول والتأكد من اختيار ورشة صحيحة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await registerForWorkshop({
+        workshop_id: workshopId,
+        user_id: user.id,
+        full_name: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        notes: `Payment Method: ${values.paymentMethod}`
+      });
+      
+      toast({
+        title: "تم تسجيل طلبك بنجاح",
+        description: "سنتواصل معك قريبًا لتأكيد حجزك",
+      });
+      
+      form.reset();
+      
+      // Redirect to workshops page after successful registration
+      setTimeout(() => {
+        navigate("/workshops");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast({
+        title: "خطأ في التسجيل",
+        description: error.message || "حدث خطأ أثناء التسجيل. الرجاء المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -138,8 +169,12 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
             )}
           />
           
-          <Button type="submit" className="w-full wirashna-btn-primary">
-            تأكيد التسجيل
+          <Button 
+            type="submit" 
+            className="w-full wirashna-btn-primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "جاري التسجيل..." : "تأكيد التسجيل"}
           </Button>
 
           <p className="text-sm text-gray-500 text-center mt-4">

@@ -4,33 +4,81 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RegistrationForm from "@/components/workshop/RegistrationForm";
-import { workshops } from "@/data/workshops";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
+import { Workshop } from "@/types/supabase";
+import { fetchWorkshopById } from "@/services/workshopService";
+import { useToast } from "@/hooks/use-toast";
 
 const WorkshopRegistration = () => {
-  const [selectedWorkshop, setSelectedWorkshop] = useState<any>(null);
+  const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   useEffect(() => {
-    // Get workshop ID from URL params
-    const params = new URLSearchParams(location.search);
-    const workshopId = params.get('id');
-    
-    if (workshopId) {
-      const workshop = workshops.find(w => w.id === workshopId);
-      if (workshop) {
-        setSelectedWorkshop(workshop);
+    const fetchWorkshop = async () => {
+      setIsLoading(true);
+      try {
+        // Get workshop ID from URL params
+        const params = new URLSearchParams(location.search);
+        const workshopId = params.get('id');
+        
+        if (workshopId) {
+          const workshop = await fetchWorkshopById(workshopId);
+          if (workshop) {
+            setSelectedWorkshop(workshop);
+          } else {
+            toast({
+              title: "الورشة غير موجودة",
+              description: "لم يتم العثور على الورشة المطلوبة",
+              variant: "destructive",
+            });
+            navigate("/workshops");
+          }
+        } else {
+          toast({
+            title: "خطأ في الرابط",
+            description: "الرجاء تحديد ورشة للتسجيل",
+            variant: "destructive",
+          });
+          navigate("/workshops");
+        }
+      } catch (error) {
+        console.error("Error fetching workshop:", error);
+        toast({
+          title: "خطأ في تحميل بيانات الورشة",
+          description: "حدث خطأ أثناء تحميل بيانات الورشة. الرجاء المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, [location]);
+    };
+
+    fetchWorkshop();
+  }, [location, navigate, toast]);
 
   const handleRedirectToLogin = () => {
     navigate("/login", { state: { from: location } });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow pt-24">
+          <div className="wirashna-container py-12 flex justify-center items-center">
+            <div className="wirashna-loader"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
