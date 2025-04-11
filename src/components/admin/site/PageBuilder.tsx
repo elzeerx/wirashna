@@ -3,7 +3,7 @@ import { useState } from "react";
 import { 
   ArrowLeft, Save, Image, Type, Layout, PanelLeft, 
   PanelRight, Grid, List, Search, Plus, Edit, Trash, Eye, 
-  Columns, Box, Heading, Paragraph, Link, Button as ButtonIcon
+  Columns, Box, Heading, Link as LinkIcon, FileText, Square
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -174,19 +174,19 @@ const PageBuilder = () => {
                   </div>
                   <div className="bg-white p-3 rounded border cursor-move hover:border-wirashna-accent">
                     <div className="flex items-center">
-                      <Paragraph className="h-4 w-4 ml-2 text-gray-500" />
+                      <FileText className="h-4 w-4 ml-2 text-gray-500" />
                       <span className="text-sm">فقرة نصية</span>
                     </div>
                   </div>
                   <div className="bg-white p-3 rounded border cursor-move hover:border-wirashna-accent">
                     <div className="flex items-center">
-                      <ButtonIcon className="h-4 w-4 ml-2 text-gray-500" />
+                      <Square className="h-4 w-4 ml-2 text-gray-500" />
                       <span className="text-sm">زر</span>
                     </div>
                   </div>
                   <div className="bg-white p-3 rounded border cursor-move hover:border-wirashna-accent">
                     <div className="flex items-center">
-                      <Link className="h-4 w-4 ml-2 text-gray-500" />
+                      <LinkIcon className="h-4 w-4 ml-2 text-gray-500" />
                       <span className="text-sm">رابط</span>
                     </div>
                   </div>
