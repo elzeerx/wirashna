@@ -15,7 +15,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import WorkshopRegistration from "./pages/WorkshopRegistration";
 import SubscriberDashboard from "./pages/SubscriberDashboard";
 import SubscriberWorkshops from "./pages/SubscriberWorkshops";
@@ -47,7 +47,7 @@ const App = () => (
             {/* Admin Routes */}
             <Route path="/admin" element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <AdminDashboard />
+                <AdminDashboardPage />
               </ProtectedRoute>
             } />
             <Route path="/admin/users" element={
