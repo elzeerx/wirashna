@@ -57,16 +57,24 @@ export const ImageUploader = ({ name, label, required = false, initialImageUrl }
       const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
+      // Create a new XMLHttpRequest to track upload progress
+      const xhr = new XMLHttpRequest();
+      
       // Upload the file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('workshop-images')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
-          onUploadProgress: (progress) => {
-            setUploadProgress(Math.round((progress.loaded / progress.total) * 100));
-          },
+          upsert: false
         });
+
+      // Update progress manually using the xhr.upload.addEventListener
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percentComplete);
+        }
+      });
 
       if (error) {
         throw error;
