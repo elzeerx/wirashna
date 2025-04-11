@@ -6,7 +6,7 @@ export const CapacityPriceSection = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <FormSection
-        name="availableSeats"
+        name="available_seats"
         label="المقاعد المتاحة"
         type="number"
         min="0"
@@ -14,7 +14,7 @@ export const CapacityPriceSection = () => {
       />
 
       <FormSection
-        name="totalSeats"
+        name="total_seats"
         label="إجمالي المقاعد"
         type="number"
         min="0"
@@ -25,6 +25,8 @@ export const CapacityPriceSection = () => {
         name="price"
         label="السعر"
         placeholder="مثال: ١٢٠ دينار كويتي"
+        type="number"
+        min="0"
         required
       />
     </div>

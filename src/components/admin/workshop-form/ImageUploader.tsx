@@ -57,7 +57,7 @@ export const ImageUploader = ({ name, label, required = false, initialImageUrl }
       const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      // Create a new XMLHttpRequest to track upload progress
+      // Setup XMLHttpRequest to track progress (but not actually use it for upload)
       const xhr = new XMLHttpRequest();
       
       // Upload the file to Supabase Storage
@@ -68,17 +68,12 @@ export const ImageUploader = ({ name, label, required = false, initialImageUrl }
           upsert: false
         });
 
-      // Update progress manually using the xhr.upload.addEventListener
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percentComplete);
-        }
-      });
-
       if (error) {
         throw error;
       }
+
+      // Manually set upload progress to 100% since we can't track it with Supabase's client
+      setUploadProgress(100);
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage

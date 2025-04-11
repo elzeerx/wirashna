@@ -8,6 +8,7 @@ import { DateTimeSection } from "./workshop-form/DateTimeSection";
 import { LocationSection } from "./workshop-form/LocationSection";
 import { CapacityPriceSection } from "./workshop-form/CapacityPriceSection";
 import { InstructorSection } from "./workshop-form/InstructorSection";
+import { ImageUploader } from "./workshop-form/ImageUploader";
 
 interface AdminWorkshopFormProps {
   initialData?: any;
@@ -22,18 +23,20 @@ const AdminWorkshopForm = ({ initialData, onSubmit, onCancel }: AdminWorkshopFor
   const form = useForm({
     defaultValues: {
       title: initialData?.title || "",
-      description: initialData?.description || "",
-      longDescription: initialData?.longDescription || "",
+      short_description: initialData?.short_description || "",
+      long_description: initialData?.long_description || "",
       date: initialData?.date || "",
       time: initialData?.time || "",
       venue: initialData?.venue || "",
       location: initialData?.location || "",
-      availableSeats: initialData?.availableSeats || 0,
-      totalSeats: initialData?.totalSeats || 0,
-      price: initialData?.price || "",
+      available_seats: initialData?.available_seats || 0,
+      total_seats: initialData?.total_seats || 0,
+      price: initialData?.price || 0,
       instructor: initialData?.instructor || "",
-      instructorBio: initialData?.instructorBio || "",
+      instructor_bio: initialData?.instructor_bio || "",
       image: initialData?.image || "",
+      benefits: initialData?.benefits || [],
+      requirements: initialData?.requirements || [],
     },
   });
 
@@ -41,14 +44,12 @@ const AdminWorkshopForm = ({ initialData, onSubmit, onCancel }: AdminWorkshopFor
     // If in edit mode, preserve the ID
     if (isEditMode) {
       data.id = initialData.id;
-    } else {
-      // For new workshops, generate a dummy ID (in a real app, the backend would do this)
-      data.id = Date.now().toString();
     }
     
     // Convert numeric string inputs to numbers
-    data.availableSeats = Number(data.availableSeats);
-    data.totalSeats = Number(data.totalSeats);
+    data.available_seats = Number(data.available_seats);
+    data.total_seats = Number(data.total_seats);
+    data.price = Number(data.price);
     
     // Add default gallery if not provided
     if (!data.gallery) {

@@ -37,9 +37,29 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     workshop.gallery = [workshop.image];
   }
 
+  // Ensure properties match database columns
+  const workshopData = {
+    title: workshop.title,
+    short_description: workshop.short_description,
+    long_description: workshop.long_description,
+    image: workshop.image,
+    gallery: workshop.gallery,
+    date: workshop.date,
+    time: workshop.time,
+    venue: workshop.venue,
+    location: workshop.location,
+    total_seats: workshop.total_seats,
+    available_seats: workshop.available_seats || workshop.total_seats, // Default to total if not provided
+    price: workshop.price,
+    instructor: workshop.instructor,
+    instructor_bio: workshop.instructor_bio,
+    benefits: workshop.benefits || [],
+    requirements: workshop.requirements || []
+  };
+
   const { data, error } = await supabase
     .from('workshops')
-    .insert(workshop)
+    .insert(workshopData)
     .select()
     .single();
 
