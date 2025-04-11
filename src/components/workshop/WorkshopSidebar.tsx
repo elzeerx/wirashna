@@ -1,6 +1,7 @@
 
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import RegistrationForm from "./RegistrationForm";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface WorkshopSidebarProps {
   date: string;
@@ -66,7 +67,10 @@ const WorkshopSidebar = ({
       </div>
       
       <div className="hidden lg:block">
-        <RegistrationForm />
+        <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
+        <Button asChild className="w-full wirashna-btn-primary">
+          <Link to="/workshop-registration">سجّل الآن</Link>
+        </Button>
       </div>
     </div>
   );
