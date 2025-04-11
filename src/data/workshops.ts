@@ -60,13 +60,6 @@ export const workshops = [
       "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
       "https://images.unsplash.com/photo-1721322800607-8c38375eef04"
-    ],
-    schedule: [
-      { time: "٣:٠٠ - ٣:٣٠", activity: "تسجيل الحضور والترحيب" },
-      { time: "٣:٣٠ - ٤:٣٠", activity: "استراتيجيات إنشاء المحتوى باستخدام الذكاء الاصطناعي" },
-      { time: "٤:٣٠ - ٥:٠٠", activity: "استراحة" },
-      { time: "٥:٠٠ - ٦:٣٠", activity: "تطبيقات عملية على أدوات إنشاء المحتوى الإبداعي" },
-      { time: "٦:٣٠ - ٧:٠٠", activity: "مناقشة وأسئلة" }
     ]
   },
   {
@@ -88,13 +81,6 @@ export const workshops = [
       "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
       "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-    ],
-    schedule: [
-      { time: "٥:٠٠ - ٥:٣٠", activity: "استقبال وتسجيل" },
-      { time: "٥:٣٠ - ٦:٣٠", activity: "مقدمة عن أدوات التصميم بالذكاء الاصطناعي" },
-      { time: "٦:٣٠ - ٧:٠٠", activity: "استراحة قهوة" },
-      { time: "٧:٠٠ - ٨:٣٠", activity: "ورشة عملية على DALL-E وMidjourney" },
-      { time: "٨:٣٠ - ٩:٠٠", activity: "عرض أعمال المشاركين والتعليق عليها" }
     ]
   },
   {
@@ -116,13 +102,6 @@ export const workshops = [
       "https://images.unsplash.com/photo-1721322800607-8c38375eef04",
       "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-    ],
-    schedule: [
-      { time: "٥:٣٠ - ٦:٠٠", activity: "تسجيل وتعارف" },
-      { time: "٦:٠٠ - ٧:٠٠", activity: "أساسيات كتابة السيناريو وكيف يمكن للذكاء الاصطناعي المساعدة" },
-      { time: "٧:٠٠ - ٧:٣٠", activity: "استراحة" },
-      { time: "٧:٣٠ - ٨:٣٠", activity: "تقنيات تطوير الشخصيات والحبكة باستخدام الذكاء الاصطناعي" },
-      { time: "٨:٣٠ - ٩:٣٠", activity: "جلسة تطبيقية وتحليل أمثلة" }
     ]
   }
 ];

@@ -12,7 +12,6 @@ import MobileRegistration from "@/components/workshop/MobileRegistration";
 import WorkshopNotFound from "@/components/workshop/WorkshopNotFound";
 import WorkshopDescription from "@/components/workshop/WorkshopDescription";
 import BackToWorkshopsLink from "@/components/workshop/BackToWorkshopsLink";
-import WorkshopSchedule from "@/components/workshop/WorkshopSchedule";
 import { workshops } from "@/data/workshops";
 import { workshopObjectives, targetAudience } from "@/data/workshopSections";
 
@@ -51,10 +50,6 @@ const WorkshopDetail = () => {
               />
               
               <WorkshopDescription description={workshop.longDescription} />
-
-              {workshop.schedule && (
-                <WorkshopSchedule schedule={workshop.schedule} />
-              )}
 
               <CollapsibleSection 
                 title="أهداف الورشة"
