@@ -1,17 +1,40 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import { useToast } from "@/hooks/use-toast";
-import { createWorkshop, fetchWorkshops } from "@/services/workshopService";
+import { createWorkshop } from "@/services/workshopService";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CreateWorkshopPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, userRole } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: any) => {
+    if (!user) {
+      toast({
+        title: "غير مصرح",
+        description: "يجب تسجيل الدخول لإنشاء ورشة جديدة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (userRole !== 'admin' && userRole !== 'supervisor') {
+      toast({
+        title: "غير مصرح",
+        description: "لا تملك الصلاحيات اللازمة لإنشاء ورشة جديدة",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      setIsSubmitting(true);
+      
       // Ensure available_seats matches total_seats for new workshops
       await createWorkshop({
         ...data,
@@ -32,6 +55,8 @@ const CreateWorkshopPage = () => {
         description: error.message || "حدث خطأ أثناء إنشاء الورشة. الرجاء المحاولة مرة أخرى.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -50,6 +75,7 @@ const CreateWorkshopPage = () => {
         <AdminWorkshopForm 
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          isSubmitting={isSubmitting}
         />
       </div>
     </AdminDashboardLayout>
