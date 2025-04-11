@@ -63,7 +63,7 @@ const workshops = [
     description: "ورشة عمل متقدمة حول كيفية استخدام أدوات الذكاء الاصطناعي لإنشاء محتوى متميز",
     longDescription: "ورشة عمل متقدمة تركز على كيفية استخدام أدوات الذكاء الاصطناعي المختلفة لإنشاء محتوى إبداعي متميز. ستتعلم كيفية استخدام تقنيات الذكاء الاصطناعي في كتابة النصوص، وإنشاء الصور، وتحرير الفيديو. هذه الورشة مخصصة للأشخاص الذين لديهم معرفة أساسية بالذكاء الاصطناعي ويرغبون في تطوير مهاراتهم في استخدامه لإنشاء محتوى إبداعي.",
     date: "٢٠ مايو ٢٠٢٥",
-    time: "٤:٠٠ مساءًا",
+    time: "٣:٠٠ مساءًا",
     venue: "دبي",
     location: "فندق العنوان، قاعة المجلس، الطابق الأول",
     availableSeats: 8,
@@ -84,7 +84,7 @@ const workshops = [
     description: "تعلم كيفية إنشاء تصاميم جرافيك احترافية باستخدام أحدث أدوات الذكاء الاصطناعي",
     longDescription: "في هذه الورشة، ستتعلم كيفية استخدام أدوات الذكاء الاصطناعي لإنشاء تصاميم جرافيك احترافية. سنغطي كيفية استخدام أدوات مثل DALL-E وMidjourney لإنشاء صور وتصاميم مبتكرة، وكيفية تحرير هذه التصاميم باستخدام برامج تحرير الصور. هذه الورشة مناسبة للمصممين والمبدعين الذين يرغبون في تعزيز مهاراتهم باستخدام الذكاء الاصطناعي.",
     date: "٢٥ مايو ٢٠٢٥",
-    time: "٦:٠٠ مساءًا",
+    time: "٥:٠٠ مساءًا",
     venue: "الرياض",
     location: "فندق الفيصلية، قاعة المؤتمرات، الطابق الثالث",
     availableSeats: 15,
@@ -103,7 +103,7 @@ const workshops = [
     id: "4",
     title: "كتابة السيناريو المدعومة بالذكاء الاصطناعي",
     description: "اكتشف كيفية استخدام الذكاء الاصطناعي لتحسين مهارات كتابة السيناريو الخاصة بك",
-    longDescription: "في هذه الورشة، ستتعلم كيفية استخدام أدوات الذكاء الاصطناعي لتحسين مهارات كتابة السيناريو الخاصة بك. سنستكشف كيفية استخدام نماذج اللغة المتقدمة لتوليد أفكار للقصص، وتطوير الشخصيات، وكتابة الحوار. ستتعلم أيضًا كيفية تحرير وتنقيح النصوص التي تم إنشاؤها بواسطة الذكاء الاصطناعي لجعلها أكثر إبداعًا وأصالة.",
+    longDescription: "في هذه الورشة، ستتعلم كيفية استخدام أدوات الذكاء الاصطناعي لتحسين مهارات كتابة السيناريو الخاصة بك. س��ستكشف كيفية استخدام نماذج اللغة المتقدمة لتوليد أفكار للقصص، وتطوير الشخصيات، وكتابة الحوار. ستتعلم أيضًا كيفية تحرير وتنقيح النصوص التي تم إنشاؤها بواسطة الذكاء الاصطناعي لجعلها أكثر إبداعًا وأصالة.",
     date: "٣٠ مايو ٢٠٢٥",
     time: "٥:٣٠ مساءًا",
     venue: "الدوحة",
@@ -135,7 +135,6 @@ const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isRequirementsOpen, setIsRequirementsOpen] = useState(false);
   const [isBenefitsOpen, setIsBenefitsOpen] = useState(false);
   const { toast } = useToast();
@@ -233,29 +232,6 @@ const WorkshopDetail = () => {
                 <h2 className="text-xl font-bold mb-4">وصف الورشة</h2>
                 <p className="text-gray-700 leading-relaxed">{workshop.longDescription}</p>
               </div>
-
-              <Collapsible
-                open={isScheduleOpen}
-                onOpenChange={setIsScheduleOpen}
-                className="mb-8 border rounded-lg overflow-hidden"
-              >
-                <CollapsibleTrigger className="flex justify-between items-center w-full p-4 bg-wirashna-secondary hover:bg-wirashna-secondary/80 transition-colors">
-                  <h2 className="text-xl font-bold">جدول الورشة</h2>
-                  <div className="text-wirashna-accent">
-                    {isScheduleOpen ? <X size={20} /> : <ArrowRight size={20} />}
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="p-4">
-                  <div className="space-y-3">
-                    {workshop.schedule?.map((item, index) => (
-                      <div key={index} className="flex border-b border-gray-200 pb-2 last:border-0">
-                        <div className="w-24 font-bold">{item.time}</div>
-                        <div>{item.activity}</div>
-                      </div>
-                    ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
 
               <Collapsible
                 open={isRequirementsOpen}
