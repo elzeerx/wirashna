@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-interface SiteSettings {
+export interface SiteSettings {
   id?: string;
   site_name: string;
   site_description: string;
@@ -24,7 +24,7 @@ export const fetchSiteSettings = async (): Promise<SiteSettings | null> => {
     throw error;
   }
 
-  return data;
+  return data as SiteSettings;
 };
 
 export const updateSiteSettings = async (settings: SiteSettings): Promise<SiteSettings> => {
@@ -40,7 +40,7 @@ export const updateSiteSettings = async (settings: SiteSettings): Promise<SiteSe
     // Update existing settings
     response = await supabase
       .from('site_settings')
-      .update(settings)
+      .update(settings as any)
       .eq('id', existingSettings[0].id)
       .select()
       .single();
@@ -48,7 +48,7 @@ export const updateSiteSettings = async (settings: SiteSettings): Promise<SiteSe
     // Insert new settings
     response = await supabase
       .from('site_settings')
-      .insert(settings)
+      .insert(settings as any)
       .select()
       .single();
   }
@@ -58,5 +58,5 @@ export const updateSiteSettings = async (settings: SiteSettings): Promise<SiteSe
     throw response.error;
   }
 
-  return response.data;
+  return response.data as SiteSettings;
 };

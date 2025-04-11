@@ -1,163 +1,169 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Workshop } from "@/types/supabase";
-import { BarChart, Calendar, Users, FileText, Settings } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronUp, Users, Calendar, DollarSign, BarChart2, Plus } from "lucide-react";
+import { Workshop } from "@/types/supabase";
+import { Link } from "react-router-dom";
 
 interface DashboardOverviewProps {
   workshops: Workshop[];
+  onNavigate?: (tab: string) => void;
 }
 
-const DashboardOverview = ({ workshops }: DashboardOverviewProps) => {
-  const navigate = useNavigate();
-  const [totalUsers, setTotalUsers] = useState<number>(0);
-  const [totalRegistrations, setTotalRegistrations] = useState<number>(0);
-  
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        // Get user count
-        const { count: userCount } = await supabase
-          .from('user_profiles')
-          .select('*', { count: 'exact', head: true });
-        
-        // Get registrations count
-        const { count: regCount } = await supabase
-          .from('workshop_registrations')
-          .select('*', { count: 'exact', head: true });
-        
-        setTotalUsers(userCount || 0);
-        setTotalRegistrations(regCount || 0);
-      } catch (error) {
-        console.error("Error fetching statistics:", error);
-      }
-    };
-    
-    fetchStatistics();
-  }, []);
+const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) => {
+  const currentDate = new Date();
+  const upcomingWorkshops = workshops.filter(workshop => {
+    const workshopDate = new Date(workshop.date);
+    return workshopDate >= currentDate;
+  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const cards = [
-    {
-      title: "الورش",
-      value: workshops.length,
-      icon: <Calendar className="h-6 w-6 text-blue-500" />,
-      action: () => navigate("/admin/workshops/create"),
-      actionText: "إضافة ورشة جديدة"
-    },
-    {
-      title: "المستخدمين",
-      value: totalUsers,
-      icon: <Users className="h-6 w-6 text-green-500" />,
-      action: () => navigate("/admin/users"),
-      actionText: "إدارة المستخدمين"
-    },
-    {
-      title: "التسجيلات",
-      value: totalRegistrations,
-      icon: <FileText className="h-6 w-6 text-purple-500" />,
-      action: () => {},
-      actionText: "عرض التسجيلات"
-    },
-    {
-      title: "إحصائيات",
-      icon: <BarChart className="h-6 w-6 text-orange-500" />,
-      action: () => {},
-      actionText: "عرض الإحصائيات"
-    },
-  ];
+  // Calculate some basic stats
+  const totalWorkshops = workshops.length;
+  const totalParticipants = workshops.reduce((sum, workshop) => sum + (workshop.total_seats - workshop.available_seats), 0);
+  const totalRevenue = workshops.reduce((sum, workshop) => sum + (workshop.price * (workshop.total_seats - workshop.available_seats)), 0);
+  
+  // Get next 3 upcoming workshops
+  const nextWorkshops = upcomingWorkshops.slice(0, 3);
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold">مرحبًا بك في لوحة التحكم</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((card, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-medium">{card.title}</CardTitle>
-              {card.icon}
-            </CardHeader>
-            <CardContent>
-              {card.value !== undefined && (
-                <p className="text-3xl font-bold mb-3">{card.value}</p>
-              )}
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={card.action}
-              >
-                {card.actionText}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">لوحة المعلومات</h2>
+        <Button asChild className="flex items-center gap-2">
+          <Link to="/admin/workshops/create">
+            <Plus size={16} />
+            ورشة جديدة
+          </Link>
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>آخر الورش</CardTitle>
-          </CardHeader>
-          <CardContent className="max-h-64 overflow-y-auto">
-            <div className="space-y-4">
-              {workshops.slice(0, 5).map((workshop) => (
-                <div key={workshop.id} className="flex items-center space-x-4 rtl:space-x-reverse border-b pb-2">
-                  <div className="w-12 h-12 rounded-md bg-gray-200 overflow-hidden">
-                    {workshop.image && (
-                      <img src={workshop.image} alt={workshop.title} className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium">{workshop.title}</h4>
-                    <p className="text-sm text-gray-500">{workshop.date}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>روابط سريعة</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">إجمالي الورش</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-start gap-2"
-                onClick={() => setActiveTab("page-builder")}
-              >
-                <FileText className="h-4 w-4" />
-                إنشاء صفحة جديدة
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-start gap-2"
-                onClick={() => navigate("/admin/workshops/create")}
-              >
-                <Calendar className="h-4 w-4" />
-                إضافة ورشة جديدة
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-start gap-2"
-                onClick={() => setActiveTab("settings")}
-              >
-                <Settings className="h-4 w-4" />
-                إعدادات الموقع
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-start gap-2"
-                onClick={() => navigate("/")}
-              >
-                <div className="h-4 w-4" />
-                عرض الموقع
-              </Button>
+            <div className="text-2xl font-bold">{totalWorkshops}</div>
+            <p className="text-xs text-muted-foreground">
+              ورشة مسجلة في النظام
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">عدد المشاركين</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalParticipants}</div>
+            <p className="text-xs text-muted-foreground">
+              مشارك في جميع الورش
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">الإيرادات</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalRevenue} ر.س</div>
+            <p className="text-xs text-muted-foreground">
+              إجمالي الإيرادات من الورش
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle className="text-xl">الورش القادمة</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {nextWorkshops.length > 0 ? (
+              <div className="space-y-4">
+                {nextWorkshops.map((workshop) => (
+                  <div key={workshop.id} className="flex items-center justify-between border-b pb-2">
+                    <div>
+                      <p className="font-medium">{workshop.title}</p>
+                      <p className="text-sm text-muted-foreground">{workshop.date} | {workshop.time}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => onNavigate && onNavigate('workshops')}>
+                      عرض التفاصيل
+                    </Button>
+                  </div>
+                ))}
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-2"
+                  onClick={() => onNavigate && onNavigate('workshops')}
+                >
+                  عرض جميع الورش
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground">لا توجد ورش قادمة</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-2"
+                  asChild
+                >
+                  <Link to="/admin/workshops/create">
+                    إضافة ورشة جديدة
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle className="text-xl">الإحصاءات</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">نسبة الحجوزات</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-wirashna-accent h-2.5 rounded-full"
+                      style={{
+                        width: `${workshops.length > 0 
+                          ? Math.floor((totalParticipants / (workshops.reduce((sum, w) => sum + w.total_seats, 0))) * 100) 
+                          : 0}%`
+                      }}
+                    ></div>
+                  </div>
+                </div>
+                <p className="text-lg font-bold">
+                  {workshops.length > 0 
+                    ? Math.floor((totalParticipants / (workshops.reduce((sum, w) => sum + w.total_seats, 0))) * 100) 
+                    : 0}%
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => onNavigate && onNavigate('pages')}
+                >
+                  إدارة الصفحات
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => onNavigate && onNavigate('settings')}
+                >
+                  إعدادات الموقع
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

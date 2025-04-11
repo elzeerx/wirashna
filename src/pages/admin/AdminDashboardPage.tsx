@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,6 @@ import PageBuilder from "@/components/admin/builder/PageBuilder";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import { Workshop } from "@/types/supabase";
 import { fetchWorkshops } from "@/services/workshopService";
-import { useEffect } from "react";
 
 const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
@@ -65,6 +64,10 @@ const AdminDashboardPage = () => {
     setActiveTab("page-builder");
   };
 
+  const handleNavigate = (tab: string) => {
+    setActiveTab(tab);
+  };
+
   if (isLoading) {
     return (
       <AdminDashboardLayout isLoading={true} />
@@ -83,7 +86,10 @@ const AdminDashboardPage = () => {
         </TabsList>
         
         <TabsContent value="overview" className="mt-6">
-          <DashboardOverview workshops={workshops} />
+          <DashboardOverview 
+            workshops={workshops} 
+            onNavigate={handleNavigate}
+          />
         </TabsContent>
         
         <TabsContent value="workshops" className="mt-6">

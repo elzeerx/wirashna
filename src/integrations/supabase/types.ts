@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      pages: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          meta_description: string | null
+          path: string
+          published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id?: string
+          meta_description?: string | null
+          path: string
+          published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          meta_description?: string | null
+          path?: string
+          published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          contact_email: string
+          enable_registrations: boolean
+          footer_text: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          site_description: string
+          site_name: string
+          social_links: Json | null
+        }
+        Insert: {
+          contact_email: string
+          enable_registrations?: boolean
+          footer_text?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          site_description: string
+          site_name: string
+          social_links?: Json | null
+        }
+        Update: {
+          contact_email?: string
+          enable_registrations?: boolean
+          footer_text?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          site_description?: string
+          site_name?: string
+          social_links?: Json | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string | null

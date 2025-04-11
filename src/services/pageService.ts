@@ -13,7 +13,7 @@ export const fetchPages = async (): Promise<PageData[]> => {
     throw error;
   }
 
-  return data || [];
+  return data as PageData[] || [];
 };
 
 export const fetchPageById = async (id: string): Promise<PageData> => {
@@ -28,7 +28,7 @@ export const fetchPageById = async (id: string): Promise<PageData> => {
     throw error;
   }
 
-  return data;
+  return data as PageData;
 };
 
 export const fetchPageByPath = async (path: string): Promise<PageData> => {
@@ -43,7 +43,7 @@ export const fetchPageByPath = async (path: string): Promise<PageData> => {
     throw error;
   }
 
-  return data;
+  return data as PageData;
 };
 
 export const savePage = async (page: PageData): Promise<PageData> => {
@@ -66,7 +66,7 @@ export const savePage = async (page: PageData): Promise<PageData> => {
     throw error;
   }
 
-  return data;
+  return data as PageData;
 };
 
 export const deletePage = async (id: string): Promise<void> => {
