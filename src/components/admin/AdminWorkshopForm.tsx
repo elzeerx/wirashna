@@ -1,16 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import { useForm, FormProvider } from "react-hook-form";
+import { BasicInfoSection } from "./workshop-form/BasicInfoSection";
+import { DateTimeSection } from "./workshop-form/DateTimeSection";
+import { LocationSection } from "./workshop-form/LocationSection";
+import { CapacityPriceSection } from "./workshop-form/CapacityPriceSection";
+import { InstructorSection } from "./workshop-form/InstructorSection";
 
 interface AdminWorkshopFormProps {
   initialData?: any;
@@ -62,207 +59,13 @@ const AdminWorkshopForm = ({ initialData, onSubmit, onCancel }: AdminWorkshopFor
   };
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>عنوان الورشة</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="أدخل عنوان الورشة" required />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>وصف مختصر</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="وصف مختصر للورشة" required />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="longDescription"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>وصف مفصل</FormLabel>
-              <FormControl>
-                <textarea 
-                  {...field} 
-                  className="flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="وصف مفصل للورشة" 
-                  required 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>التاريخ</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="مثال: ١٥ مايو ٢٠٢٥" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="time"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>الوقت</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="مثال: ٥:٠٠ مساءًا" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="venue"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>المدينة</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="مثال: الكويت، دبي، الرياض" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>العنوان التفصيلي</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="مثال: فندق الشيراتون، قاعة الفردوس" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="availableSeats"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>المقاعد المتاحة</FormLabel>
-                <FormControl>
-                  <Input {...field} type="number" min="0" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="totalSeats"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>إجمالي المقاعد</FormLabel>
-                <FormControl>
-                  <Input {...field} type="number" min="0" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>السعر</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="مثال: ١٢٠ دينار كويتي" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="instructor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>اسم المدرب</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="اسم المدرب" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="image"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>رابط الصورة الرئيسية</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="أدخل رابط الصورة" required />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="instructorBio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>نبذة عن المدرب</FormLabel>
-              <FormControl>
-                <textarea 
-                  {...field} 
-                  className="flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="نبذة عن المدرب" 
-                  required 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <BasicInfoSection />
+        <DateTimeSection />
+        <LocationSection />
+        <CapacityPriceSection />
+        <InstructorSection />
 
         <div className="flex justify-end space-x-2 space-x-reverse pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
@@ -273,7 +76,7 @@ const AdminWorkshopForm = ({ initialData, onSubmit, onCancel }: AdminWorkshopFor
           </Button>
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 };
 
