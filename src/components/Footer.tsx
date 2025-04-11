@@ -57,7 +57,7 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">تواصل معنا</h3>
             <p className="text-gray-600 mb-2">البريد الإلكتروني: info@wirashna.com</p>
-            <p className="text-gray-600 mb-2">الهاتف: +965 1234 5678</p>
+            <p className="text-gray-600 mb-2">الهاتف: <span dir="ltr">+965 1234 5678</span></p>
             <p className="text-gray-600">الكويت، مدينة الكويت</p>
           </div>
         </div>
