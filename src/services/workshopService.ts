@@ -32,6 +32,11 @@ export const fetchWorkshopById = async (id: string): Promise<Workshop | null> =>
 };
 
 export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at' | 'updated_at'>): Promise<Workshop> => {
+  // Make sure gallery is an array
+  if (workshop.image && (!workshop.gallery || workshop.gallery.length === 0)) {
+    workshop.gallery = [workshop.image];
+  }
+
   const { data, error } = await supabase
     .from('workshops')
     .insert(workshop)
@@ -47,6 +52,11 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
 };
 
 export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): Promise<Workshop> => {
+  // Make sure gallery is an array
+  if (workshop.image && (!workshop.gallery || workshop.gallery.length === 0)) {
+    workshop.gallery = [workshop.image];
+  }
+
   const { data, error } = await supabase
     .from('workshops')
     .update(workshop)

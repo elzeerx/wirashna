@@ -52,7 +52,7 @@ const AdminWorkshopForm = ({ initialData, onSubmit, onCancel }: AdminWorkshopFor
     
     // Add default gallery if not provided
     if (!data.gallery) {
-      data.gallery = [data.image];
+      data.gallery = data.image ? [data.image] : [];
     }
     
     onSubmit(data);
