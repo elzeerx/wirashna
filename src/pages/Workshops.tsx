@@ -1,63 +1,46 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WorkshopCard from "@/components/WorkshopCard";
+import WorkshopCard, { workshopToCardProps } from "@/components/WorkshopCard";
 import { Search } from "lucide-react";
-
-// Mock workshop data - same as in WorkshopShowcase
-const workshops = [
-  {
-    id: "1",
-    title: "الذكاء الاصطناعي للمبتدئين",
-    description: "تعلم أساسيات الذكاء الاصطناعي وكيفية استخدامه في صناعة المحتوى بشكل عملي",
-    date: "١٥ مايو ٢٠٢٥",
-    time: "٥:٠٠ مساءًا",
-    venue: "الكويت",
-    availableSeats: 12,
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-  },
-  {
-    id: "2",
-    title: "إنشاء محتوى إبداعي مع الذكاء الاصطناعي",
-    description: "ورشة عمل متقدمة حول كيفية استخدام أدوات الذكاء الاصطناعي لإنشاء محتوى متميز",
-    date: "٢٠ مايو ٢٠٢٥",
-    time: "٤:٠٠ مساءًا",
-    venue: "دبي",
-    availableSeats: 8,
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
-  },
-  {
-    id: "3",
-    title: "تصميم الجرافيك باستخدام الذكاء الاصطناعي",
-    description: "تعلم كيفية إنشاء تصاميم جرافيك احترافية باستخدام أحدث أدوات الذكاء الاصطناعي",
-    date: "٢٥ مايو ٢٠٢٥",
-    time: "٦:٠٠ مساءًا",
-    venue: "الرياض",
-    availableSeats: 15,
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
-  },
-  {
-    id: "4",
-    title: "كتابة السيناريو المدعومة بالذكاء الاصطناعي",
-    description: "اكتشف كيفية استخدام الذكاء الاصطناعي لتحسين مهارات كتابة السيناريو الخاصة بك",
-    date: "٣٠ مايو ٢٠٢٥",
-    time: "٥:٣٠ مساءًا",
-    venue: "الدوحة",
-    availableSeats: 10,
-    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04"
-  }
-];
+import { fetchWorkshops } from "@/services/workshopService";
+import { Workshop } from "@/types/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const Workshops = () => {
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedVenue, setSelectedVenue] = useState("");
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const loadWorkshops = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchWorkshops();
+        setWorkshops(data);
+      } catch (error) {
+        console.error("Error loading workshops:", error);
+        toast({
+          title: "خطأ في تحميل الورش",
+          description: "حدث خطأ أثناء تحميل بيانات الورش. الرجاء المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadWorkshops();
+  }, [toast]);
   
   const venues = [...new Set(workshops.map(workshop => workshop.venue))];
   
   const filteredWorkshops = workshops.filter(workshop => {
     const matchesSearch = workshop.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          workshop.description.toLowerCase().includes(searchTerm.toLowerCase());
+                          workshop.short_description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesVenue = selectedVenue === "" || workshop.venue === selectedVenue;
     
     return matchesSearch && matchesVenue;
@@ -109,10 +92,14 @@ const Workshops = () => {
             </div>
           </div>
           
-          {filteredWorkshops.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="wirashna-loader"></div>
+            </div>
+          ) : filteredWorkshops.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredWorkshops.map((workshop) => (
-                <WorkshopCard key={workshop.id} {...workshop} />
+                <WorkshopCard key={workshop.id} {...workshopToCardProps(workshop)} />
               ))}
             </div>
           ) : (
