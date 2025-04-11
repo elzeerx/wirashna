@@ -23,6 +23,9 @@ const CreateWorkshopPage = () => {
       return;
     }
 
+    console.log("Current user role:", userRole);
+    console.log("Current user ID:", user.id);
+    
     if (userRole !== 'admin' && userRole !== 'supervisor') {
       toast({
         title: "غير مصرح",
@@ -34,6 +37,7 @@ const CreateWorkshopPage = () => {
 
     try {
       setIsSubmitting(true);
+      console.log("Submitting workshop data:", data);
       
       // Ensure available_seats matches total_seats for new workshops
       await createWorkshop({

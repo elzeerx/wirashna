@@ -57,6 +57,8 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     requirements: workshop.requirements || []
   };
 
+  console.log("Creating workshop with data:", workshopData);
+
   const { data, error } = await supabase
     .from('workshops')
     .insert(workshopData)

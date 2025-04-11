@@ -15,6 +15,7 @@ export const useWorkshopOperations = ({ onWorkshopsUpdated }: UseWorkshopOperati
   const handleCreate = async (workshopData: any) => {
     setIsLoading(true);
     try {
+      console.log("Creating workshop:", workshopData);
       await createWorkshop({
         ...workshopData,
         available_seats: workshopData.total_seats,
