@@ -43,8 +43,8 @@ const WorkshopDetail = () => {
         // Ensure workshop image and gallery are properly formatted
         const formattedWorkshop = {
           ...workshopData,
-          image: workshopData.image || '',
-          gallery: Array.isArray(workshopData.gallery) ? workshopData.gallery : []
+          image: workshopData.image && typeof workshopData.image === 'string' && workshopData.image !== '{}' ? workshopData.image : '',
+          gallery: Array.isArray(workshopData.gallery) ? workshopData.gallery.filter(img => img && typeof img === 'string' && img !== '{}') : []
         };
         
         setWorkshop(formattedWorkshop);

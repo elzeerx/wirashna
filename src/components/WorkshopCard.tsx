@@ -26,7 +26,7 @@ const WorkshopCard = ({
   image,
 }: WorkshopCardProps) => {
   // Default image fallback if no image is provided
-  const imageUrl = image && typeof image === 'string' 
+  const imageUrl = image && typeof image === 'string' && image !== '{}' && !image.includes('{}')
     ? image 
     : "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
   
@@ -77,7 +77,9 @@ export const workshopToCardProps = (workshop: Workshop): WorkshopCardProps => {
     time: workshop.time,
     venue: workshop.venue,
     availableSeats: workshop.available_seats,
-    image: workshop.image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
+    image: workshop.image && typeof workshop.image === 'string' && workshop.image !== '{}'
+      ? workshop.image 
+      : "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
   };
 };
 

@@ -11,8 +11,10 @@ interface WorkshopGalleryProps {
 const WorkshopGallery = ({ mainImage, gallery, title }: WorkshopGalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
-  // Ensure mainImage is a string (not an empty object)
-  const coverImageUrl = typeof mainImage === 'string' && mainImage ? mainImage : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c';
+  // Ensure mainImage is a valid string URL
+  const coverImageUrl = typeof mainImage === 'string' && mainImage && mainImage !== '{}' && !mainImage.includes('{}')
+    ? mainImage 
+    : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c';
   
   return (
     <>
