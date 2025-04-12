@@ -3,7 +3,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 
 interface WorkshopGalleryProps {
-  mainImage: string;
+  mainImage: string [];
   gallery: string[];
   title: string;
 }
@@ -26,10 +26,10 @@ const WorkshopGallery = ({ mainImage, gallery, title }: WorkshopGalleryProps) =>
           <div 
             key={index} 
             className="h-24 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-wirashna-accent transition-colors"
-            onClick={() => setSelectedImage(cover_image)}
+            onClick={() => setSelectedImage(image)}
           >
             <img 
-              src={cover_image} 
+              src={image} 
               alt={`Gallery ${index + 1}`} 
               className="w-full h-full object-cover"
             />
