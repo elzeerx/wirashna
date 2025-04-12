@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
@@ -30,7 +30,22 @@ export const ImageUploader = ({
   
   // Get the current value from the form
   const currentValue = watch(name);
-  const imageUrl = currentValue || initialImageUrl;
+  const [imageUrl, setImageUrl] = useState<string | undefined>(initialImageUrl);
+  
+  // Sync with form value
+  useEffect(() => {
+    if (currentValue && currentValue !== imageUrl) {
+      setImageUrl(currentValue);
+    }
+  }, [currentValue, imageUrl]);
+  
+  // Sync with initialImageUrl
+  useEffect(() => {
+    if (initialImageUrl && initialImageUrl !== imageUrl && !currentValue) {
+      setImageUrl(initialImageUrl);
+      setValue(name, initialImageUrl, { shouldValidate: true });
+    }
+  }, [initialImageUrl, imageUrl, setValue, name, currentValue]);
 
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +106,9 @@ export const ImageUploader = ({
 
       console.log("Uploaded image URL:", publicUrl);
 
+      // Update the state
+      setImageUrl(publicUrl);
+      
       // Update the form value
       setValue(name, publicUrl, { shouldValidate: true, shouldDirty: true });
 
@@ -117,6 +135,7 @@ export const ImageUploader = ({
 
   // Remove the current image
   const handleRemoveImage = () => {
+    setImageUrl(undefined);
     setValue(name, "", { shouldValidate: true, shouldDirty: true });
     if (onImageUploaded) {
       onImageUploaded("");
@@ -168,7 +187,6 @@ export const ImageUploader = ({
           onChange={handleFileUpload}
           accept="image/*"
           disabled={isUploading}
-          {...register(name, { required })}
         />
         
         {!isUploading && !imageUrl && (
@@ -183,9 +201,11 @@ export const ImageUploader = ({
           </Button>
         )}
 
-        {imageUrl && (
-          <input type="hidden" {...register(name, { required })} />
-        )}
+        <input 
+          type="hidden" 
+          {...register(name, { required })} 
+          value={imageUrl || ""}
+        />
       </div>
     </div>
   );

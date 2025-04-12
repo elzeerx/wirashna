@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { FormProvider } from "react-hook-form";
@@ -27,12 +27,22 @@ const AdminWorkshopForm = ({
   onCancel,
   isSubmitting = false
 }: AdminWorkshopFormProps) => {
+  console.log("AdminWorkshopForm initialData:", initialData);
+  
   const formContext = useWorkshopForm({
     initialData,
-    onSubmit,
+    onSubmit: (data: any) => {
+      console.log("AdminWorkshopForm - data to submit:", data);
+      onSubmit(data);
+    },
   });
 
   const { form, handleSubmit, isEditMode } = formContext;
+
+  // Log when initialData changes
+  useEffect(() => {
+    console.log("Workshop form initialData changed:", initialData);
+  }, [initialData]);
 
   return (
     <FormProvider {...form}>

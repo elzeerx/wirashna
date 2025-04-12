@@ -32,10 +32,14 @@ export const fetchWorkshopById = async (id: string): Promise<Workshop | null> =>
 };
 
 export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at' | 'updated_at'>): Promise<Workshop> => {
+  console.log("Creating workshop with data:", workshop);
+  
+  // Ensure gallery includes cover_image if available
   if (workshop.cover_image && (!workshop.gallery || workshop.gallery.length === 0)) {
     workshop.gallery = [workshop.cover_image];
   }
 
+  // Create a clean workshop object with all fields
   const workshopData = {
     title: workshop.title,
     short_description: workshop.short_description,
@@ -56,7 +60,7 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     requirements: workshop.requirements || []
   };
 
-  console.log("Creating workshop with data:", workshopData);
+  console.log("Sending workshop data to database:", workshopData);
 
   const { data, error } = await supabase
     .from('workshops')
@@ -73,6 +77,10 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
 };
 
 export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): Promise<Workshop> => {
+  console.log("Updating workshop with id:", id);
+  console.log("Workshop data to update:", workshop);
+  
+  // Ensure gallery includes cover_image if available
   if (workshop.cover_image && (!workshop.gallery || workshop.gallery.length === 0)) {
     workshop.gallery = [workshop.cover_image];
   }

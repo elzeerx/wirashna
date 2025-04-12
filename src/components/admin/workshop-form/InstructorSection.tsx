@@ -7,10 +7,19 @@ import { useWorkshopForm } from "@/hooks/useWorkshopForm";
 
 export const InstructorSection = () => {
   const { instructorImage, setInstructorImage } = useWorkshopForm();
-  const { setValue } = useFormContext();
+  const { setValue, watch } = useFormContext();
+  const currentInstructorImage = watch("instructor_image");
+
+  // Sync instructorImage with form value if they get out of sync
+  React.useEffect(() => {
+    if (currentInstructorImage !== instructorImage) {
+      setInstructorImage(currentInstructorImage);
+    }
+  }, [currentInstructorImage, instructorImage, setInstructorImage]);
 
   const handleImageUploaded = (url: string) => {
-    setValue("instructor_image", url, { shouldValidate: true });
+    console.log("Instructor image uploaded:", url);
+    setValue("instructor_image", url, { shouldValidate: true, shouldDirty: true });
     setInstructorImage(url);
   };
 

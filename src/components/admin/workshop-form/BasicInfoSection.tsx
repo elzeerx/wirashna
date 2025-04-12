@@ -7,10 +7,19 @@ import { useWorkshopForm } from "@/hooks/useWorkshopForm";
 
 export const BasicInfoSection = () => {
   const { coverImage, setCoverImage } = useWorkshopForm();
-  const { setValue } = useFormContext();
+  const { setValue, watch } = useFormContext();
+  const currentCoverImage = watch("cover_image");
+
+  // Sync coverImage with form value if they get out of sync
+  React.useEffect(() => {
+    if (currentCoverImage !== coverImage) {
+      setCoverImage(currentCoverImage);
+    }
+  }, [currentCoverImage, coverImage, setCoverImage]);
 
   const handleImageUploaded = (url: string) => {
-    setValue("cover_image", url, { shouldValidate: true });
+    console.log("Cover image uploaded:", url);
+    setValue("cover_image", url, { shouldValidate: true, shouldDirty: true });
     setCoverImage(url);
   };
 
