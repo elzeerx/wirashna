@@ -8,7 +8,10 @@ interface UseWorkshopFormProps {
   onSubmit: (data: any) => void;
 }
 
-export const useWorkshopForm = ({ initialData, onSubmit }: UseWorkshopFormProps) => {
+export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
+  const initialData = props?.initialData || {};
+  const onSubmit = props?.onSubmit || (() => {});
+  
   const isEditMode = !!initialData?.id;
   const [instructorImage, setInstructorImage] = useState<string | null>(
     initialData?.instructor_image || null

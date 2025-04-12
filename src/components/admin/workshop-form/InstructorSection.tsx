@@ -6,7 +6,7 @@ import { useFormContext } from "react-hook-form";
 import { useWorkshopForm } from "@/hooks/useWorkshopForm";
 
 export const InstructorSection = () => {
-  const { instructorImage, setInstructorImage } = useWorkshopForm({} as any);
+  const { instructorImage, setInstructorImage } = useWorkshopForm();
   const { setValue } = useFormContext();
 
   const handleImageUploaded = (url: string) => {
