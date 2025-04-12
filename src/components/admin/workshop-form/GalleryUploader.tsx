@@ -9,16 +9,15 @@ import { useToast } from "@/hooks/use-toast";
 interface GalleryUploaderProps {
   name: string;
   label: string;
-  required?: boolean;
 }
 
-export const GalleryUploader = ({ name, label, required = false }: GalleryUploaderProps) => {
-  const { setValue, watch } = useFormContext();
+export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
+  const { register, setValue, watch } = useFormContext();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   
-  // Get the current gallery value from the form
-  const gallery = watch(name) || [];
+  // Get the current value from the form
+  const gallery = watch(name) as string[] || [];
 
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,7 +49,7 @@ export const GalleryUploader = ({ name, label, required = false }: GalleryUpload
 
       // Generate a unique file name
       const fileExt = file.name.split('.').pop();
-      const fileName = `gallery-${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
+      const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
       // Upload the file to Supabase Storage
@@ -70,13 +69,13 @@ export const GalleryUploader = ({ name, label, required = false }: GalleryUpload
         .from('workshop-images')
         .getPublicUrl(filePath);
 
-      // Update the form value by adding the new image to the gallery
+      // Add the new image URL to the gallery array
       const updatedGallery = [...gallery, publicUrl];
       setValue(name, updatedGallery, { shouldValidate: true, shouldDirty: true });
 
       toast({
         title: "تم رفع الصورة بنجاح",
-        description: "تم إضافة الصورة إلى معرض الورشة",
+        description: "تم إضافة الصورة إلى معرض الصور",
       });
     } catch (error: any) {
       console.error("Error uploading file:", error);
@@ -98,19 +97,40 @@ export const GalleryUploader = ({ name, label, required = false }: GalleryUpload
   };
 
   return (
-    <div className="space-y-2">
-      <label htmlFor={`${name}-upload`} className="block text-sm font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <label className="block text-sm font-medium">{label}</label>
+        <input
+          id={`${name}-input`}
+          type="file"
+          className="hidden"
+          onChange={handleFileUpload}
+          accept="image/*"
+          disabled={isUploading}
+        />
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="sm"
+          onClick={() => document.getElementById(`${name}-input`)?.click()}
+          disabled={isUploading}
+        >
+          {isUploading ? (
+            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+          ) : (
+            <Plus size={16} className="ml-2" />
+          )}
+          إضافة صورة
+        </Button>
+      </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-        {/* Display existing gallery images */}
-        {gallery.map((imageUrl: string, index: number) => (
-          <div key={index} className="relative">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {gallery.map((imageUrl, index) => (
+          <div key={index} className="relative h-40 rounded-md overflow-hidden border border-gray-300">
             <img 
               src={imageUrl} 
-              alt={`Gallery image ${index + 1}`} 
-              className="w-full h-32 object-cover rounded-md border border-gray-300"
+              alt={`Gallery ${index + 1}`} 
+              className="w-full h-full object-cover"
             />
             <button
               type="button"
@@ -121,34 +141,17 @@ export const GalleryUploader = ({ name, label, required = false }: GalleryUpload
             </button>
           </div>
         ))}
-        
-        {/* Add new image button */}
-        <div 
-          className="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
-          onClick={() => document.getElementById(`${name}-upload`)?.click()}
-        >
-          {isUploading ? (
-            <Loader2 className="h-8 w-8 text-gray-500 animate-spin" />
-          ) : (
-            <>
-              <Plus className="h-8 w-8 text-gray-500 mb-2" />
-              <span className="text-sm text-gray-500">إضافة صورة</span>
-            </>
-          )}
-        </div>
+        {gallery.length === 0 && (
+          <div className="flex items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-md bg-gray-50 text-gray-500 text-sm">
+            لا توجد صور في المعرض
+          </div>
+        )}
       </div>
       
-      <input
-        id={`${name}-upload`}
-        type="file"
-        className="hidden"
-        onChange={handleFileUpload}
-        accept="image/*"
-        disabled={isUploading}
+      <input 
+        type="hidden" 
+        {...register(name)}
       />
-      
-      {/* Hidden input to store gallery value */}
-      <input type="hidden" name={name} />
     </div>
   );
 };

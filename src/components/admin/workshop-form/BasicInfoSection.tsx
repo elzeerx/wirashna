@@ -25,6 +25,7 @@ export const BasicInfoSection = () => {
           label="صورة الغلاف"
           required={true}
           initialImageUrl={coverImage || undefined}
+          bucketId="workshop-covers"
           onImageUploaded={handleImageUploaded}
         />
       </div>

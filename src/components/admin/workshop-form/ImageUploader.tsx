@@ -11,6 +11,7 @@ interface ImageUploaderProps {
   label: string;
   required?: boolean;
   initialImageUrl?: string;
+  bucketId: 'workshop-covers' | 'instructor-images' | 'workshop-images';
   onImageUploaded?: (url: string) => void;
 }
 
@@ -19,6 +20,7 @@ export const ImageUploader = ({
   label, 
   required = false, 
   initialImageUrl,
+  bucketId,
   onImageUploaded 
 }: ImageUploaderProps) => {
   const { register, setValue, watch } = useFormContext();
@@ -64,9 +66,9 @@ export const ImageUploader = ({
       const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      // Upload the file to Supabase Storage
+      // Upload the file to specified Supabase Storage bucket
       const { data, error } = await supabase.storage
-        .from('workshop-images')
+        .from(bucketId)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -81,7 +83,7 @@ export const ImageUploader = ({
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('workshop-images')
+        .from(bucketId)
         .getPublicUrl(filePath);
 
       // Update the form value

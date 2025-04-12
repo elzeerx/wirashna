@@ -32,6 +32,7 @@ export const InstructorSection = () => {
             name="instructor_image"
             label="صورة المدرب"
             required
+            bucketId="instructor-images"
             initialImageUrl={instructorImage || undefined}
             onImageUploaded={handleImageUploaded}
           />
