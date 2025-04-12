@@ -142,6 +142,7 @@ const WorkshopDetail = () => {
                 image={workshop.instructor_image || ""}
               />
 
+              {/* Move MobileRegistration component to after all the workshop details */}
               <MobileRegistration workshopId={workshop.id} />
             </div>
             
