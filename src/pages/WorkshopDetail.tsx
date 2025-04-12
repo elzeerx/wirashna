@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { Target, UserRound, Award, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -33,14 +32,12 @@ const WorkshopDetail = () => {
       setIsLoading(true);
       
       try {
-        // Fetch workshop details
         const workshopData = await fetchWorkshopById(id);
         
         if (!workshopData) {
           return navigate("/workshops");
         }
         
-        // Ensure workshop cover_image and gallery are properly formatted
         const formattedWorkshop = {
           ...workshopData,
           cover_image: workshopData.cover_image && typeof workshopData.cover_image === 'string' && workshopData.cover_image !== '{}' ? workshopData.cover_image : '',
@@ -49,10 +46,8 @@ const WorkshopDetail = () => {
         
         setWorkshop(formattedWorkshop);
         
-        // Fetch all workshops for related workshops
         const allWorkshops = await fetchWorkshops();
         
-        // Filter related workshops (not including current workshop)
         const related = allWorkshops
           .filter(w => w.id !== id)
           .filter(w => w.venue === workshopData.venue || Math.random() > 0.5)
@@ -142,7 +137,6 @@ const WorkshopDetail = () => {
                 image={workshop.instructor_image || ""}
               />
 
-              {/* Move MobileRegistration component to after all the workshop details */}
               <MobileRegistration workshopId={workshop.id} />
             </div>
             

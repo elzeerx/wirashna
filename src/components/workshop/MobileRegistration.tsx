@@ -5,36 +5,37 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchWorkshopById } from "@/services/workshopService";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Calendar, Clock, MapPin, Users } from "lucide-react";
 
 type MobileRegistrationProps = {
   workshopId: string;
 };
 
 const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
-  const [availableSeats, setAvailableSeats] = useState<number | null>(null);
+  const [workshop, setWorkshop] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
   
   useEffect(() => {
-    const checkAvailability = async () => {
+    const fetchWorkshopDetails = async () => {
       try {
-        const workshop = await fetchWorkshopById(workshopId);
-        if (workshop) {
-          setAvailableSeats(workshop.available_seats);
+        const workshopData = await fetchWorkshopById(workshopId);
+        if (workshopData) {
+          setWorkshop(workshopData);
         }
       } catch (error) {
-        console.error("Error fetching workshop availability:", error);
+        console.error("Error fetching workshop details:", error);
       } finally {
         setIsLoading(false);
       }
     };
     
-    checkAvailability();
+    fetchWorkshopDetails();
   }, [workshopId]);
   
-  const isSoldOut = availableSeats !== null && availableSeats <= 0;
+  const isSoldOut = workshop?.available_seats !== null && workshop?.available_seats <= 0;
 
-  if (!isMobile) {
+  if (!isMobile || isLoading || !workshop) {
     return null;
   }
 
@@ -42,12 +43,54 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
     <div className="lg:hidden">
       <Card className="mb-8">
         <CardContent className="pt-6">
+          {/* تفاصيل الورشة */}
+          <h3 className="text-xl font-bold mb-4">تفاصيل الورشة</h3>
+          
+          <div className="flex items-center mb-4">
+            <Calendar size={18} className="ml-3 text-wirashna-accent" />
+            <div>
+              <p className="font-medium">التاريخ</p>
+              <p className="text-gray-600">{workshop.date}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center mb-4">
+            <Clock size={18} className="ml-3 text-wirashna-accent" />
+            <div>
+              <p className="font-medium">الوقت</p>
+              <p className="text-gray-600">{workshop.time}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center mb-4">
+            <MapPin size={18} className="ml-3 text-wirashna-accent" />
+            <div>
+              <p className="font-medium">المكان</p>
+              <p className="text-gray-600">{workshop.venue}</p>
+              <p className="text-gray-600 text-sm">{workshop.location}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center mb-6">
+            <Users size={18} className="ml-3 text-wirashna-accent" />
+            <div>
+              <p className="font-medium">المقاعد المتاحة</p>
+              <p className={`text-gray-600 ${workshop.available_seats <= 5 ? 'text-red-500 font-bold' : ''}`}>
+                {workshop.available_seats} / {workshop.total_seats}
+              </p>
+            </div>
+          </div>
+          
+          <div className="mb-8">
+            <p className="font-medium">السعر</p>
+            <p className="text-lg font-bold text-wirashna-accent">
+              {typeof workshop.price === 'number' ? `${workshop.price.toFixed(2)} د.ك` : workshop.price}
+            </p>
+          </div>
+
+          {/* سجل في الورشة */}
           <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
-          {isLoading ? (
-            <Button disabled className="w-full bg-gray-300">
-              جاري التحميل...
-            </Button>
-          ) : isSoldOut ? (
+          {isSoldOut ? (
             <Button disabled className="w-full bg-gray-400">
               نفذت التذاكر
             </Button>
