@@ -26,7 +26,9 @@ const WorkshopCard = ({
   image,
 }: WorkshopCardProps) => {
   // Default image fallback if no image is provided
-  const imageUrl = image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
+  const imageUrl = image && typeof image === 'string' 
+    ? image 
+    : "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
   
   return (
     <div className="wirashna-card group overflow-hidden flex flex-col h-full">

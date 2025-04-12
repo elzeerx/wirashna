@@ -11,30 +11,48 @@ interface WorkshopGalleryProps {
 const WorkshopGallery = ({ mainImage, gallery, title }: WorkshopGalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
+  // Ensure mainImage is a string (not an empty object)
+  const coverImageUrl = typeof mainImage === 'string' && mainImage ? mainImage : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c';
+  
   return (
     <>
       <div className="relative h-72 mb-6 rounded-lg overflow-hidden">
         <img 
-          src={mainImage} 
+          src={coverImageUrl} 
           alt={title} 
           className="w-full h-full object-cover"
         />
       </div>
       
       <div className="grid grid-cols-3 gap-4 mb-6">
-        {gallery.map((image, index) => (
-          <div 
-            key={index} 
-            className="h-24 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-wirashna-accent transition-colors"
-            onClick={() => setSelectedImage(image)}
-          >
-            <img 
-              src={image} 
-              alt={`Gallery ${index + 1}`} 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
+        {Array.isArray(gallery) && gallery.length > 0 ? (
+          gallery.map((image, index) => (
+            <div 
+              key={index} 
+              className="h-24 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-wirashna-accent transition-colors"
+              onClick={() => setSelectedImage(image)}
+            >
+              <img 
+                src={image} 
+                alt={`Gallery ${index + 1}`} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))
+        ) : (
+          coverImageUrl && (
+            <div 
+              className="h-24 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-wirashna-accent transition-colors"
+              onClick={() => setSelectedImage(coverImageUrl)}
+            >
+              <img 
+                src={coverImageUrl} 
+                alt="Workshop cover" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )
+        )}
       </div>
       
       {selectedImage && (

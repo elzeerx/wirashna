@@ -40,7 +40,14 @@ const WorkshopDetail = () => {
           return navigate("/workshops");
         }
         
-        setWorkshop(workshopData);
+        // Ensure workshop image and gallery are properly formatted
+        const formattedWorkshop = {
+          ...workshopData,
+          image: workshopData.image || '',
+          gallery: Array.isArray(workshopData.gallery) ? workshopData.gallery : []
+        };
+        
+        setWorkshop(formattedWorkshop);
         
         // Fetch all workshops for related workshops
         const allWorkshops = await fetchWorkshops();
@@ -132,7 +139,7 @@ const WorkshopDetail = () => {
               <InstructorCard 
                 name={workshop.instructor} 
                 bio={workshop.instructor_bio || ""} 
-                image={workshop.instructor_image}
+                image={workshop.instructor_image || ""}
               />
 
               <MobileRegistration workshopId={workshop.id} />
