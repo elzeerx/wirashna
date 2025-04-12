@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { Target, UserRound, Award, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -131,6 +132,7 @@ const WorkshopDetail = () => {
               <InstructorCard 
                 name={workshop.instructor} 
                 bio={workshop.instructor_bio || ""} 
+                image={workshop.instructor_image}
               />
 
               <MobileRegistration workshopId={workshop.id} />

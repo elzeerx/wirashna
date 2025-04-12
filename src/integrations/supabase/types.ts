@@ -221,6 +221,7 @@ export type Database = {
           image: string | null
           instructor: string
           instructor_bio: string | null
+          instructor_image: string | null
           location: string
           long_description: string | null
           price: number
@@ -242,6 +243,7 @@ export type Database = {
           image?: string | null
           instructor: string
           instructor_bio?: string | null
+          instructor_image?: string | null
           location: string
           long_description?: string | null
           price: number
@@ -263,6 +265,7 @@ export type Database = {
           image?: string | null
           instructor?: string
           instructor_bio?: string | null
+          instructor_image?: string | null
           location?: string
           long_description?: string | null
           price?: number
