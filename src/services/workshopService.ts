@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Workshop, WorkshopRegistration } from "@/types/supabase";
 
@@ -50,6 +51,7 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     price: workshop.price,
     instructor: workshop.instructor,
     instructor_bio: workshop.instructor_bio,
+    instructor_image: workshop.instructor_image,
     benefits: workshop.benefits || [],
     requirements: workshop.requirements || []
   };

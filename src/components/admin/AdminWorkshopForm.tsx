@@ -27,10 +27,12 @@ const AdminWorkshopForm = ({
   onCancel,
   isSubmitting = false
 }: AdminWorkshopFormProps) => {
-  const { form, isEditMode, handleSubmit } = useWorkshopForm({
+  const formContext = useWorkshopForm({
     initialData,
     onSubmit,
   });
+
+  const { form, handleSubmit, isEditMode } = formContext;
 
   return (
     <FormProvider {...form}>

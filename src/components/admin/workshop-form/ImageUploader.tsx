@@ -11,9 +11,16 @@ interface ImageUploaderProps {
   label: string;
   required?: boolean;
   initialImageUrl?: string;
+  onImageUploaded?: (url: string) => void;
 }
 
-export const ImageUploader = ({ name, label, required = false, initialImageUrl }: ImageUploaderProps) => {
+export const ImageUploader = ({ 
+  name, 
+  label, 
+  required = false, 
+  initialImageUrl,
+  onImageUploaded 
+}: ImageUploaderProps) => {
   const { register, setValue, watch } = useFormContext();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -57,9 +64,6 @@ export const ImageUploader = ({ name, label, required = false, initialImageUrl }
       const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
-      // Setup XMLHttpRequest to track progress (but not actually use it for upload)
-      const xhr = new XMLHttpRequest();
-      
       // Upload the file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('workshop-images')
@@ -83,6 +87,11 @@ export const ImageUploader = ({ name, label, required = false, initialImageUrl }
       // Update the form value
       setValue(name, publicUrl, { shouldValidate: true, shouldDirty: true });
 
+      // Call the callback if provided
+      if (onImageUploaded) {
+        onImageUploaded(publicUrl);
+      }
+
       toast({
         title: "تم رفع الصورة بنجاح",
         description: "تم رفع الصورة وإضافتها إلى الورشة",
@@ -102,6 +111,9 @@ export const ImageUploader = ({ name, label, required = false, initialImageUrl }
   // Remove the current image
   const handleRemoveImage = () => {
     setValue(name, "", { shouldValidate: true, shouldDirty: true });
+    if (onImageUploaded) {
+      onImageUploaded("");
+    }
   };
 
   return (

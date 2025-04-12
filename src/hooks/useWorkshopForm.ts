@@ -10,6 +10,12 @@ interface UseWorkshopFormProps {
 
 export const useWorkshopForm = ({ initialData, onSubmit }: UseWorkshopFormProps) => {
   const isEditMode = !!initialData?.id;
+  const [instructorImage, setInstructorImage] = useState<string | null>(
+    initialData?.instructor_image || null
+  );
+  const [coverImage, setCoverImage] = useState<string | null>(
+    initialData?.image || null
+  );
   
   // Initialize form with default values or initial data
   const form = useForm({
@@ -26,6 +32,7 @@ export const useWorkshopForm = ({ initialData, onSubmit }: UseWorkshopFormProps)
       price: initialData?.price || 0,
       instructor: initialData?.instructor || "",
       instructor_bio: initialData?.instructor_bio || "",
+      instructor_image: initialData?.instructor_image || "",
       image: initialData?.image || "",
       gallery: initialData?.gallery || [],
       benefits: initialData?.benefits || [],
@@ -49,12 +56,20 @@ export const useWorkshopForm = ({ initialData, onSubmit }: UseWorkshopFormProps)
       data.gallery = data.image ? [data.image] : [];
     }
     
+    // Ensure instructor_image and cover image are included
+    data.instructor_image = instructorImage;
+    data.image = coverImage;
+    
     onSubmit(data);
   };
 
   return {
     form,
     isEditMode,
+    instructorImage,
+    setInstructorImage,
+    coverImage,
+    setCoverImage,
     handleSubmit: form.handleSubmit(handleSubmit),
   };
 };

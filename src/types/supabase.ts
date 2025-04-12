@@ -15,6 +15,7 @@ export type Workshop = {
   price: number;
   instructor: string;
   instructor_bio?: string;
+  instructor_image?: string;
   requirements?: string[];
   benefits?: string[];
   created_at: string;
