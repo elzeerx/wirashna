@@ -66,6 +66,8 @@ export const ImageUploader = ({
       const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
+      console.log(`Uploading to bucket: ${bucketId}, path: ${filePath}`);
+      
       // Upload the file to specified Supabase Storage bucket
       const { data, error } = await supabase.storage
         .from(bucketId)
@@ -75,6 +77,7 @@ export const ImageUploader = ({
         });
 
       if (error) {
+        console.error("Upload error:", error);
         throw error;
       }
 
@@ -85,6 +88,8 @@ export const ImageUploader = ({
       const { data: { publicUrl } } = supabase.storage
         .from(bucketId)
         .getPublicUrl(filePath);
+
+      console.log("Uploaded image URL:", publicUrl);
 
       // Update the form value
       setValue(name, publicUrl, { shouldValidate: true, shouldDirty: true });

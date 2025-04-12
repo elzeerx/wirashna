@@ -11,10 +11,15 @@ interface WorkshopGalleryProps {
 const WorkshopGallery = ({ mainImage, gallery, title }: WorkshopGalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
-  // Ensure mainImage is a valid string URL
+  // Ensure mainImage is a valid string URL and not an empty object representation
   const coverImageUrl = typeof mainImage === 'string' && mainImage && mainImage !== '{}' && !mainImage.includes('{}')
     ? mainImage 
     : 'https://images.unsplash.com/photo-1519389950473-47ba0277781c';
+  
+  // Filter out any invalid gallery images
+  const validGalleryImages = Array.isArray(gallery) 
+    ? gallery.filter(img => typeof img === 'string' && img && img !== '{}' && !img.includes('{}'))
+    : [];
   
   return (
     <>
@@ -27,8 +32,8 @@ const WorkshopGallery = ({ mainImage, gallery, title }: WorkshopGalleryProps) =>
       </div>
       
       <div className="grid grid-cols-3 gap-4 mb-6">
-        {Array.isArray(gallery) && gallery.length > 0 ? (
-          gallery.map((image, index) => (
+        {validGalleryImages.length > 0 ? (
+          validGalleryImages.map((image, index) => (
             <div 
               key={index} 
               className="h-24 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-wirashna-accent transition-colors"

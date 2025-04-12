@@ -52,6 +52,8 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
       const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
       
+      console.log(`Uploading gallery image to workshop-images bucket, path: ${filePath}`);
+      
       // Upload the file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('workshop-images')
@@ -61,6 +63,7 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
         });
 
       if (error) {
+        console.error("Gallery upload error:", error);
         throw error;
       }
 
@@ -68,6 +71,8 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
       const { data: { publicUrl } } = supabase.storage
         .from('workshop-images')
         .getPublicUrl(filePath);
+
+      console.log("Uploaded gallery image URL:", publicUrl);
 
       // Add the new image URL to the gallery array
       const updatedGallery = [...gallery, publicUrl];
