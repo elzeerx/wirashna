@@ -4,7 +4,7 @@ export type Workshop = {
   title: string;
   short_description: string;
   long_description?: string;
-  image?: string;
+  cover_image?: string;
   gallery?: string[];
   date: string;
   time: string;

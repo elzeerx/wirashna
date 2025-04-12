@@ -32,15 +32,15 @@ export const fetchWorkshopById = async (id: string): Promise<Workshop | null> =>
 };
 
 export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at' | 'updated_at'>): Promise<Workshop> => {
-  if (workshop.image && (!workshop.gallery || workshop.gallery.length === 0)) {
-    workshop.gallery = [workshop.image];
+  if (workshop.cover_image && (!workshop.gallery || workshop.gallery.length === 0)) {
+    workshop.gallery = [workshop.cover_image];
   }
 
   const workshopData = {
     title: workshop.title,
     short_description: workshop.short_description,
     long_description: workshop.long_description,
-    image: workshop.image,
+    cover_image: workshop.cover_image,
     gallery: workshop.gallery,
     date: workshop.date,
     time: workshop.time,
@@ -73,8 +73,8 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
 };
 
 export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): Promise<Workshop> => {
-  if (workshop.image && (!workshop.gallery || workshop.gallery.length === 0)) {
-    workshop.gallery = [workshop.image];
+  if (workshop.cover_image && (!workshop.gallery || workshop.gallery.length === 0)) {
+    workshop.gallery = [workshop.cover_image];
   }
 
   const { data, error } = await supabase

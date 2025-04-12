@@ -3,7 +3,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 
 interface WorkshopGalleryProps {
-  mainImage: string[];
+  mainImage: string;
   gallery: string[];
   title: string;
 }
@@ -11,25 +11,35 @@ interface WorkshopGalleryProps {
 const WorkshopGallery = ({ mainImage, gallery, title }: WorkshopGalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
+  // Default image fallback if no image is provided
+  const displayImage = mainImage && typeof mainImage === 'string' && mainImage !== '{}' && !mainImage.includes('{}')
+    ? mainImage 
+    : "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
+  
+  // Filter valid gallery images
+  const validGallery = Array.isArray(gallery) 
+    ? gallery.filter(img => img && typeof img === 'string' && img !== '{}' && !img.includes('{}'))
+    : [];
+  
   return (
     <>
       <div className="relative h-72 mb-6 rounded-lg overflow-hidden">
         <img 
-          src={mainImage} 
+          src={displayImage} 
           alt={title} 
           className="w-full h-full object-cover"
         />
       </div>
       
       <div className="grid grid-cols-3 gap-4 mb-6">
-        {gallery.map((image, index) => (
+        {validGallery.map((image, index) => (
           <div 
             key={index} 
             className="h-24 rounded-lg overflow-hidden cursor-pointer border-2 hover:border-wirashna-accent transition-colors"
-            onClick={() => setSelectedImage(cover_image)}
+            onClick={() => setSelectedImage(image)}
           >
             <img 
-              src={cover_image} 
+              src={image} 
               alt={`Gallery ${index + 1}`} 
               className="w-full h-full object-cover"
             />

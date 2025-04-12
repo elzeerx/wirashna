@@ -10,7 +10,7 @@ export const BasicInfoSection = () => {
   const { setValue } = useFormContext();
 
   const handleImageUploaded = (url: string) => {
-    setValue("image", url, { shouldValidate: true });
+    setValue("cover_image", url, { shouldValidate: true });
     setCoverImage(url);
   };
 
@@ -21,7 +21,7 @@ export const BasicInfoSection = () => {
       <div className="mb-4">
         <h4 className="text-md font-medium mb-2">صورة الغلاف</h4>
         <ImageUploader
-          name="image"
+          name="cover_image"
           label="صورة الغلاف"
           required={true}
           initialImageUrl={coverImage || undefined}

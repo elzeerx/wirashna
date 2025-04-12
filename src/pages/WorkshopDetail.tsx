@@ -40,10 +40,10 @@ const WorkshopDetail = () => {
           return navigate("/workshops");
         }
         
-        // Ensure workshop image and gallery are properly formatted
+        // Ensure workshop cover_image and gallery are properly formatted
         const formattedWorkshop = {
           ...workshopData,
-          image: workshopData.image && typeof workshopData.image === 'string' && workshopData.image !== '{}' ? workshopData.image : '',
+          cover_image: workshopData.cover_image && typeof workshopData.cover_image === 'string' && workshopData.cover_image !== '{}' ? workshopData.cover_image : '',
           gallery: Array.isArray(workshopData.gallery) ? workshopData.gallery.filter(img => img && typeof img === 'string' && img !== '{}') : []
         };
         
@@ -105,7 +105,7 @@ const WorkshopDetail = () => {
               <h1 className="text-3xl font-bold mb-4">{workshop.title}</h1>
               
               <WorkshopGallery 
-                mainImage={workshop.image || ""} 
+                mainImage={workshop.cover_image || ""} 
                 gallery={workshop.gallery || []} 
                 title={workshop.title} 
               />

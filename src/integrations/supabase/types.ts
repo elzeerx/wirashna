@@ -214,11 +214,11 @@ export type Database = {
         Row: {
           available_seats: number
           benefits: string[] | null
+          cover_image: string | null
           created_at: string | null
           date: string
           gallery: string[] | null
           id: string
-          image: string | null
           instructor: string
           instructor_bio: string | null
           instructor_image: string | null
@@ -236,11 +236,11 @@ export type Database = {
         Insert: {
           available_seats: number
           benefits?: string[] | null
+          cover_image?: string | null
           created_at?: string | null
           date: string
           gallery?: string[] | null
           id?: string
-          image?: string | null
           instructor: string
           instructor_bio?: string | null
           instructor_image?: string | null
@@ -258,11 +258,11 @@ export type Database = {
         Update: {
           available_seats?: number
           benefits?: string[] | null
+          cover_image?: string | null
           created_at?: string | null
           date?: string
           gallery?: string[] | null
           id?: string
-          image?: string | null
           instructor?: string
           instructor_bio?: string | null
           instructor_image?: string | null

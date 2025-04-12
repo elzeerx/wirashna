@@ -77,8 +77,8 @@ export const workshopToCardProps = (workshop: Workshop): WorkshopCardProps => {
     time: workshop.time,
     venue: workshop.venue,
     availableSeats: workshop.available_seats,
-    image: workshop.image && typeof workshop.image === 'string' && workshop.image !== '{}'
-      ? workshop.image 
+    image: workshop.cover_image && typeof workshop.cover_image === 'string' && workshop.cover_image !== '{}'
+      ? workshop.cover_image 
       : "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
   };
 };

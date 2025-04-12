@@ -17,7 +17,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     initialData?.instructor_image || null
   );
   const [coverImage, setCoverImage] = useState<string | null>(
-    initialData?.image || null
+    initialData?.cover_image || null
   );
   
   // Initialize form with default values or initial data
@@ -36,7 +36,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       instructor: initialData?.instructor || "",
       instructor_bio: initialData?.instructor_bio || "",
       instructor_image: initialData?.instructor_image || "",
-      image: initialData?.image || "",
+      cover_image: initialData?.cover_image || "",
       gallery: initialData?.gallery || [],
       benefits: initialData?.benefits || [],
       requirements: initialData?.requirements || [],
@@ -56,12 +56,12 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     
     // Add default gallery if not provided
     if (!data.gallery) {
-      data.gallery = data.image ? [data.image] : [];
+      data.gallery = data.cover_image ? [data.cover_image] : [];
     }
     
     // Ensure instructor_image and cover image are included
     data.instructor_image = instructorImage;
-    data.image = coverImage;
+    data.cover_image = coverImage;
     
     onSubmit(data);
   };
