@@ -47,9 +47,9 @@ const WorkshopTable = ({
           {workshops.map((workshop) => (
             <TableRow key={workshop.id}>
               <TableCell>
-                {workshop.image ? (
+                {workshop.cover_image ? (
                   <img
-                    src={workshop.image}
+                    src={workshop.cover_image}
                     alt={workshop.title}
                     className="w-16 h-16 object-cover rounded-md"
                   />
