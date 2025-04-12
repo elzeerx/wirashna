@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchWorkshopById } from "@/services/workshopService";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type MobileRegistrationProps = {
   workshopId: string;
@@ -12,6 +13,7 @@ type MobileRegistrationProps = {
 const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
   const [availableSeats, setAvailableSeats] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     const checkAvailability = async () => {
@@ -31,6 +33,10 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
   }, [workshopId]);
   
   const isSoldOut = availableSeats !== null && availableSeats <= 0;
+
+  if (!isMobile) {
+    return null;
+  }
 
   return (
     <div className="lg:hidden">

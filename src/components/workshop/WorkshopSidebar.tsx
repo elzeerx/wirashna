@@ -2,6 +2,7 @@
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkshopSidebarProps {
   date: string;
@@ -26,9 +27,10 @@ const WorkshopSidebar = ({
 }: WorkshopSidebarProps) => {
   const isSoldOut = availableSeats <= 0;
   const formattedPrice = typeof price === 'number' ? `${price.toFixed(2)} د.ك` : price;
+  const isMobile = useIsMobile();
 
-  return (
-    <div className="wirashna-card sticky top-24">
+  const workshopDetails = (
+    <>
       <h3 className="text-xl font-bold mb-4">تفاصيل الورشة</h3>
       
       <div className="flex items-center mb-4">
@@ -70,18 +72,30 @@ const WorkshopSidebar = ({
         <p className="font-medium">السعر</p>
         <p className="text-lg font-bold text-wirashna-accent">{formattedPrice}</p>
       </div>
+    </>
+  );
+
+  const registrationSection = (
+    <>
+      <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
+      {isSoldOut ? (
+        <Button disabled className="w-full bg-gray-400">
+          نفذت التذاكر
+        </Button>
+      ) : (
+        <Button asChild className="w-full wirashna-btn-primary">
+          <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
+        </Button>
+      )}
+    </>
+  );
+
+  return (
+    <div className="wirashna-card sticky top-24">
+      {workshopDetails}
       
-      <div className="hidden lg:block">
-        <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
-        {isSoldOut ? (
-          <Button disabled className="w-full bg-gray-400">
-            نفذت التذاكر
-          </Button>
-        ) : (
-          <Button asChild className="w-full wirashna-btn-primary">
-            <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
-          </Button>
-        )}
+      <div className={isMobile ? "hidden" : "block"}>
+        {registrationSection}
       </div>
     </div>
   );
