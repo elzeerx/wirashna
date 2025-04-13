@@ -34,8 +34,17 @@ serve(async (req) => {
     // Parse the request body
     const requestData = await req.json();
     const { tap_id } = requestData;
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
 
     if (!tap_id) {
+      // Log the error
+      await logPaymentAction({
+        action: "verify_payment_attempt",
+        status: "error",
+        error_message: "Missing charge ID",
+        ip_address: ip
+      });
+
       return new Response(
         JSON.stringify({ error: "Missing charge ID" }),
         {
@@ -58,6 +67,19 @@ serve(async (req) => {
 
     const paymentData = await response.json();
     console.log(`Payment verification response: ${JSON.stringify(paymentData)}`);
+
+    // Log the verification attempt
+    await logPaymentAction({
+      action: "verify_payment",
+      status: response.ok ? "success" : "error",
+      payment_id: tap_id,
+      amount: paymentData.amount,
+      userId: paymentData.metadata?.userId,
+      workshopId: paymentData.metadata?.workshopId,
+      response_data: paymentData,
+      error_message: response.ok ? null : "Failed to verify payment",
+      ip_address: ip
+    });
     
     // Check if the payment was successful
     if (paymentData.status === "CAPTURED") {
@@ -83,14 +105,51 @@ serve(async (req) => {
           
         if (error) {
           console.error("Error updating registration:", error);
+          // Log the error
+          await logPaymentAction({
+            action: "update_registration",
+            status: "error",
+            payment_id: tap_id,
+            userId,
+            workshopId,
+            error_message: error.message,
+            ip_address: ip
+          });
         } else {
           console.log("Registration updated successfully:", data);
+          // Log the successful update
+          await logPaymentAction({
+            action: "update_registration",
+            status: "success",
+            payment_id: tap_id,
+            userId,
+            workshopId,
+            ip_address: ip
+          });
         }
       } else {
         console.error("Missing metadata in payment response: workshopId or userId not found");
+        // Log the missing metadata error
+        await logPaymentAction({
+          action: "update_registration_attempt",
+          status: "error",
+          payment_id: tap_id,
+          error_message: "Missing metadata: workshopId or userId not found",
+          ip_address: ip
+        });
       }
     } else {
       console.log(`Payment not captured. Status: ${paymentData.status}`);
+      // Log the non-captured payment
+      await logPaymentAction({
+        action: "payment_not_captured",
+        status: "info",
+        payment_id: tap_id,
+        userId: paymentData.metadata?.userId,
+        workshopId: paymentData.metadata?.workshopId,
+        response_data: { status: paymentData.status },
+        ip_address: ip
+      });
     }
     
     return new Response(
@@ -106,6 +165,18 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error verifying payment:", error);
     
+    // Log the error
+    try {
+      await logPaymentAction({
+        action: "verify_payment_error",
+        status: "error",
+        error_message: error.message,
+        ip_address: req.headers.get("x-forwarded-for") || "unknown"
+      });
+    } catch (logError) {
+      console.error("Error logging payment action:", logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -115,3 +186,43 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to log payment actions
+async function logPaymentAction({
+  action,
+  status,
+  payment_id = null,
+  amount = null,
+  userId = null,
+  workshopId = null,
+  response_data = null,
+  error_message = null,
+  ip_address = null
+}) {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const { data, error } = await supabase
+      .from("payment_logs")
+      .insert({
+        action,
+        status,
+        payment_id,
+        amount,
+        user_id: userId,
+        workshop_id: workshopId,
+        response_data,
+        error_message,
+        ip_address
+      });
+      
+    if (error) {
+      console.error("Error logging payment action:", error);
+    }
+    
+    return { success: !error };
+  } catch (error) {
+    console.error("Exception logging payment action:", error);
+    return { success: false };
+  }
+}

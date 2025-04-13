@@ -42,6 +42,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_logs: {
+        Row: {
+          action: string
+          amount: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          payment_id: string | null
+          response_data: Json | null
+          status: string
+          user_id: string | null
+          workshop_id: string | null
+        }
+        Insert: {
+          action: string
+          amount?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          payment_id?: string | null
+          response_data?: Json | null
+          status: string
+          user_id?: string | null
+          workshop_id?: string | null
+        }
+        Update: {
+          action?: string
+          amount?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          payment_id?: string | null
+          response_data?: Json | null
+          status?: string
+          user_id?: string | null
+          workshop_id?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           contact_email: string

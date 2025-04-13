@@ -1,9 +1,13 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const TAP_API_KEY = Deno.env.get("TAP_SECRET_KEY");
 const TAP_API_URL = "https://api.tap.company/v2/charges";
+
+const supabaseUrl = "https://dxgscdegcjhejmqcvajc.supabase.co";
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -30,8 +34,20 @@ serve(async (req) => {
     // Parse the request body
     const requestData = await req.json();
     const { amount, customerDetails, workshopId, userId, redirectUrl } = requestData;
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
 
     if (!amount || !customerDetails || !workshopId || !userId || !redirectUrl) {
+      // Log the error
+      await logPaymentAction({
+        action: "create_payment_attempt",
+        status: "error",
+        amount,
+        userId,
+        workshopId,
+        error_message: "Missing required parameters",
+        ip_address: ip
+      });
+
       return new Response(
         JSON.stringify({ error: "Missing required parameters" }),
         {
@@ -95,6 +111,19 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log("Tap API response:", JSON.stringify(data));
+
+    // Log the payment attempt
+    await logPaymentAction({
+      action: "create_payment",
+      status: response.ok ? "success" : "error",
+      payment_id: data.id,
+      amount,
+      userId,
+      workshopId,
+      response_data: data,
+      error_message: response.ok ? null : data.error || "API error",
+      ip_address: ip
+    });
     
     return new Response(
       JSON.stringify(data),
@@ -106,6 +135,18 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error processing payment:", error);
     
+    // Log the error
+    try {
+      await logPaymentAction({
+        action: "create_payment_attempt",
+        status: "error",
+        error_message: error.message,
+        ip_address: req.headers.get("x-forwarded-for") || "unknown"
+      });
+    } catch (logError) {
+      console.error("Error logging payment action:", logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -115,3 +156,43 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to log payment actions
+async function logPaymentAction({
+  action,
+  status,
+  payment_id = null,
+  amount = null,
+  userId = null,
+  workshopId = null,
+  response_data = null,
+  error_message = null,
+  ip_address = null
+}) {
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const { data, error } = await supabase
+      .from("payment_logs")
+      .insert({
+        action,
+        status,
+        payment_id,
+        amount,
+        user_id: userId,
+        workshop_id: workshopId,
+        response_data,
+        error_message,
+        ip_address
+      });
+      
+    if (error) {
+      console.error("Error logging payment action:", error);
+    }
+    
+    return { success: !error };
+  } catch (error) {
+    console.error("Exception logging payment action:", error);
+    return { success: false };
+  }
+}
