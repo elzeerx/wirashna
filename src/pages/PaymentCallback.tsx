@@ -5,13 +5,13 @@ import { useToast } from "@/hooks/use-toast";
 import { verifyTapPayment } from "@/services/payment/paymentService";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PaymentCallbackQuery } from "@/types/payment";
 
 const PaymentCallback = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [workshopId, setWorkshopId] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -19,10 +19,15 @@ const PaymentCallback = () => {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        // Extract tap_id from URL query parameters
+        // Extract tap_id and other params from URL query parameters
         const queryParams = new URLSearchParams(location.search);
         const tapId = queryParams.get("tap_id");
         const status = queryParams.get("status");
+        const workshopIdParam = queryParams.get("workshop_id");
+        
+        if (workshopIdParam) {
+          setWorkshopId(workshopIdParam);
+        }
 
         if (!tapId) {
           setPaymentStatus("error");
@@ -89,6 +94,14 @@ const PaymentCallback = () => {
     navigate("/");
   };
 
+  const handleTryAgain = () => {
+    if (workshopId) {
+      navigate(`/workshop-registration?id=${workshopId}`);
+    } else {
+      navigate("/workshops");
+    }
+  };
+
   const renderPaymentStatus = () => {
     if (isVerifying) {
       return (
@@ -123,12 +136,18 @@ const PaymentCallback = () => {
         </h2>
         <p className="text-gray-600 mb-8">
           {paymentStatus === "failed"
-            ? "لم تكتمل عملية الدفع بنجاح. يرجى المحاولة مرة أخرى أو التواصل مع الدعم."
-            : "حدث خطأ أثناء التحقق من حالة الدفع. يرجى التواصل مع الدعم."}
+            ? "لم تكتمل عملية الدفع بنجاح. يمكنك إعادة المحاولة بالضغط على الزر أدناه."
+            : "حدث خطأ أثناء التحقق من حالة الدفع. يمكنك إعادة المحاولة."}
         </p>
-        <Button onClick={handleRedirectToHome} className="wirashna-btn-primary">
-          العودة إلى الصفحة الرئيسية
-        </Button>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Button onClick={handleTryAgain} className="wirashna-btn-primary flex items-center gap-2">
+            <RefreshCw size={18} />
+            إعادة المحاولة
+          </Button>
+          <Button onClick={handleRedirectToHome} variant="outline">
+            العودة إلى الصفحة الرئيسية
+          </Button>
+        </div>
       </div>
     );
   };

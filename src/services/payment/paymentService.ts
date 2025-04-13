@@ -11,7 +11,8 @@ export const createTapPayment = async (
   try {
     // Get the current URL to use as the base for the redirect
     const baseUrl = window.location.origin;
-    const redirectUrl = `${baseUrl}/payment/callback`;
+    // Include the workshop ID in the redirect URL as a parameter
+    const redirectUrl = `${baseUrl}/payment/callback?workshop_id=${workshopId}`;
 
     // Call the Supabase Edge Function to create a payment
     const { data, error } = await supabase.functions.invoke("create-payment", {

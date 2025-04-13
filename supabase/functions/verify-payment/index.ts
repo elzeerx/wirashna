@@ -45,6 +45,8 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Verifying payment with ID: ${tap_id}`);
+
     // Verify the payment status with Tap
     const response = await fetch(`${TAP_API_URL}/${tap_id}`, {
       method: "GET",
@@ -55,6 +57,7 @@ serve(async (req) => {
     });
 
     const paymentData = await response.json();
+    console.log(`Payment verification response: ${JSON.stringify(paymentData)}`);
     
     // Check if the payment was successful
     if (paymentData.status === "CAPTURED") {
@@ -65,7 +68,9 @@ serve(async (req) => {
       const { workshopId, userId } = paymentData.metadata || {};
       
       if (workshopId && userId) {
-        const { error } = await supabase
+        console.log(`Updating registration for workshop: ${workshopId}, user: ${userId}`);
+        
+        const { data, error } = await supabase
           .from("workshop_registrations")
           .update({ 
             payment_status: "paid",
@@ -78,8 +83,14 @@ serve(async (req) => {
           
         if (error) {
           console.error("Error updating registration:", error);
+        } else {
+          console.log("Registration updated successfully:", data);
         }
+      } else {
+        console.error("Missing metadata in payment response: workshopId or userId not found");
       }
+    } else {
+      console.log(`Payment not captured. Status: ${paymentData.status}`);
     }
     
     return new Response(

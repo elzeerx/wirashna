@@ -17,9 +17,6 @@ const formSchema = z.object({
   fullName: z.string().min(3, { message: "الرجاء إدخال الاسم الكامل" }),
   email: z.string().email({ message: "الرجاء إدخال بريد إلكتروني صحيح" }),
   phone: z.string().min(8, { message: "الرجاء إدخال رقم هاتف صحيح" }),
-  paymentMethod: z.enum(["credit", "bank", "cash"], {
-    required_error: "الرجاء اختيار طريقة الدفع",
-  }),
 });
 
 type RegistrationFormProps = {
@@ -46,7 +43,6 @@ const RegistrationForm = ({
       fullName: user?.user_metadata?.full_name || "",
       email: userEmail,
       phone: "",
-      paymentMethod: "credit",
     },
   });
 
@@ -70,12 +66,11 @@ const RegistrationForm = ({
         full_name: values.fullName,
         email: values.email,
         phone: values.phone,
-        notes: `Payment Method: ${values.paymentMethod}`
+        notes: "Payment Method: credit"
       });
       
-      // Handle payment based on the selected method
-      if (values.paymentMethod === "credit" && workshopPrice > 0) {
-        // Process online payment
+      // Process online payment
+      if (workshopPrice > 0) {
         const paymentResult = await createTapPayment(
           workshopPrice,
           workshopId,
@@ -99,10 +94,10 @@ const RegistrationForm = ({
           });
         }
       } else {
-        // For bank transfer or cash, show success message and redirect
+        // Free workshop, just show success message and redirect
         toast({
           title: "تم تسجيل طلبك بنجاح",
-          description: "سنتواصل معك قريبًا لتأكيد حجزك",
+          description: "شكراً لتسجيلك في الورشة",
         });
         
         // Redirect to home page after successful registration
@@ -179,29 +174,19 @@ const RegistrationForm = ({
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="paymentMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>طريقة الدفع</FormLabel>
-                <FormControl>
-                  <div className="flex">
-                    <CreditCard size={18} className="absolute mt-3 mr-3 text-gray-400" />
-                    <select
-                      className="w-full py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-wirashna-accent"
-                      {...field}
-                    >
-                      <option value="credit">بطاقة ائتمان (كي نت / ماستركارد / فيزا)</option>
-                      <option value="bank">تحويل بنكي</option>
-                      <option value="cash">نقداً عند الحضور</option>
-                    </select>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="py-2">
+            <div className="flex items-center gap-2 mb-2">
+              <CreditCard size={18} className="text-gray-500" />
+              <span className="text-sm font-medium">طريقة الدفع: بطاقة ائتمان (كي نت / ماستركارد / فيزا)</span>
+            </div>
+            {workshopPrice > 0 ? (
+              <div className="text-wirashna-accent font-bold text-lg">
+                المبلغ: {workshopPrice} د.ك
+              </div>
+            ) : (
+              <div className="text-green-600 font-bold">مجاناً</div>
             )}
-          />
+          </div>
           
           <Button 
             type="submit" 

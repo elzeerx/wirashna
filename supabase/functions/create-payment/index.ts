@@ -41,6 +41,13 @@ serve(async (req) => {
       );
     }
 
+    console.log("Creating Tap payment with data:", {
+      amount,
+      workshopId,
+      userId,
+      redirectUrl
+    });
+
     // Create the charge request to Tap
     const tapPayload = {
       amount,
@@ -63,16 +70,18 @@ serve(async (req) => {
       },
       customer: {
         first_name: customerDetails.name.split(" ")[0],
-        last_name: customerDetails.name.split(" ").slice(1).join(" "),
+        last_name: customerDetails.name.split(" ").slice(1).join(" ") || " ",
         email: customerDetails.email,
         phone: {
           country_code: "965",
-          number: customerDetails.phone
+          number: customerDetails.phone.replace(/[^0-9]/g, "")
         }
       },
       source: { id: "src_kw.knet" },
       redirect: { url: redirectUrl }
     };
+
+    console.log("Tap payload:", JSON.stringify(tapPayload));
 
     // Make the request to Tap API
     const response = await fetch(TAP_API_URL, {
@@ -85,6 +94,7 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    console.log("Tap API response:", JSON.stringify(data));
     
     return new Response(
       JSON.stringify(data),
