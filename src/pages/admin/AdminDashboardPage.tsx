@@ -6,9 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import AdminWorkshopList from "@/components/admin/workshops/AdminWorkshopList";
-import AdminPagesList from "@/components/admin/pages/AdminPagesList";
 import SiteSettings from "@/components/admin/settings/SiteSettings";
-import PageBuilder from "@/components/admin/builder/PageBuilder";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import WorkshopRegistrationsList from "@/components/admin/workshops/WorkshopRegistrationsList";
 import { Workshop } from "@/types/supabase";
@@ -18,7 +16,6 @@ const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -56,16 +53,6 @@ const AdminDashboardPage = () => {
     }
   }, [isAdmin, isLoading, navigate, toast]);
 
-  const handlePageSelect = (pageId: string) => {
-    setSelectedPageId(pageId);
-    setActiveTab("page-builder");
-  };
-
-  const handleNewPage = () => {
-    setSelectedPageId(null);
-    setActiveTab("page-builder");
-  };
-
   const handleWorkshopSelect = (workshopId: string) => {
     setSelectedWorkshopId(workshopId);
     setActiveTab("registrations");
@@ -84,12 +71,10 @@ const AdminDashboardPage = () => {
   return (
     <AdminDashboardLayout>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-6 mb-8">
+        <TabsList className="grid grid-cols-4 mb-8">
           <TabsTrigger value="overview">لوحة المعلومات</TabsTrigger>
           <TabsTrigger value="workshops">إدارة الورش</TabsTrigger>
           <TabsTrigger value="registrations">التسجيلات</TabsTrigger>
-          <TabsTrigger value="pages">إدارة الصفحات</TabsTrigger>
-          <TabsTrigger value="page-builder">محرر الصفحات</TabsTrigger>
           <TabsTrigger value="settings">إعدادات الموقع</TabsTrigger>
         </TabsList>
         
@@ -116,17 +101,6 @@ const AdminDashboardPage = () => {
               الرجاء اختيار ورشة من قائمة الورش لعرض التسجيلات الخاصة بها
             </p>
           )}
-        </TabsContent>
-        
-        <TabsContent value="pages" className="mt-6">
-          <AdminPagesList
-            onPageSelect={handlePageSelect}
-            onNewPage={handleNewPage}
-          />
-        </TabsContent>
-        
-        <TabsContent value="page-builder" className="mt-6">
-          <PageBuilder pageId={selectedPageId} />
         </TabsContent>
         
         <TabsContent value="settings" className="mt-6">

@@ -69,7 +69,7 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue} ر.س</div>
+            <div className="text-2xl font-bold">{totalRevenue} د.ك</div>
             <p className="text-xs text-muted-foreground">
               إجمالي الإيرادات من الورش
             </p>
@@ -148,14 +148,7 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => onNavigate && onNavigate('pages')}
-                >
-                  إدارة الصفحات
-                </Button>
+              <div className="grid grid-cols-1 gap-4 pt-4">
                 <Button 
                   variant="outline" 
                   className="w-full"
