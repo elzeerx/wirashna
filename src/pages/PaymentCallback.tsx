@@ -141,7 +141,7 @@ const PaymentCallback = () => {
             : "حدث خطأ أثناء التحقق من حالة الدفع. يمكنك إعادة المحاولة."}
         </p>
         
-        <Alert variant="warning" className="mb-4 bg-amber-50 border-amber-200 text-amber-800">
+        <Alert variant="default" className="mb-4 bg-amber-50 border-amber-200 text-amber-800">
           <AlertTitle className="font-bold text-amber-800">هام</AlertTitle>
           <AlertDescription>
             لن يتم خصم أي مبلغ من حسابك في حالة فشل العملية. يمكنك إعادة محاولة الدفع بأمان.
@@ -181,3 +181,4 @@ const PaymentCallback = () => {
 };
 
 export default PaymentCallback;
+
