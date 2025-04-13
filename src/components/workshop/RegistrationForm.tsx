@@ -10,6 +10,7 @@ import { User, Mail, Phone, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { registerForWorkshop } from "@/services/workshops";
+import { createTapPayment } from "@/services/payment/paymentService";
 import { useState } from "react";
 
 const formSchema = z.object({
@@ -25,9 +26,15 @@ type RegistrationFormProps = {
   compact?: boolean;
   workshopId?: string;
   userEmail?: string;
+  workshopPrice?: number;
 };
 
-const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: RegistrationFormProps) => {
+const RegistrationForm = ({ 
+  compact = false, 
+  workshopId, 
+  userEmail = "", 
+  workshopPrice = 0 
+}: RegistrationFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -56,7 +63,8 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
     setIsSubmitting(true);
 
     try {
-      await registerForWorkshop({
+      // Register for the workshop first
+      const registration = await registerForWorkshop({
         workshop_id: workshopId,
         user_id: user.id,
         full_name: values.fullName,
@@ -65,17 +73,43 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
         notes: `Payment Method: ${values.paymentMethod}`
       });
       
-      toast({
-        title: "تم تسجيل طلبك بنجاح",
-        description: "سنتواصل معك قريبًا لتأكيد حجزك",
-      });
-      
-      form.reset();
-      
-      // Redirect to home page after successful registration
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
+      // Handle payment based on the selected method
+      if (values.paymentMethod === "credit" && workshopPrice > 0) {
+        // Process online payment
+        const paymentResult = await createTapPayment(
+          workshopPrice,
+          workshopId,
+          user.id,
+          {
+            name: values.fullName,
+            email: values.email,
+            phone: values.phone
+          }
+        );
+        
+        if (paymentResult.success && paymentResult.redirect_url) {
+          // Redirect to Tap payment page
+          window.location.href = paymentResult.redirect_url;
+          return;
+        } else {
+          toast({
+            title: "خطأ في معالجة الدفع",
+            description: paymentResult.error || "حدث خطأ أثناء إنشاء عملية الدفع",
+            variant: "destructive",
+          });
+        }
+      } else {
+        // For bank transfer or cash, show success message and redirect
+        toast({
+          title: "تم تسجيل طلبك بنجاح",
+          description: "سنتواصل معك قريبًا لتأكيد حجزك",
+        });
+        
+        // Redirect to home page after successful registration
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      }
     } catch (error: any) {
       console.error("Registration error:", error);
       toast({
@@ -158,7 +192,7 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
                       className="w-full py-2 pr-10 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-wirashna-accent"
                       {...field}
                     >
-                      <option value="credit">بطاقة ائتمان</option>
+                      <option value="credit">بطاقة ائتمان (كي نت / ماستركارد / فيزا)</option>
                       <option value="bank">تحويل بنكي</option>
                       <option value="cash">نقداً عند الحضور</option>
                     </select>

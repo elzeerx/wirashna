@@ -19,6 +19,7 @@ import TermsConditions from "./pages/TermsConditions";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import CreateWorkshopPage from "./pages/admin/CreateWorkshopPage";
 import WorkshopRegistration from "./pages/WorkshopRegistration";
+import PaymentCallback from "./pages/PaymentCallback";
 import SubscriberDashboard from "./pages/SubscriberDashboard";
 import SubscriberWorkshops from "./pages/SubscriberWorkshops";
 import SubscriberCertificates from "./pages/SubscriberCertificates";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/workshops" element={<Workshops />} />
               <Route path="/workshops/:id" element={<WorkshopDetail />} />
               <Route path="/workshop-registration" element={<WorkshopRegistration />} />
+              <Route path="/payment/callback" element={<PaymentCallback />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/login" element={<Login />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

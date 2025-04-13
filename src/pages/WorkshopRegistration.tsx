@@ -93,6 +93,18 @@ const WorkshopRegistration = () => {
                 {selectedWorkshop && ` "${selectedWorkshop.title}"`}
               </h1>
               
+              {selectedWorkshop && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-md">
+                  <p className="font-bold text-lg">معلومات الورشة:</p>
+                  <p>التاريخ: {selectedWorkshop.date}</p>
+                  <p>الوقت: {selectedWorkshop.time}</p>
+                  <p>المكان: {selectedWorkshop.venue}</p>
+                  <p className="font-bold text-wirashna-accent">
+                    السعر: {selectedWorkshop.price} د.ك
+                  </p>
+                </div>
+              )}
+              
               {!user ? (
                 <div className="text-center py-8">
                   <p className="mb-6 text-lg">
@@ -110,6 +122,7 @@ const WorkshopRegistration = () => {
                 <RegistrationForm 
                   workshopId={selectedWorkshop?.id}
                   userEmail={user.email || ""}
+                  workshopPrice={selectedWorkshop?.price || 0}
                 />
               )}
             </div>
