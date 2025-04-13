@@ -39,43 +39,70 @@ export const useRegistrationSubmit = ({
       console.log("Starting registration process for workshop:", workshopId, "User:", user.id, "Is retry:", isRetry);
       
       // Register for the workshop first (or update existing registration if it's a retry)
-      // The updated registerForWorkshop function will handle retry logic internally
-      const registration = await registerForWorkshop({
-        workshop_id: workshopId,
-        user_id: user.id,
-        full_name: values.fullName,
-        email: values.email,
-        phone: values.phone,
-        notes: isRetry ? "Payment Retry" : "Payment Method: credit"
-      });
-      
-      console.log("Registration successful:", registration);
+      let registration;
+      try {
+        registration = await registerForWorkshop({
+          workshop_id: workshopId,
+          user_id: user.id,
+          full_name: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          notes: isRetry ? "Payment Retry" : "Payment Method: credit"
+        });
+        
+        console.log("Registration successful:", registration);
+      } catch (registrationError: any) {
+        console.error("Registration step error:", registrationError);
+        
+        // Handle specific registration errors
+        if (registrationError.name === "DuplicateRegistrationError") {
+          toast({
+            title: "لا يمكن التسجيل مرة أخرى",
+            description: registrationError.message || "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // If it's any other registration error, rethrow it to be caught by the outer try/catch
+        throw registrationError;
+      }
       
       // Process online payment
       if (workshopPrice > 0) {
         console.log("Processing payment for amount:", workshopPrice);
-        const paymentResult = await createTapPayment(
-          workshopPrice,
-          workshopId,
-          user.id,
-          {
-            name: values.fullName,
-            email: values.email,
-            phone: values.phone
-          },
-          isRetry
-        );
-        
-        if (paymentResult.success && paymentResult.redirect_url) {
-          console.log("Payment created successfully, redirecting to:", paymentResult.redirect_url);
-          // Redirect to Tap payment page
-          window.location.href = paymentResult.redirect_url;
-          return;
-        } else {
-          console.error("Payment creation failed:", paymentResult.error);
+        try {
+          const paymentResult = await createTapPayment(
+            workshopPrice,
+            workshopId,
+            user.id,
+            {
+              name: values.fullName,
+              email: values.email,
+              phone: values.phone
+            },
+            isRetry
+          );
+          
+          if (paymentResult.success && paymentResult.redirect_url) {
+            console.log("Payment created successfully, redirecting to:", paymentResult.redirect_url);
+            // Redirect to Tap payment page
+            window.location.href = paymentResult.redirect_url;
+            return;
+          } else {
+            console.error("Payment creation failed:", paymentResult.error);
+            toast({
+              title: "خطأ في معالجة الدفع",
+              description: paymentResult.error || "حدث خطأ أثناء إنشاء عملية الدفع",
+              variant: "destructive",
+            });
+          }
+        } catch (paymentError: any) {
+          console.error("Payment processing error:", paymentError);
           toast({
             title: "خطأ في معالجة الدفع",
-            description: paymentResult.error || "حدث خطأ أثناء إنشاء عملية الدفع",
+            description: paymentError.message || "حدث خطأ أثناء معالجة عملية الدفع",
             variant: "destructive",
           });
         }
@@ -106,6 +133,12 @@ export const useRegistrationSubmit = ({
         toast({
           title: "خطأ في نظام التسجيل",
           description: "هناك مشكلة في بيانات التسجيل. يرجى المحاولة مرة أخرى لاحقاً أو التواصل مع الدعم الفني.",
+          variant: "destructive",
+        });
+      } else if (error.message && error.message.includes("duplicate key")) {
+        toast({
+          title: "لا يمكن التسجيل مرة أخرى",
+          description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
           variant: "destructive",
         });
       } else {
