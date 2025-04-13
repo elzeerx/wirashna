@@ -6,7 +6,8 @@ export const createTapPayment = async (
   amount: number,
   workshopId: string,
   userId: string,
-  customerDetails: UserDetails
+  customerDetails: UserDetails,
+  isRetry: boolean = false
 ): Promise<{ success: boolean; redirect_url?: string; error?: string }> => {
   try {
     // Get the current URL to use as the base for the redirect
@@ -16,7 +17,7 @@ export const createTapPayment = async (
 
     // Log the payment attempt client-side
     await logPaymentAction({
-      action: "client_create_payment_attempt",
+      action: isRetry ? "client_retry_payment_attempt" : "client_create_payment_attempt",
       status: "pending",
       amount,
       userId,
@@ -31,6 +32,7 @@ export const createTapPayment = async (
         userId,
         customerDetails,
         redirectUrl,
+        isRetry
       },
     });
 
@@ -62,15 +64,17 @@ export const createTapPayment = async (
       });
       
       // Update the registration status to processing
-      await supabase
-        .from("workshop_registrations")
-        .update({
-          payment_status: "processing",
-          payment_id: data.id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("workshop_id", workshopId)
-        .eq("user_id", userId);
+      if (!isRetry) {
+        await supabase
+          .from("workshop_registrations")
+          .update({
+            payment_status: "processing",
+            payment_id: data.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("workshop_id", workshopId)
+          .eq("user_id", userId);
+      }
 
       return { success: true, redirect_url: data.transaction.url };
     }

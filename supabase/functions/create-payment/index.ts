@@ -33,7 +33,7 @@ serve(async (req) => {
 
     // Parse the request body
     const requestData = await req.json();
-    const { amount, customerDetails, workshopId, userId, redirectUrl } = requestData;
+    const { amount, customerDetails, workshopId, userId, redirectUrl, isRetry } = requestData;
     const ip = req.headers.get("x-forwarded-for") || "unknown";
 
     if (!amount || !customerDetails || !workshopId || !userId || !redirectUrl) {
@@ -61,8 +61,47 @@ serve(async (req) => {
       amount,
       workshopId,
       userId,
-      redirectUrl
+      redirectUrl,
+      isRetry
     });
+
+    // Create Supabase client
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // If this is a retry attempt, check for existing registration in failed or processing state
+    if (isRetry) {
+      console.log("This is a retry attempt, checking for existing registration");
+      
+      const { data: existingRegistrations, error: fetchError } = await supabase
+        .from("workshop_registrations")
+        .select("*")
+        .eq("workshop_id", workshopId)
+        .eq("user_id", userId)
+        .in("payment_status", ["failed", "processing", "unpaid"]);
+      
+      if (fetchError) {
+        console.error("Error checking for existing registration:", fetchError);
+      } else if (existingRegistrations && existingRegistrations.length > 0) {
+        console.log("Found existing registration:", existingRegistrations[0]);
+        
+        // Update the existing registration to processing status
+        const { error: updateError } = await supabase
+          .from("workshop_registrations")
+          .update({
+            payment_status: "processing",
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", existingRegistrations[0].id);
+        
+        if (updateError) {
+          console.error("Error updating existing registration:", updateError);
+        } else {
+          console.log("Updated existing registration to processing status");
+        }
+      } else {
+        console.log("No existing registration found for retry, will create new one");
+      }
+    }
 
     // Create the charge request to Tap
     const tapPayload = {

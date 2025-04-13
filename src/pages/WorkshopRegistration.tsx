@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 const WorkshopRegistration = () => {
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRetry, setIsRetry] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -26,6 +27,12 @@ const WorkshopRegistration = () => {
         // Get workshop ID from URL params
         const params = new URLSearchParams(location.search);
         const workshopId = params.get('id');
+        const retry = params.get('retry');
+        
+        // Set retry flag if present
+        if (retry === 'true') {
+          setIsRetry(true);
+        }
         
         if (workshopId) {
           const workshop = await fetchWorkshopById(workshopId);
@@ -89,9 +96,17 @@ const WorkshopRegistration = () => {
           <div className="max-w-2xl mx-auto">
             <div className="wirashna-card">
               <h1 className="text-2xl font-bold mb-6 text-center">
-                تسجيل في ورشة
+                {isRetry ? "إعادة محاولة الدفع" : "تسجيل في ورشة"}
                 {selectedWorkshop && ` "${selectedWorkshop.title}"`}
               </h1>
+              
+              {isRetry && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-amber-700 font-semibold">
+                    فشلت عملية الدفع السابقة، يمكنك المحاولة مرة أخرى الآن.
+                  </p>
+                </div>
+              )}
               
               {selectedWorkshop && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-md">
@@ -123,6 +138,7 @@ const WorkshopRegistration = () => {
                   workshopId={selectedWorkshop?.id}
                   userEmail={user.email || ""}
                   workshopPrice={selectedWorkshop?.price || 0}
+                  isRetry={isRetry}
                 />
               )}
             </div>

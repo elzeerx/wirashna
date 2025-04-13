@@ -24,13 +24,15 @@ type RegistrationFormProps = {
   workshopId?: string;
   userEmail?: string;
   workshopPrice?: number;
+  isRetry?: boolean;
 };
 
 const RegistrationForm = ({ 
   compact = false, 
   workshopId, 
   userEmail = "", 
-  workshopPrice = 0 
+  workshopPrice = 0,
+  isRetry = false
 }: RegistrationFormProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -59,15 +61,18 @@ const RegistrationForm = ({
     setIsSubmitting(true);
 
     try {
-      // Register for the workshop first
-      const registration = await registerForWorkshop({
-        workshop_id: workshopId,
-        user_id: user.id,
-        full_name: values.fullName,
-        email: values.email,
-        phone: values.phone,
-        notes: "Payment Method: credit"
-      });
+      // If it's not a retry, register for the workshop first
+      let registration;
+      if (!isRetry) {
+        registration = await registerForWorkshop({
+          workshop_id: workshopId,
+          user_id: user.id,
+          full_name: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          notes: "Payment Method: credit"
+        });
+      }
       
       // Process online payment
       if (workshopPrice > 0) {
@@ -79,7 +84,8 @@ const RegistrationForm = ({
             name: values.fullName,
             email: values.email,
             phone: values.phone
-          }
+          },
+          isRetry
         );
         
         if (paymentResult.success && paymentResult.redirect_url) {
@@ -107,11 +113,43 @@ const RegistrationForm = ({
       }
     } catch (error: any) {
       console.error("Registration error:", error);
-      toast({
-        title: "خطأ في التسجيل",
-        description: error.message || "حدث خطأ أثناء التسجيل. الرجاء المحاولة مرة أخرى.",
-        variant: "destructive",
-      });
+      
+      // If it's a unique violation error, it might be a duplicate registration
+      if (error.message && error.message.includes("duplicate key value violates unique constraint")) {
+        toast({
+          title: "تم التسجيل مسبقاً",
+          description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً. يمكنك متابعة عملية الدفع.",
+          variant: "destructive",
+        });
+        
+        // Try to process payment anyway
+        try {
+          const paymentResult = await createTapPayment(
+            workshopPrice,
+            workshopId,
+            user.id,
+            {
+              name: values.fullName,
+              email: values.email,
+              phone: values.phone
+            },
+            true // Force it as a retry
+          );
+          
+          if (paymentResult.success && paymentResult.redirect_url) {
+            window.location.href = paymentResult.redirect_url;
+            return;
+          }
+        } catch (payError) {
+          console.error("Payment retry error:", payError);
+        }
+      } else {
+        toast({
+          title: "خطأ في التسجيل",
+          description: error.message || "حدث خطأ أثناء التسجيل. الرجاء المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -119,7 +157,7 @@ const RegistrationForm = ({
 
   return (
     <>
-      {!compact && <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>}
+      {!compact && <h3 className="text-xl font-bold mb-4">{isRetry ? "إكمال عملية الدفع" : "سجل في الورشة"}</h3>}
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -193,7 +231,7 @@ const RegistrationForm = ({
             className="w-full wirashna-btn-primary"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "جاري التسجيل..." : "تأكيد التسجيل"}
+            {isSubmitting ? "جاري التسجيل..." : isRetry ? "متابعة عملية الدفع" : "تأكيد التسجيل"}
           </Button>
 
           <p className="text-sm text-gray-500 text-center mt-4">

@@ -96,7 +96,7 @@ const PaymentCallback = () => {
 
   const handleTryAgain = () => {
     if (workshopId) {
-      navigate(`/workshop-registration?id=${workshopId}`);
+      navigate(`/workshop-registration?id=${workshopId}&retry=true`);
     } else {
       navigate("/workshops");
     }
