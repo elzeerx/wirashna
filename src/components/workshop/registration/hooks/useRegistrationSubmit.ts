@@ -36,18 +36,16 @@ export const useRegistrationSubmit = ({
     setIsSubmitting(true);
 
     try {
-      // If it's not a retry, register for the workshop first
-      let registration;
-      if (!isRetry) {
-        registration = await registerForWorkshop({
-          workshop_id: workshopId,
-          user_id: user.id,
-          full_name: values.fullName,
-          email: values.email,
-          phone: values.phone,
-          notes: "Payment Method: credit"
-        });
-      }
+      // Register for the workshop first (or update existing registration if it's a retry)
+      // The updated registerForWorkshop function will handle retry logic internally
+      const registration = await registerForWorkshop({
+        workshop_id: workshopId,
+        user_id: user.id,
+        full_name: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        notes: isRetry ? "Payment Retry" : "Payment Method: credit"
+      });
       
       // Process online payment
       if (workshopPrice > 0) {
@@ -89,35 +87,13 @@ export const useRegistrationSubmit = ({
     } catch (error: any) {
       console.error("Registration error:", error);
       
-      // If it's a unique violation error, it might be a duplicate registration
-      if (error.message && error.message.includes("duplicate key value violates unique constraint")) {
+      // If it's a DuplicateRegistrationError, show a specific message
+      if (error.name === "DuplicateRegistrationError") {
         toast({
-          title: "تم التسجيل مسبقاً",
-          description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً. يمكنك متابعة عملية الدفع.",
+          title: "لا يمكن التسجيل مرة أخرى",
+          description: error.message || "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
           variant: "destructive",
         });
-        
-        // Try to process payment anyway
-        try {
-          const paymentResult = await createTapPayment(
-            workshopPrice,
-            workshopId,
-            user.id,
-            {
-              name: values.fullName,
-              email: values.email,
-              phone: values.phone
-            },
-            true // Force it as a retry
-          );
-          
-          if (paymentResult.success && paymentResult.redirect_url) {
-            window.location.href = paymentResult.redirect_url;
-            return;
-          }
-        } catch (payError) {
-          console.error("Payment retry error:", payError);
-        }
       } else {
         toast({
           title: "خطأ في التسجيل",

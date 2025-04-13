@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const PaymentCallback = () => {
   const [isVerifying, setIsVerifying] = useState(true);
@@ -139,6 +140,14 @@ const PaymentCallback = () => {
             ? "لم تكتمل عملية الدفع بنجاح. يمكنك إعادة المحاولة بالضغط على الزر أدناه."
             : "حدث خطأ أثناء التحقق من حالة الدفع. يمكنك إعادة المحاولة."}
         </p>
+        
+        <Alert variant="warning" className="mb-4 bg-amber-50 border-amber-200 text-amber-800">
+          <AlertTitle className="font-bold text-amber-800">هام</AlertTitle>
+          <AlertDescription>
+            لن يتم خصم أي مبلغ من حسابك في حالة فشل العملية. يمكنك إعادة محاولة الدفع بأمان.
+          </AlertDescription>
+        </Alert>
+        
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button onClick={handleTryAgain} className="wirashna-btn-primary flex items-center gap-2">
             <RefreshCw size={18} />
