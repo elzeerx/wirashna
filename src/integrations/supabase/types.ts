@@ -171,32 +171,47 @@ export type Database = {
       }
       workshop_registrations: {
         Row: {
+          admin_notes: string | null
           created_at: string | null
           email: string
           full_name: string
           id: string
           notes: string | null
+          payment_id: string | null
+          payment_status: string
           phone: string | null
+          status: string
+          updated_at: string | null
           user_id: string
           workshop_id: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string | null
           email: string
           full_name: string
           id?: string
           notes?: string | null
+          payment_id?: string | null
+          payment_status?: string
           phone?: string | null
+          status?: string
+          updated_at?: string | null
           user_id: string
           workshop_id: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string | null
           email?: string
           full_name?: string
           id?: string
           notes?: string | null
+          payment_id?: string | null
+          payment_status?: string
           phone?: string | null
+          status?: string
+          updated_at?: string | null
           user_id?: string
           workshop_id?: string
         }

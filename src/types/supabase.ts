@@ -31,6 +31,11 @@ export type WorkshopRegistration = {
   phone?: string;
   notes?: string;
   created_at: string;
+  updated_at: string;
+  status: 'pending' | 'confirmed' | 'canceled' | 'attended';
+  payment_status: 'unpaid' | 'processing' | 'paid' | 'refunded' | 'failed';
+  payment_id?: string;
+  admin_notes?: string;
 };
 
 export type UserProfile = {

@@ -112,10 +112,16 @@ export const deleteWorkshop = async (id: string): Promise<void> => {
   }
 };
 
-export const registerForWorkshop = async (registration: Omit<WorkshopRegistration, 'id' | 'created_at'>): Promise<WorkshopRegistration> => {
+export const registerForWorkshop = async (registration: Omit<WorkshopRegistration, 'id' | 'created_at' | 'updated_at' | 'status' | 'payment_status' | 'payment_id' | 'admin_notes'>): Promise<WorkshopRegistration> => {
+  const registrationData = {
+    ...registration,
+    status: 'pending',
+    payment_status: 'unpaid'
+  };
+
   const { data, error } = await supabase
     .from('workshop_registrations')
-    .insert(registration)
+    .insert(registrationData)
     .select()
     .single();
 
@@ -145,7 +151,7 @@ export const fetchUserRegistrations = async (userId: string): Promise<WorkshopRe
 export const cancelRegistration = async (registrationId: string): Promise<void> => {
   const { error } = await supabase
     .from('workshop_registrations')
-    .delete()
+    .update({ status: 'canceled' })
     .eq('id', registrationId);
 
   if (error) {
@@ -167,4 +173,32 @@ export const fetchWorkshopRegistrations = async (workshopId: string): Promise<Wo
   }
 
   return data || [];
+};
+
+export const updateRegistrationStatus = async (registrationId: string, updates: Partial<WorkshopRegistration>): Promise<WorkshopRegistration> => {
+  const { data, error } = await supabase
+    .from('workshop_registrations')
+    .update(updates)
+    .eq('id', registrationId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error updating registration ${registrationId}:`, error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const deleteRegistration = async (registrationId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('workshop_registrations')
+    .delete()
+    .eq('id', registrationId);
+
+  if (error) {
+    console.error(`Error deleting registration ${registrationId}:`, error);
+    throw error;
+  }
 };
