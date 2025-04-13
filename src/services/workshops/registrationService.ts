@@ -8,7 +8,12 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     .select('*')
     .eq('user_id', registration.user_id)
     .eq('workshop_id', registration.workshop_id)
-    .single();
+    .maybeSingle();  // Use maybeSingle() instead of single()
+
+  if (checkError) {
+    console.error("Error checking existing workshop registration:", checkError);
+    throw checkError;
+  }
 
   // If there's an existing registration with a failed or unpaid payment, update it
   if (existingRegistration && ['failed', 'unpaid'].includes(existingRegistration.payment_status)) {
@@ -35,8 +40,14 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     return data as WorkshopRegistration;
   }
   
-  // If no existing registration or the existing one is in a completed state,
-  // create a new registration
+  // If there's an existing registration in a completed state, throw a duplicate error
+  if (existingRegistration) {
+    const duplicateError = new Error("لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى");
+    duplicateError.name = "DuplicateRegistrationError";
+    throw duplicateError;
+  }
+  
+  // Create a new registration if no existing one was found
   const registrationData = {
     ...registration,
     status: 'pending' as const,

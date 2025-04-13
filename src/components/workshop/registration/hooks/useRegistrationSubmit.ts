@@ -36,6 +36,8 @@ export const useRegistrationSubmit = ({
     setIsSubmitting(true);
 
     try {
+      console.log("Starting registration process for workshop:", workshopId, "User:", user.id, "Is retry:", isRetry);
+      
       // Register for the workshop first (or update existing registration if it's a retry)
       // The updated registerForWorkshop function will handle retry logic internally
       const registration = await registerForWorkshop({
@@ -47,8 +49,11 @@ export const useRegistrationSubmit = ({
         notes: isRetry ? "Payment Retry" : "Payment Method: credit"
       });
       
+      console.log("Registration successful:", registration);
+      
       // Process online payment
       if (workshopPrice > 0) {
+        console.log("Processing payment for amount:", workshopPrice);
         const paymentResult = await createTapPayment(
           workshopPrice,
           workshopId,
@@ -62,10 +67,12 @@ export const useRegistrationSubmit = ({
         );
         
         if (paymentResult.success && paymentResult.redirect_url) {
+          console.log("Payment created successfully, redirecting to:", paymentResult.redirect_url);
           // Redirect to Tap payment page
           window.location.href = paymentResult.redirect_url;
           return;
         } else {
+          console.error("Payment creation failed:", paymentResult.error);
           toast({
             title: "خطأ في معالجة الدفع",
             description: paymentResult.error || "حدث خطأ أثناء إنشاء عملية الدفع",
@@ -92,6 +99,13 @@ export const useRegistrationSubmit = ({
         toast({
           title: "لا يمكن التسجيل مرة أخرى",
           description: error.message || "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
+          variant: "destructive",
+        });
+      } else if (error.code === "PGRST116") {
+        // This is the "JSON object requested, multiple (or no) rows returned" error
+        toast({
+          title: "خطأ في نظام التسجيل",
+          description: "هناك مشكلة في بيانات التسجيل. يرجى المحاولة مرة أخرى لاحقاً أو التواصل مع الدعم الفني.",
           variant: "destructive",
         });
       } else {
