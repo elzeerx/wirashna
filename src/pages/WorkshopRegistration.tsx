@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import { Workshop } from "@/types/supabase";
-import { fetchWorkshopById } from "@/services/workshopService";
+import { fetchWorkshopById } from "@/services/workshops";
 import { useToast } from "@/hooks/use-toast";
 
 const WorkshopRegistration = () => {

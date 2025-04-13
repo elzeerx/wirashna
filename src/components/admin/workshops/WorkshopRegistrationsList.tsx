@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { WorkshopRegistration } from "@/types/supabase";
-import { fetchWorkshopRegistrations, updateRegistrationStatus, deleteRegistration } from "@/services/workshopService";
+import { fetchWorkshopRegistrations, updateRegistrationStatus, deleteRegistration } from "@/services/workshops";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";

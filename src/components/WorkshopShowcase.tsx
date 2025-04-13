@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import WorkshopCard, { workshopToCardProps } from "./WorkshopCard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { fetchWorkshops } from "@/services/workshopService";
+import { fetchWorkshops } from "@/services/workshops";
 import { Workshop } from "@/types/supabase";
 import { useToast } from "@/hooks/use-toast";
 

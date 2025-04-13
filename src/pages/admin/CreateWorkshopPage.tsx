@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import { useToast } from "@/hooks/use-toast";
-import { createWorkshop } from "@/services/workshopService";
+import { createWorkshop } from "@/services/workshops";
 import { useAuth } from "@/contexts/AuthContext";
 
 const CreateWorkshopPage = () => {
