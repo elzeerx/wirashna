@@ -1,9 +1,22 @@
 
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect authenticated users to home page
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

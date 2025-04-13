@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginForm } from "./LoginForm";
 import { SignupForm } from "./SignupForm";
@@ -12,14 +12,10 @@ export const AuthCard = () => {
   const [error, setError] = useState<string | null>(null);
   const { signIn, signUp, signInWithGoogle, isLoading, user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   
   // If the user is already logged in, redirect to the home page
-  // or to the page they were trying to access
-  const from = location.state?.from?.pathname || "/";
-  
   if (user) {
-    navigate(from, { replace: true });
+    navigate("/", { replace: true });
   }
   
   const toggleView = () => {
@@ -30,7 +26,7 @@ export const AuthCard = () => {
   const handleSignIn = async (email: string, password: string) => {
     try {
       await signIn(email, password);
-      navigate(from, { replace: true });
+      navigate("/", { replace: true });
     } catch (error: any) {
       console.error("Authentication error:", error);
     }

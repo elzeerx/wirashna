@@ -72,9 +72,9 @@ const RegistrationForm = ({ compact = false, workshopId, userEmail = "" }: Regis
       
       form.reset();
       
-      // Redirect to workshops page after successful registration
+      // Redirect to home page after successful registration
       setTimeout(() => {
-        navigate("/workshops");
+        navigate("/");
       }, 2000);
     } catch (error: any) {
       console.error("Registration error:", error);

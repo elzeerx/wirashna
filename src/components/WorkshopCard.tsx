@@ -31,39 +31,41 @@ const WorkshopCard = ({
     : "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
   
   return (
-    <div className="wirashna-card group overflow-hidden flex flex-col h-full">
-      <div className="relative h-48 mb-4 overflow-hidden rounded-md">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+    <Link to={`/workshops/${id}`} className="block h-full">
+      <div className="wirashna-card group overflow-hidden flex flex-col h-full hover:shadow-md transition-all duration-300">
+        <div className="relative h-48 mb-4 overflow-hidden rounded-md">
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+        
+        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
+        
+        <div className="flex items-center text-gray-600 mb-2">
+          <Calendar size={16} className="ml-2" />
+          <span className="text-sm">{date} | {time}</span>
+        </div>
+        
+        <div className="flex items-center text-gray-600 mb-2">
+          <MapPin size={16} className="ml-2" />
+          <span className="text-sm">{venue}</span>
+        </div>
+        
+        <div className="flex items-center text-gray-600 mb-4">
+          <Users size={16} className="ml-2" />
+          <span className="text-sm">{availableSeats} مقعد متبقي</span>
+        </div>
+        
+        <div className="mt-auto">
+          <div className="wirashna-btn-primary block text-center">
+            سجل الآن
+          </div>
+        </div>
       </div>
-      
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
-      
-      <div className="flex items-center text-gray-600 mb-2">
-        <Calendar size={16} className="ml-2" />
-        <span className="text-sm">{date} | {time}</span>
-      </div>
-      
-      <div className="flex items-center text-gray-600 mb-2">
-        <MapPin size={16} className="ml-2" />
-        <span className="text-sm">{venue}</span>
-      </div>
-      
-      <div className="flex items-center text-gray-600 mb-4">
-        <Users size={16} className="ml-2" />
-        <span className="text-sm">{availableSeats} مقعد متبقي</span>
-      </div>
-      
-      <div className="mt-auto">
-        <Link to={`/workshops/${id}`} className="wirashna-btn-primary block text-center">
-          سجل الآن
-        </Link>
-      </div>
-    </div>
+    </Link>
   );
 };
 
