@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -7,7 +8,7 @@ import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayou
 import AdminWorkshopList from "@/components/admin/workshops/AdminWorkshopList";
 import SiteSettings from "@/components/admin/settings/SiteSettings";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
-import WorkshopRegistrationsList from "@/components/admin/workshops/WorkshopRegistrationsList";
+import { WorkshopRegistrationsList } from "@/components/admin/workshops/registrations";
 import { Workshop } from "@/types/supabase";
 import { fetchWorkshops } from "@/services/workshops";
 
