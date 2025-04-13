@@ -1,6 +1,6 @@
 
 // Re-export existing types for broader usage
-export { UserDetails, PaymentResult, PaymentCallbackQuery } from '@/types/payment';
+export type { UserDetails, PaymentResult, PaymentCallbackQuery } from '@/types/payment';
 
 // Internal types for payment logging
 export interface PaymentLogData {
