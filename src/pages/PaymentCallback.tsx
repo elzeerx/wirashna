@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { verifyTapPayment } from "@/services/payment/paymentService";
+import { verifyTapPayment } from "@/services/payment";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";

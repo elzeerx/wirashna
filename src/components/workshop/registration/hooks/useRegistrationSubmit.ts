@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { registerForWorkshop } from "@/services/workshops";
-import { createTapPayment } from "@/services/payment/paymentService";
+import { createTapPayment } from "@/services/payment";
 import { UserFormData } from "../UserDetailsForm";
 
 type UseRegistrationSubmitProps = {

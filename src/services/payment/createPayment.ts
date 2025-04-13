@@ -1,14 +1,18 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { UserDetails } from "@/types/payment";
+import { UserDetails, PaymentResult } from './types';
+import { logPaymentAction } from './paymentLogs';
 
+/**
+ * Creates a payment request with the Tap payment gateway
+ */
 export const createTapPayment = async (
   amount: number,
   workshopId: string,
   userId: string,
   customerDetails: UserDetails,
   isRetry: boolean = false
-): Promise<{ success: boolean; redirect_url?: string; error?: string }> => {
+): Promise<PaymentResult> => {
   try {
     // Get the current URL to use as the base for the redirect
     const baseUrl = window.location.origin;
@@ -110,109 +114,3 @@ export const createTapPayment = async (
     return { success: false, error: error.message };
   }
 };
-
-export const verifyTapPayment = async (
-  tapId: string
-): Promise<{ success: boolean; status?: string; error?: string }> => {
-  try {
-    // Log the verification attempt client-side
-    await logPaymentAction({
-      action: "client_verify_payment_attempt",
-      status: "pending",
-      payment_id: tapId
-    });
-
-    // Call the Supabase Edge Function to verify payment
-    const { data, error } = await supabase.functions.invoke("verify-payment", {
-      body: { tap_id: tapId },
-    });
-
-    if (error) {
-      console.error("Error verifying payment:", error);
-      
-      // Log the error
-      await logPaymentAction({
-        action: "client_verify_payment_error",
-        status: "error",
-        payment_id: tapId,
-        error_message: error.message
-      });
-      
-      return { success: false, error: error.message };
-    }
-
-    if (data && data.payment && data.payment.status) {
-      // Log successful verification
-      await logPaymentAction({
-        action: "client_verify_payment_success",
-        status: "success",
-        payment_id: tapId,
-        response_data: { payment_status: data.payment.status }
-      });
-      
-      return { success: true, status: data.payment.status };
-    }
-
-    // Log verification failure
-    await logPaymentAction({
-      action: "client_verify_payment_failure",
-      status: "error",
-      payment_id: tapId,
-      error_message: "Failed to verify payment status"
-    });
-
-    return { success: false, error: "Failed to verify payment status" };
-  } catch (error) {
-    console.error("Error in verifyTapPayment:", error);
-    
-    // Log the exception
-    try {
-      await logPaymentAction({
-        action: "client_verify_payment_exception",
-        status: "error",
-        payment_id: tapId,
-        error_message: error.message
-      });
-    } catch (logError) {
-      console.error("Error logging payment action:", logError);
-    }
-    
-    return { success: false, error: error.message };
-  }
-};
-
-// Helper function to log payment actions on the client side
-async function logPaymentAction({
-  action,
-  status,
-  payment_id = null,
-  amount = null,
-  userId = null,
-  workshopId = null,
-  response_data = null,
-  error_message = null
-}) {
-  try {
-    const { data, error } = await supabase
-      .from("payment_logs")
-      .insert({
-        action,
-        status,
-        payment_id,
-        amount,
-        user_id: userId,
-        workshop_id: workshopId,
-        response_data,
-        error_message
-      });
-      
-    if (error) {
-      console.error("Error logging payment action:", error);
-    }
-    
-    return { success: !error };
-  } catch (error) {
-    console.error("Exception logging payment action:", error);
-    return { success: false };
-  }
-}
