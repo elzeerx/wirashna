@@ -9,7 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Phone, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { registerForWorkshop } from "@/services/workshopService";
+import { registerForWorkshop } from "@/services/workshops";
 import { useState } from "react";
 
 const formSchema = z.object({

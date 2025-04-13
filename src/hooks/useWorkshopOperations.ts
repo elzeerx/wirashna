@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Workshop } from "@/types/supabase";
-import { createWorkshop, updateWorkshop, deleteWorkshop, fetchWorkshops } from "@/services/workshopService";
+import { createWorkshop, updateWorkshop, deleteWorkshop, fetchWorkshops } from "@/services/workshops";
 
 interface UseWorkshopOperationsProps {
   onWorkshopsUpdated: (workshops: Workshop[]) => void;
