@@ -115,8 +115,8 @@ export const deleteWorkshop = async (id: string): Promise<void> => {
 export const registerForWorkshop = async (registration: Omit<WorkshopRegistration, 'id' | 'created_at' | 'updated_at' | 'status' | 'payment_status' | 'payment_id' | 'admin_notes'>): Promise<WorkshopRegistration> => {
   const registrationData = {
     ...registration,
-    status: 'pending',
-    payment_status: 'unpaid'
+    status: 'pending' as const,
+    payment_status: 'unpaid' as const
   };
 
   const { data, error } = await supabase
@@ -130,7 +130,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     throw error;
   }
 
-  return data;
+  return data as WorkshopRegistration;
 };
 
 export const fetchUserRegistrations = async (userId: string): Promise<WorkshopRegistration[]> => {
@@ -145,13 +145,13 @@ export const fetchUserRegistrations = async (userId: string): Promise<WorkshopRe
     throw error;
   }
 
-  return data || [];
+  return (data || []) as WorkshopRegistration[];
 };
 
 export const cancelRegistration = async (registrationId: string): Promise<void> => {
   const { error } = await supabase
     .from('workshop_registrations')
-    .update({ status: 'canceled' })
+    .update({ status: 'canceled' as const })
     .eq('id', registrationId);
 
   if (error) {
@@ -172,7 +172,7 @@ export const fetchWorkshopRegistrations = async (workshopId: string): Promise<Wo
     throw error;
   }
 
-  return data || [];
+  return (data || []) as WorkshopRegistration[];
 };
 
 export const updateRegistrationStatus = async (registrationId: string, updates: Partial<WorkshopRegistration>): Promise<WorkshopRegistration> => {
@@ -188,7 +188,7 @@ export const updateRegistrationStatus = async (registrationId: string, updates: 
     throw error;
   }
 
-  return data;
+  return data as WorkshopRegistration;
 };
 
 export const deleteRegistration = async (registrationId: string): Promise<void> => {
