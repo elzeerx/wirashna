@@ -31,10 +31,13 @@ const SupervisorDashboard = () => {
     loadData();
   }, []);
 
-  // Calculate statistics for supervisor dashboard
+  // Calculate statistics for supervisor dashboard with corrected logic
   const totalWorkshops = workshops.length;
   const totalSeats = workshops.reduce((sum, w) => sum + w.total_seats, 0);
-  const filledSeats = workshops.reduce((sum, w) => sum + (w.total_seats - w.available_seats), 0);
+  
+  // Use confirmed seats only for calculations
+  const confirmedSeats = workshops.reduce((sum, w) => sum + (w.total_seats - w.available_seats), 0);
+  
   const upcomingWorkshops = workshops.filter(w => w.date.includes('٢٠٢٥')).length;
 
   return (
@@ -52,9 +55,9 @@ const SupervisorDashboard = () => {
         />
         <StatisticsCard
           title="نسبة الحجز"
-          value={`${totalSeats > 0 ? Math.round((filledSeats / totalSeats) * 100) : 0}%`}
+          value={`${totalSeats > 0 ? Math.round((confirmedSeats / totalSeats) * 100) : 0}%`}
           icon={<Award className="h-4 w-4" />}
-          description={`${filledSeats} من ${totalSeats} مقعد`}
+          description={`${confirmedSeats} من ${totalSeats} مقعد`}
         />
         <StatisticsCard
           title="الورش القادمة"

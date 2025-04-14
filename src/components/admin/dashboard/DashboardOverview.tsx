@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronUp, Users, Calendar, DollarSign, BarChart2, Plus } from "lucide-react";
-import { Workshop } from "@/types/supabase";
+import { Workshop, WorkshopRegistration } from "@/types/supabase";
 import { Link } from "react-router-dom";
 
 interface DashboardOverviewProps {
@@ -18,10 +18,21 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
     return workshopDate >= currentDate;
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Calculate some basic stats
+  // Calculate some basic stats with corrected logic
   const totalWorkshops = workshops.length;
-  const totalParticipants = workshops.reduce((sum, workshop) => sum + (workshop.total_seats - workshop.available_seats), 0);
-  const totalRevenue = workshops.reduce((sum, workshop) => sum + (workshop.price * (workshop.total_seats - workshop.available_seats)), 0);
+  
+  // Calculate confirmed participants (those with 'paid' payment status)
+  const confirmedParticipants = workshops.reduce((sum, workshop) => {
+    const confirmedSeats = workshop.total_seats - workshop.available_seats;
+    return sum + confirmedSeats;
+  }, 0);
+  
+  // Calculate revenue only from confirmed payments (paid status)
+  const confirmedRevenue = workshops.reduce((sum, workshop) => {
+    // Only count revenue from confirmed seats
+    const confirmedSeats = workshop.total_seats - workshop.available_seats;
+    return sum + (workshop.price * confirmedSeats);
+  }, 0);
   
   // Get next 3 upcoming workshops
   const nextWorkshops = upcomingWorkshops.slice(0, 3);
@@ -57,7 +68,7 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalParticipants}</div>
+            <div className="text-2xl font-bold">{confirmedParticipants}</div>
             <p className="text-xs text-muted-foreground">
               مشارك في جميع الورش
             </p>
@@ -69,7 +80,7 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue} د.ك</div>
+            <div className="text-2xl font-bold">{confirmedRevenue} د.ك</div>
             <p className="text-xs text-muted-foreground">
               إجمالي الإيرادات من الورش
             </p>
@@ -135,7 +146,7 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
                       className="bg-wirashna-accent h-2.5 rounded-full"
                       style={{
                         width: `${workshops.length > 0 
-                          ? Math.floor((totalParticipants / (workshops.reduce((sum, w) => sum + w.total_seats, 0))) * 100) 
+                          ? Math.floor((confirmedParticipants / (workshops.reduce((sum, w) => sum + w.total_seats, 0))) * 100) 
                           : 0}%`
                       }}
                     ></div>
@@ -143,7 +154,7 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
                 </div>
                 <p className="text-lg font-bold">
                   {workshops.length > 0 
-                    ? Math.floor((totalParticipants / (workshops.reduce((sum, w) => sum + w.total_seats, 0))) * 100) 
+                    ? Math.floor((confirmedParticipants / (workshops.reduce((sum, w) => sum + w.total_seats, 0))) * 100) 
                     : 0}%
                 </p>
               </div>

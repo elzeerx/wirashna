@@ -9,7 +9,7 @@ import AdminWorkshopList from "@/components/admin/workshops/AdminWorkshopList";
 import SiteSettings from "@/components/admin/settings/SiteSettings";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import { WorkshopRegistrationsList } from "@/components/admin/workshops/registrations";
-import { Workshop } from "@/types/supabase";
+import { Workshop, WorkshopRegistration } from "@/types/supabase";
 import { fetchWorkshops } from "@/services/workshops";
 import { 
   Breadcrumb,
