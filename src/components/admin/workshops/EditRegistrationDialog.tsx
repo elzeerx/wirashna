@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { WorkshopRegistration } from "@/types/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface EditRegistrationDialogProps {
   isOpen: boolean;
@@ -23,10 +24,11 @@ const EditRegistrationDialog = ({
 }: EditRegistrationDialogProps) => {
   const [formData, setFormData] = useState<Partial<WorkshopRegistration>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   // Reset form data when dialog opens with new registration
-  const handleOpenChange = (open: boolean) => {
-    if (open && registration) {
+  useEffect(() => {
+    if (isOpen && registration) {
       setFormData({
         full_name: registration.full_name,
         email: registration.email,
@@ -37,8 +39,12 @@ const EditRegistrationDialog = ({
         payment_status: registration.payment_status
       });
     }
-    onOpenChange(open);
-  };
+    
+    // Reset submission state when dialog closes
+    if (!isOpen) {
+      setIsSubmitting(false);
+    }
+  }, [isOpen, registration]);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -46,6 +52,8 @@ const EditRegistrationDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     if (!registration || isSubmitting) return;
     
     setIsSubmitting(true);
@@ -54,6 +62,13 @@ const EditRegistrationDialog = ({
       if (success) {
         onOpenChange(false);
       }
+    } catch (error) {
+      console.error("Error submitting registration update:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث التسجيل. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -62,8 +77,8 @@ const EditRegistrationDialog = ({
   if (!registration) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>تعديل بيانات التسجيل</DialogTitle>
         </DialogHeader>

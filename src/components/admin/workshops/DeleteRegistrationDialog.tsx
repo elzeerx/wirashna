@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { WorkshopRegistration } from "@/types/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeleteRegistrationDialogProps {
   isOpen: boolean;
@@ -26,13 +27,31 @@ const DeleteRegistrationDialog = ({
   onDelete
 }: DeleteRegistrationDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
+  
+  // Reset state when dialog opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsDeleting(false);
+    }
+  }, [isOpen]);
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!registration || isDeleting) return;
     
     setIsDeleting(true);
     try {
       await onDelete();
+    } catch (error) {
+      console.error("Error deleting registration:", error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف التسجيل. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
     } finally {
       setIsDeleting(false);
     }

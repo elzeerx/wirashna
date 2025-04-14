@@ -39,6 +39,22 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
     resetFilters
   } = useRegistrationsList(workshopId);
 
+  // Memoize the event handlers
+  const handleTableEditRegistration = (registration) => (e) => {
+    e.stopPropagation();
+    handleEditRegistration(registration);
+  };
+
+  const handleTableDeleteRegistration = (registration) => (e) => {
+    e.stopPropagation();
+    handleDeleteRegistration(registration);
+  };
+
+  const handleTableResetRegistration = (registration) => (e) => {
+    e.stopPropagation();
+    handleResetRegistration(registration);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -89,9 +105,9 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
 
           <RegistrationsTable
             registrations={filteredRegistrations}
-            onEdit={handleEditRegistration}
-            onDelete={handleDeleteRegistration}
-            onReset={handleResetRegistration}
+            onEdit={handleTableEditRegistration}
+            onDelete={handleTableDeleteRegistration}
+            onReset={handleTableResetRegistration}
           />
         </div>
         
@@ -102,27 +118,33 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
         )}
       </CardContent>
       
-      {/* Dialogs */}
-      <EditRegistrationDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        registration={selectedRegistration}
-        onSubmit={(data) => selectedRegistration && handleUpdateRegistration(selectedRegistration.id, data)}
-      />
+      {/* Dialogs - Only render when needed */}
+      {isEditDialogOpen && (
+        <EditRegistrationDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          registration={selectedRegistration}
+          onSubmit={(data) => selectedRegistration && handleUpdateRegistration(selectedRegistration.id, data)}
+        />
+      )}
       
-      <DeleteRegistrationDialog
-        isOpen={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        registration={selectedRegistration}
-        onDelete={handleRemoveRegistration}
-      />
+      {isDeleteDialogOpen && (
+        <DeleteRegistrationDialog
+          isOpen={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          registration={selectedRegistration}
+          onDelete={handleRemoveRegistration}
+        />
+      )}
 
-      <ResetRegistrationDialog
-        isOpen={isResetDialogOpen}
-        onOpenChange={setIsResetDialogOpen}
-        registration={selectedRegistration}
-        onReset={handleResetConfirmation}
-      />
+      {isResetDialogOpen && (
+        <ResetRegistrationDialog
+          isOpen={isResetDialogOpen}
+          onOpenChange={setIsResetDialogOpen}
+          registration={selectedRegistration}
+          onReset={handleResetConfirmation}
+        />
+      )}
     </Card>
   );
 };

@@ -22,9 +22,9 @@ import RegistrationStatusBadge from "./RegistrationStatusBadge";
 
 interface RegistrationsTableProps {
   registrations: WorkshopRegistration[];
-  onEdit: (registration: WorkshopRegistration) => void;
-  onDelete: (registration: WorkshopRegistration) => void;
-  onReset: (registration: WorkshopRegistration) => void;
+  onEdit: (registration: WorkshopRegistration) => (e: React.MouseEvent) => void;
+  onDelete: (registration: WorkshopRegistration) => (e: React.MouseEvent) => void;
+  onReset: (registration: WorkshopRegistration) => (e: React.MouseEvent) => void;
 }
 
 const RegistrationsTable = ({ 
@@ -83,7 +83,7 @@ const RegistrationsTable = ({
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
                         <span className="sr-only">فتح القائمة</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -91,16 +91,16 @@ const RegistrationsTable = ({
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onEdit(registration)}>
+                      <DropdownMenuItem onClick={onEdit(registration)}>
                         <Edit className="ml-2 h-4 w-4" />
                         تعديل
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onReset(registration)}>
+                      <DropdownMenuItem onClick={onReset(registration)}>
                         <RotateCcw className="ml-2 h-4 w-4" />
                         إعادة ضبط التسجيل
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => onDelete(registration)}
+                        onClick={onDelete(registration)}
                         className="text-red-600"
                       >
                         <Trash2 className="ml-2 h-4 w-4" />
