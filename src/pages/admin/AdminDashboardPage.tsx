@@ -11,12 +11,21 @@ import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import { WorkshopRegistrationsList } from "@/components/admin/workshops/registrations";
 import { Workshop } from "@/types/supabase";
 import { fetchWorkshops } from "@/services/workshops";
+import { 
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage 
+} from "@/components/ui/breadcrumb";
 
 const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(null);
+  const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
@@ -42,6 +51,16 @@ const AdminDashboardPage = () => {
   }, [toast]);
 
   useEffect(() => {
+    // Find the selected workshop details when ID changes
+    if (selectedWorkshopId && workshops.length > 0) {
+      const workshop = workshops.find(w => w.id === selectedWorkshopId);
+      setSelectedWorkshop(workshop || null);
+    } else {
+      setSelectedWorkshop(null);
+    }
+  }, [selectedWorkshopId, workshops]);
+
+  useEffect(() => {
     // Redirect non-admin users
     if (!isAdmin && !isLoading) {
       navigate("/");
@@ -60,6 +79,11 @@ const AdminDashboardPage = () => {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
+  };
+
+  const clearSelectedWorkshop = () => {
+    setSelectedWorkshopId(null);
+    setSelectedWorkshop(null);
   };
 
   if (isLoading) {
@@ -95,11 +119,44 @@ const AdminDashboardPage = () => {
         
         <TabsContent value="registrations" className="mt-6">
           {selectedWorkshopId ? (
-            <WorkshopRegistrationsList workshopId={selectedWorkshopId} />
+            <>
+              <Breadcrumb className="mb-4">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink onClick={() => clearSelectedWorkshop()}>جميع الورش</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{selectedWorkshop?.title || "تسجيلات الورشة"}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+              <WorkshopRegistrationsList workshopId={selectedWorkshopId} />
+            </>
           ) : (
-            <p className="text-center py-8 text-gray-500">
-              الرجاء اختيار ورشة من قائمة الورش لعرض التسجيلات الخاصة بها
-            </p>
+            <div className="space-y-6">
+              <div className="bg-muted/50 p-6 rounded-lg text-center">
+                <h3 className="text-xl font-semibold mb-2">قائمة الورش</h3>
+                <p className="text-gray-500 mb-4">الرجاء اختيار ورشة من القائمة أدناه لعرض التسجيلات الخاصة بها</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {workshops.map(workshop => (
+                  <div 
+                    key={workshop.id}
+                    className="border rounded-lg p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+                    onClick={() => handleWorkshopSelect(workshop.id)}
+                  >
+                    <h4 className="font-medium mb-2">{workshop.title}</h4>
+                    <p className="text-sm text-gray-500 mb-2">{workshop.short_description}</p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span>التاريخ: {workshop.date}</span>
+                      <span className="text-muted-foreground">اضغط لعرض التسجيلات</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </TabsContent>
         
