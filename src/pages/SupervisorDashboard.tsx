@@ -38,7 +38,12 @@ const SupervisorDashboard = () => {
   // Use confirmed/paid seats only for calculations (which is what available_seats now tracks)
   const confirmedSeats = workshops.reduce((sum, w) => sum + (w.total_seats - w.available_seats), 0);
   
-  const upcomingWorkshops = workshops.filter(w => w.date.includes('٢٠٢٥')).length;
+  const upcomingWorkshops = workshops.filter(w => {
+    // Compare with current date to determine if workshop is upcoming
+    const workshopDate = new Date(w.date);
+    const currentDate = new Date();
+    return workshopDate >= currentDate;
+  }).length;
 
   return (
     <DashboardLayout title={`لوحة المشرف - ${userProfile?.full_name || ''}`} requireRole="supervisor">
