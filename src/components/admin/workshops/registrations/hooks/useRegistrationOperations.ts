@@ -1,5 +1,5 @@
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { WorkshopRegistration } from "@/types/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -14,20 +14,24 @@ export const useRegistrationOperations = (
   setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>
 ) => {
   const { toast } = useToast();
+  // Add a local operation state to prevent concurrent operations
+  const [isOperationInProgress, setIsOperationInProgress] = useState(false);
 
   const handleUpdateRegistration = useCallback(async (registrationId: string, data: Partial<WorkshopRegistration>) => {
-    if (!registrationId) return false;
+    if (!registrationId || isOperationInProgress) return false;
     
     try {
+      setIsOperationInProgress(true);
       setIsProcessing(true);
+      
       await updateRegistrationStatus(registrationId, data);
       
       // Update the local registrations list
-      const updatedRegistrations = registrations.map(reg => 
-        reg.id === registrationId ? { ...reg, ...data } : reg
+      setRegistrations(prevRegistrations => 
+        prevRegistrations.map(reg => 
+          reg.id === registrationId ? { ...reg, ...data } : reg
+        )
       );
-      
-      setRegistrations(updatedRegistrations as WorkshopRegistration[]);
       
       toast({
         title: "تم تحديث التسجيل بنجاح",
@@ -44,20 +48,24 @@ export const useRegistrationOperations = (
       });
       return false;
     } finally {
+      setIsOperationInProgress(false);
       setIsProcessing(false);
     }
-  }, [registrations, setRegistrations, setIsProcessing, toast]);
+  }, [setRegistrations, setIsProcessing, toast, isOperationInProgress]);
 
   const handleRemoveRegistration = useCallback(async (registrationId: string) => {
-    if (!registrationId) return false;
+    if (!registrationId || isOperationInProgress) return false;
     
     try {
+      setIsOperationInProgress(true);
       setIsProcessing(true);
+      
       await deleteRegistration(registrationId);
       
       // Update the local registrations list
-      const updatedRegistrations = registrations.filter(reg => reg.id !== registrationId);
-      setRegistrations(updatedRegistrations);
+      setRegistrations(prevRegistrations => 
+        prevRegistrations.filter(reg => reg.id !== registrationId)
+      );
       
       toast({
         title: "تم حذف التسجيل بنجاح",
@@ -74,28 +82,31 @@ export const useRegistrationOperations = (
       });
       return false;
     } finally {
+      setIsOperationInProgress(false);
       setIsProcessing(false);
     }
-  }, [registrations, setRegistrations, setIsProcessing, toast]);
+  }, [setRegistrations, setIsProcessing, toast, isOperationInProgress]);
 
   const handleResetConfirmation = useCallback(async (registrationId: string) => {
-    if (!registrationId) return false;
+    if (!registrationId || isOperationInProgress) return false;
     
     try {
+      setIsOperationInProgress(true);
       setIsProcessing(true);
+      
       await resetRegistration(registrationId);
       
       // Update the local registrations list with proper type casting
-      const updatedRegistrations = registrations.map(reg => 
-        reg.id === registrationId ? { 
-          ...reg, 
-          status: 'canceled' as const, 
-          payment_status: 'failed' as const,
-          admin_notes: 'Reset by admin to allow re-registration' 
-        } : reg
+      setRegistrations(prevRegistrations => 
+        prevRegistrations.map(reg => 
+          reg.id === registrationId ? { 
+            ...reg, 
+            status: 'canceled' as const, 
+            payment_status: 'failed' as const,
+            admin_notes: 'Reset by admin to allow re-registration' 
+          } : reg
+        )
       );
-      
-      setRegistrations(updatedRegistrations);
       
       toast({
         title: "تم إعادة ضبط التسجيل بنجاح",
@@ -112,9 +123,10 @@ export const useRegistrationOperations = (
       });
       return false;
     } finally {
+      setIsOperationInProgress(false);
       setIsProcessing(false);
     }
-  }, [registrations, setRegistrations, setIsProcessing, toast]);
+  }, [setRegistrations, setIsProcessing, toast, isOperationInProgress]);
 
   return {
     handleUpdateRegistration,

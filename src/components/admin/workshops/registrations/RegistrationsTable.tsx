@@ -19,15 +19,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { WorkshopRegistration } from "@/types/supabase";
 import RegistrationStatusBadge from "./RegistrationStatusBadge";
+import { memo } from "react";
 
 interface RegistrationsTableProps {
   registrations: WorkshopRegistration[];
-  onEdit: (registration: WorkshopRegistration) => (e: React.MouseEvent) => void;
-  onDelete: (registration: WorkshopRegistration) => (e: React.MouseEvent) => void;
-  onReset: (registration: WorkshopRegistration) => (e: React.MouseEvent) => void;
+  onEdit: (registration: WorkshopRegistration) => void;
+  onDelete: (registration: WorkshopRegistration) => void;
+  onReset: (registration: WorkshopRegistration) => void;
 }
 
-const RegistrationsTable = ({ 
+// Memoize the component to prevent unnecessary re-renders
+const RegistrationsTable = memo(({ 
   registrations, 
   onEdit, 
   onDelete,
@@ -44,6 +46,25 @@ const RegistrationsTable = ({
       hour: 'numeric',
       minute: 'numeric'
     }).format(date);
+  };
+
+  // Create handlers that don't require closure creation in the render loop
+  const handleEdit = (registration: WorkshopRegistration) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEdit(registration);
+  };
+
+  const handleDelete = (registration: WorkshopRegistration) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDelete(registration);
+  };
+
+  const handleReset = (registration: WorkshopRegistration) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onReset(registration);
   };
 
   return (
@@ -83,7 +104,11 @@ const RegistrationsTable = ({
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0" onClick={(e) => e.stopPropagation()}>
+                      <Button 
+                        variant="ghost" 
+                        className="h-8 w-8 p-0" 
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <span className="sr-only">فتح القائمة</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -91,16 +116,16 @@ const RegistrationsTable = ({
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={onEdit(registration)}>
+                      <DropdownMenuItem onClick={handleEdit(registration)}>
                         <Edit className="ml-2 h-4 w-4" />
                         تعديل
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={onReset(registration)}>
+                      <DropdownMenuItem onClick={handleReset(registration)}>
                         <RotateCcw className="ml-2 h-4 w-4" />
                         إعادة ضبط التسجيل
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={onDelete(registration)}
+                        onClick={handleDelete(registration)}
                         className="text-red-600"
                       >
                         <Trash2 className="ml-2 h-4 w-4" />
@@ -116,6 +141,8 @@ const RegistrationsTable = ({
       </Table>
     </div>
   );
-};
+});
+
+RegistrationsTable.displayName = 'RegistrationsTable';
 
 export default RegistrationsTable;

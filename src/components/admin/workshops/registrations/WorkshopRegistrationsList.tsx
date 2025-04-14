@@ -7,7 +7,7 @@ import RegistrationFilters from "./RegistrationFilters";
 import RegistrationsTable from "./RegistrationsTable";
 import ResetRegistrationDialog from "./ResetRegistrationDialog";
 import { useRegistrationsList } from "./hooks/useRegistrationsList";
-import { useCallback } from "react";
+import { Suspense, useCallback } from "react";
 
 interface WorkshopRegistrationsListProps {
   workshopId: string;
@@ -40,19 +40,16 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
     resetFilters
   } = useRegistrationsList(workshopId);
 
-  // Memoize the event handlers with useCallback
-  const handleTableEditRegistration = useCallback((registration) => (e) => {
-    e.stopPropagation();
+  // Memoize the event handlers with useCallback for better performance
+  const handleTableEditRegistration = useCallback((registration) => {
     handleEditRegistration(registration);
   }, [handleEditRegistration]);
 
-  const handleTableDeleteRegistration = useCallback((registration) => (e) => {
-    e.stopPropagation();
+  const handleTableDeleteRegistration = useCallback((registration) => {
     handleDeleteRegistration(registration);
   }, [handleDeleteRegistration]);
 
-  const handleTableResetRegistration = useCallback((registration) => (e) => {
-    e.stopPropagation();
+  const handleTableResetRegistration = useCallback((registration) => {
     handleResetRegistration(registration);
   }, [handleResetRegistration]);
 
@@ -104,12 +101,14 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
             resetFilters={resetFilters}
           />
 
-          <RegistrationsTable
-            registrations={filteredRegistrations}
-            onEdit={handleTableEditRegistration}
-            onDelete={handleTableDeleteRegistration}
-            onReset={handleTableResetRegistration}
-          />
+          <Suspense fallback={<div className="flex justify-center py-8"><div className="wirashna-loader"></div></div>}>
+            <RegistrationsTable
+              registrations={filteredRegistrations}
+              onEdit={handleTableEditRegistration}
+              onDelete={handleTableDeleteRegistration}
+              onReset={handleTableResetRegistration}
+            />
+          </Suspense>
         </div>
         
         {isProcessing && (
