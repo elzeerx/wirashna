@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { registerForWorkshop } from "@/services/workshops";
+import { registerForWorkshop, recalculateWorkshopSeats, cleanupFailedRegistrations } from "@/services/workshops";
 import { createTapPayment } from "@/services/payment";
 import { UserFormData } from "../UserDetailsForm";
 
@@ -37,6 +37,16 @@ export const useRegistrationSubmit = ({
 
     try {
       console.log("Starting registration process for workshop:", workshopId, "User:", user.id, "Is retry:", isRetry);
+      
+      // If it's not a retry, first cleanup any failed registrations
+      if (!isRetry) {
+        try {
+          await cleanupFailedRegistrations(workshopId);
+        } catch (cleanupError) {
+          // Log but continue if cleanup fails
+          console.error("Failed to cleanup registrations, but continuing:", cleanupError);
+        }
+      }
       
       // Register for the workshop first (or update existing registration if it's a retry)
       let registration;
@@ -92,6 +102,14 @@ export const useRegistrationSubmit = ({
             return;
           } else {
             console.error("Payment creation failed:", paymentResult.error);
+            
+            // Attempt to recalculate seats
+            try {
+              await recalculateWorkshopSeats(workshopId);
+            } catch (recalcError) {
+              console.error("Failed to recalculate seats:", recalcError);
+            }
+            
             toast({
               title: "خطأ في معالجة الدفع",
               description: paymentResult.error || "حدث خطأ أثناء إنشاء عملية الدفع",
@@ -100,6 +118,14 @@ export const useRegistrationSubmit = ({
           }
         } catch (paymentError: any) {
           console.error("Payment processing error:", paymentError);
+          
+          // Attempt to recalculate seats
+          try {
+            await recalculateWorkshopSeats(workshopId);
+          } catch (recalcError) {
+            console.error("Failed to recalculate seats:", recalcError);
+          }
+          
           toast({
             title: "خطأ في معالجة الدفع",
             description: paymentError.message || "حدث خطأ أثناء معالجة عملية الدفع",
@@ -120,6 +146,15 @@ export const useRegistrationSubmit = ({
       }
     } catch (error: any) {
       console.error("Registration error:", error);
+      
+      // Try to recalculate seats in case of error
+      if (workshopId) {
+        try {
+          await recalculateWorkshopSeats(workshopId);
+        } catch (recalcError) {
+          console.error("Failed to recalculate seats:", recalcError);
+        }
+      }
       
       // If it's a DuplicateRegistrationError, show a specific message
       if (error.name === "DuplicateRegistrationError") {

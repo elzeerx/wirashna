@@ -48,8 +48,8 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     }
     
     // If there's an existing registration in a completed state, throw a duplicate error
-    if (existingRegistration) {
-      console.log("Found existing registration with payment status:", existingRegistration.payment_status);
+    if (existingRegistration && existingRegistration.payment_status === 'paid') {
+      console.log("Found existing paid registration with payment status:", existingRegistration.payment_status);
       const duplicateError = new Error("لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى");
       duplicateError.name = "DuplicateRegistrationError";
       throw duplicateError;
@@ -172,6 +172,100 @@ export const deleteRegistration = async (registrationId: string): Promise<void> 
 
   if (error) {
     console.error(`Error deleting registration ${registrationId}:`, error);
+    throw error;
+  }
+};
+
+export const cleanupFailedRegistrations = async (workshopId: string): Promise<void> => {
+  try {
+    // Get all registrations for this workshop with failed or processing payment status
+    const { data: failedRegistrations, error: fetchError } = await supabase
+      .from('workshop_registrations')
+      .select('id')
+      .eq('workshop_id', workshopId)
+      .in('payment_status', ['failed', 'processing'])
+      .eq('status', 'pending');
+    
+    if (fetchError) {
+      console.error(`Error fetching failed registrations for workshop ${workshopId}:`, fetchError);
+      throw fetchError;
+    }
+    
+    if (failedRegistrations && failedRegistrations.length > 0) {
+      console.log(`Found ${failedRegistrations.length} failed registrations to cleanup`);
+      
+      // Update all failed registrations to canceled status
+      const registrationIds = failedRegistrations.map(reg => reg.id);
+      const { error: updateError } = await supabase
+        .from('workshop_registrations')
+        .update({ 
+          status: 'canceled',
+          updated_at: new Date().toISOString()
+        })
+        .in('id', registrationIds);
+      
+      if (updateError) {
+        console.error(`Error updating failed registrations:`, updateError);
+        throw updateError;
+      }
+      
+      console.log(`Successfully cleaned up ${failedRegistrations.length} failed registrations`);
+    } else {
+      console.log(`No failed registrations found for workshop ${workshopId}`);
+    }
+  } catch (error) {
+    console.error(`Error cleaning up failed registrations:`, error);
+    throw error;
+  }
+};
+
+export const recalculateWorkshopSeats = async (workshopId: string): Promise<void> => {
+  try {
+    // Get workshop details
+    const { data: workshop, error: workshopError } = await supabase
+      .from('workshops')
+      .select('total_seats')
+      .eq('id', workshopId)
+      .single();
+    
+    if (workshopError) {
+      console.error(`Error fetching workshop ${workshopId}:`, workshopError);
+      throw workshopError;
+    }
+    
+    // Count confirmed registrations
+    const { count, error: countError } = await supabase
+      .from('workshop_registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('workshop_id', workshopId)
+      .eq('status', 'confirmed')
+      .eq('payment_status', 'paid');
+    
+    if (countError) {
+      console.error(`Error counting confirmed registrations:`, countError);
+      throw countError;
+    }
+    
+    const totalSeats = workshop.total_seats;
+    const confirmedRegistrations = count || 0;
+    const availableSeats = Math.max(0, totalSeats - confirmedRegistrations);
+    
+    console.log(`Workshop ${workshopId}: Total seats ${totalSeats}, Confirmed registrations ${confirmedRegistrations}, Available seats ${availableSeats}`);
+    
+    // Update workshop available seats
+    const { error: updateError } = await supabase
+      .from('workshops')
+      .update({ available_seats: availableSeats })
+      .eq('id', workshopId);
+    
+    if (updateError) {
+      console.error(`Error updating workshop available seats:`, updateError);
+      throw updateError;
+    }
+    
+    console.log(`Successfully recalculated available seats for workshop ${workshopId}`);
+  } catch (error) {
+    console.error(`Error recalculating workshop seats:`, error);
     throw error;
   }
 };

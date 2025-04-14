@@ -1,111 +1,112 @@
 
+import { Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { HelmetProvider } from "react-helmet-async";
+import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Index from "./pages/Index";
-import About from "./pages/About";
-import Workshops from "./pages/Workshops";
-import WorkshopDetail from "./pages/WorkshopDetail";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsConditions from "./pages/TermsConditions";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import CreateWorkshopPage from "./pages/admin/CreateWorkshopPage";
-import WorkshopRegistration from "./pages/WorkshopRegistration";
-import PaymentCallback from "./pages/PaymentCallback";
-import SubscriberDashboard from "./pages/SubscriberDashboard";
-import SubscriberWorkshops from "./pages/SubscriberWorkshops";
-import SubscriberCertificates from "./pages/SubscriberCertificates";
-import SubscriberMaterials from "./pages/SubscriberMaterials";
-import SupervisorDashboard from "./pages/SupervisorDashboard";
-import AdminUserManagement from "./pages/AdminUserManagement";
-import DynamicPage from "./pages/DynamicPage";
+import LoadingPage from "@/components/LoadingPage";
 
-const queryClient = new QueryClient();
+// Home and public routes
+const HomePage = lazy(() => import("@/pages/HomePage"));
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
+const WorkshopsPage = lazy(() => import("@/pages/WorkshopsPage"));
+const WorkshopDetailsPage = lazy(() => import("@/pages/WorkshopDetailsPage"));
+const WorkshopRegistration = lazy(() => import("@/pages/WorkshopRegistration"));
+const PaymentCallback = lazy(() => import("@/pages/PaymentCallback"));
+const AboutPage = lazy(() => import("@/pages/AboutPage"));
+const ContactPage = lazy(() => import("@/pages/ContactPage"));
+const PageNotFound = lazy(() => import("@/pages/PageNotFound"));
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <HelmetProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/workshops" element={<Workshops />} />
-              <Route path="/workshops/:id" element={<WorkshopDetail />} />
-              <Route path="/workshop-registration" element={<WorkshopRegistration />} />
-              <Route path="/payment/callback" element={<PaymentCallback />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-conditions" element={<TermsConditions />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboardPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/workshops/create" element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <CreateWorkshopPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/users" element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminUserManagement />
-                </ProtectedRoute>
-              } />
-              
-              {/* Supervisor Routes */}
-              <Route path="/supervisor" element={
-                <ProtectedRoute allowedRoles={['supervisor']}>
-                  <SupervisorDashboard />
-                </ProtectedRoute>
-              } />
-              
-              {/* Subscriber Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute allowedRoles={['subscriber']}>
-                  <SubscriberDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard/workshops" element={
-                <ProtectedRoute allowedRoles={['subscriber']}>
-                  <SubscriberWorkshops />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard/certificates" element={
-                <ProtectedRoute allowedRoles={['subscriber']}>
-                  <SubscriberCertificates />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard/materials" element={
-                <ProtectedRoute allowedRoles={['subscriber']}>
-                  <SubscriberMaterials />
-                </ProtectedRoute>
-              } />
-              
-              {/* Dynamic Pages */}
-              <Route path="/:path" element={<DynamicPage />} />
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </HelmetProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+// Admin routes
+const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const CreateWorkshopPage = lazy(() => import("@/pages/admin/CreateWorkshopPage"));
+const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
+const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
+
+// User dashboard
+const SubscriberDashboard = lazy(() => import("@/pages/SubscriberDashboard"));
+const SupervisorDashboard = lazy(() => import("@/pages/SupervisorDashboard"));
+
+function App() {
+  const { isAdmin, isSupervisor } = useAuth();
+
+  return (
+    <>
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/workshops" element={<WorkshopsPage />} />
+          <Route path="/workshops/:id" element={<WorkshopDetailsPage />} />
+          <Route path="/workshop-registration" element={<WorkshopRegistration />} />
+          <Route path="/payment/callback" element={<PaymentCallback />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          
+          {/* Admin routes */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute condition={isAdmin}>
+                <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/workshops/create" 
+            element={
+              <ProtectedRoute condition={isAdmin}>
+                <CreateWorkshopPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/workshops/edit/:id" 
+            element={
+              <ProtectedRoute condition={isAdmin}>
+                <EditWorkshopPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/system-repair" 
+            element={
+              <ProtectedRoute condition={isAdmin}>
+                <SystemRepairPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* User dashboard routes */}
+          <Route 
+            path="/supervisor" 
+            element={
+              <ProtectedRoute condition={isSupervisor || isAdmin}>
+                <SupervisorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                {isAdmin ? <Navigate to="/admin" replace /> : 
+                 isSupervisor ? <Navigate to="/supervisor" replace /> : 
+                 <SubscriberDashboard />}
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Fallback route */}
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </Suspense>
+      <Toaster />
+    </>
+  );
+}
 
 export default App;
