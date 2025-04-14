@@ -5,9 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 type ProtectedRouteProps = {
   children: React.ReactNode;
   allowedRoles?: ('admin' | 'supervisor' | 'subscriber')[];
+  condition?: boolean; // Added condition prop
 };
 
-const ProtectedRoute = ({ children, allowedRoles = [] }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, allowedRoles = [], condition }: ProtectedRouteProps) => {
   const { user, isLoading, userRole } = useAuth();
   const location = useLocation();
 
@@ -18,6 +19,18 @@ const ProtectedRoute = ({ children, allowedRoles = [] }: ProtectedRouteProps) =>
         <div className="wirashna-loader"></div>
       </div>
     );
+  }
+
+  // Check condition prop if provided
+  if (condition !== undefined && !condition) {
+    // Redirect to appropriate route based on user role
+    if (userRole === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (userRole === 'supervisor') {
+      return <Navigate to="/supervisor" replace />;
+    } else {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   if (!user) {

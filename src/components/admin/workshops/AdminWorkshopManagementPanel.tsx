@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import WorkshopForm from "@/components/workshop/WorkshopForm";
+import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
 import { useWorkshopOperations } from "@/hooks/useWorkshopOperations";
 import { Workshop } from "@/types/supabase";
 import { WorkshopRegistrationsList } from "./registrations";
@@ -40,7 +40,7 @@ const AdminWorkshopManagementPanel = ({
       </TabsList>
 
       <TabsContent value="details" className="mt-4 space-y-4">
-        <WorkshopForm
+        <AdminWorkshopForm
           initialData={workshop}
           onSubmit={handleWorkshopUpdate}
           showCancelButton

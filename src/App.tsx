@@ -4,19 +4,19 @@ import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import LoadingPage from "@/components/LoadingPage";
+import LoadingPage from "@/pages/LoadingPage";
 
 // Home and public routes
-const HomePage = lazy(() => import("@/pages/HomePage"));
-const LoginPage = lazy(() => import("@/pages/LoginPage"));
-const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
-const WorkshopsPage = lazy(() => import("@/pages/WorkshopsPage"));
-const WorkshopDetailsPage = lazy(() => import("@/pages/WorkshopDetailsPage"));
+const HomePage = lazy(() => import("@/pages/Index"));
+const LoginPage = lazy(() => import("@/pages/Login"));
+const RegisterPage = lazy(() => import("@/pages/Register"));
+const WorkshopsPage = lazy(() => import("@/pages/Workshops"));
+const WorkshopDetailsPage = lazy(() => import("@/pages/WorkshopDetail"));
 const WorkshopRegistration = lazy(() => import("@/pages/WorkshopRegistration"));
 const PaymentCallback = lazy(() => import("@/pages/PaymentCallback"));
-const AboutPage = lazy(() => import("@/pages/AboutPage"));
-const ContactPage = lazy(() => import("@/pages/ContactPage"));
-const PageNotFound = lazy(() => import("@/pages/PageNotFound"));
+const AboutPage = lazy(() => import("@/pages/About"));
+const ContactPage = lazy(() => import("@/pages/Contact"));
+const PageNotFound = lazy(() => import("@/pages/NotFound"));
 
 // Admin routes
 const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
