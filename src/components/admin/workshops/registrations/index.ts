@@ -5,4 +5,3 @@ export { default as RegistrationFilters } from './RegistrationFilters';
 export { default as RegistrationsTable } from './RegistrationsTable';
 export { default as ResetRegistrationDialog } from './ResetRegistrationDialog';
 export { useRegistrationsList } from './hooks/useRegistrationsList';
-

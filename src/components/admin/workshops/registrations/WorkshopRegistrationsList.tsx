@@ -7,6 +7,7 @@ import RegistrationFilters from "./RegistrationFilters";
 import RegistrationsTable from "./RegistrationsTable";
 import ResetRegistrationDialog from "./ResetRegistrationDialog";
 import { useRegistrationsList } from "./hooks/useRegistrationsList";
+import { useCallback } from "react";
 
 interface WorkshopRegistrationsListProps {
   workshopId: string;
@@ -39,21 +40,21 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
     resetFilters
   } = useRegistrationsList(workshopId);
 
-  // Memoize the event handlers
-  const handleTableEditRegistration = (registration) => (e) => {
+  // Memoize the event handlers with useCallback
+  const handleTableEditRegistration = useCallback((registration) => (e) => {
     e.stopPropagation();
     handleEditRegistration(registration);
-  };
+  }, [handleEditRegistration]);
 
-  const handleTableDeleteRegistration = (registration) => (e) => {
+  const handleTableDeleteRegistration = useCallback((registration) => (e) => {
     e.stopPropagation();
     handleDeleteRegistration(registration);
-  };
+  }, [handleDeleteRegistration]);
 
-  const handleTableResetRegistration = (registration) => (e) => {
+  const handleTableResetRegistration = useCallback((registration) => (e) => {
     e.stopPropagation();
     handleResetRegistration(registration);
-  };
+  }, [handleResetRegistration]);
 
   if (isLoading) {
     return (
@@ -124,7 +125,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
           isOpen={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           registration={selectedRegistration}
-          onSubmit={(data) => selectedRegistration && handleUpdateRegistration(selectedRegistration.id, data)}
+          onSubmit={handleUpdateRegistration}
         />
       )}
       
