@@ -13,6 +13,7 @@ export const useRegistrationsList = (workshopId: string) => {
   const [registrations, setRegistrations] = useState<WorkshopRegistration[]>([]);
   const [filteredRegistrations, setFilteredRegistrations] = useState<WorkshopRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,22 +75,28 @@ export const useRegistrationsList = (workshopId: string) => {
   }, [registrations, statusFilter, paymentStatusFilter, searchQuery]);
 
   const handleEditRegistration = (registration: WorkshopRegistration) => {
+    if (isProcessing) return;
     setSelectedRegistration(registration);
     setIsEditDialogOpen(true);
   };
 
   const handleDeleteRegistration = (registration: WorkshopRegistration) => {
+    if (isProcessing) return;
     setSelectedRegistration(registration);
     setIsDeleteDialogOpen(true);
   };
 
   const handleResetRegistration = (registration: WorkshopRegistration) => {
+    if (isProcessing) return;
     setSelectedRegistration(registration);
     setIsResetDialogOpen(true);
   };
 
   const handleUpdateRegistration = async (registrationId: string, data: Partial<WorkshopRegistration>) => {
+    if (isProcessing) return false;
+    
     try {
+      setIsProcessing(true);
       await updateRegistrationStatus(registrationId, data);
       
       // Update the local registrations list
@@ -113,13 +120,16 @@ export const useRegistrationsList = (workshopId: string) => {
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const handleRemoveRegistration = async () => {
-    if (!selectedRegistration) return false;
+    if (!selectedRegistration || isProcessing) return false;
     
     try {
+      setIsProcessing(true);
       await deleteRegistration(selectedRegistration.id);
       
       // Update the local registrations list
@@ -140,13 +150,17 @@ export const useRegistrationsList = (workshopId: string) => {
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsProcessing(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
   const handleResetConfirmation = async () => {
-    if (!selectedRegistration) return false;
+    if (!selectedRegistration || isProcessing) return false;
     
     try {
+      setIsProcessing(true);
       await resetRegistration(selectedRegistration.id);
       
       // Update the local registrations list with proper type casting
@@ -175,6 +189,9 @@ export const useRegistrationsList = (workshopId: string) => {
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsProcessing(false);
+      setIsResetDialogOpen(false);
     }
   };
 
@@ -188,6 +205,7 @@ export const useRegistrationsList = (workshopId: string) => {
     registrations,
     filteredRegistrations,
     isLoading,
+    isProcessing,
     statusFilter,
     setStatusFilter,
     paymentStatusFilter,

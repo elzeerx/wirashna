@@ -37,6 +37,9 @@ const ResetRegistrationDialog = ({
         onOpenChange(false);
       }
       return success;
+    } catch (error) {
+      console.error("Error in reset confirmation:", error);
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +60,10 @@ const ResetRegistrationDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>إلغاء</AlertDialogCancel>
           <AlertDialogAction 
-            onClick={handleResetConfirmation}
+            onClick={(e) => {
+              e.preventDefault();
+              handleResetConfirmation();
+            }}
             disabled={isSubmitting}
           >
             {isSubmitting ? "جاري إعادة الضبط..." : "تأكيد"}

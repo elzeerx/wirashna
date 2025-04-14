@@ -16,6 +16,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
   const {
     filteredRegistrations,
     isLoading,
+    isProcessing,
     statusFilter,
     setStatusFilter,
     paymentStatusFilter,
@@ -63,6 +64,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
               variant="outline"
               size="sm"
               onClick={resetFilters}
+              disabled={isProcessing}
             >
               إعادة ضبط الفلتر
             </Button>
@@ -74,7 +76,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-4">
+        <div className={`space-y-4 ${isProcessing ? 'opacity-70 pointer-events-none' : ''}`}>
           <RegistrationFilters
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -92,6 +94,12 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
             onReset={handleResetRegistration}
           />
         </div>
+        
+        {isProcessing && (
+          <div className="fixed inset-0 bg-background/20 flex items-center justify-center z-50">
+            <div className="wirashna-loader"></div>
+          </div>
+        )}
       </CardContent>
       
       {/* Dialogs */}
