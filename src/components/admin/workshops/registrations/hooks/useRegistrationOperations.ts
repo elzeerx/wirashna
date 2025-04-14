@@ -1,42 +1,35 @@
 
-import { useCallback, useState } from "react";
-import { WorkshopRegistration } from "@/types/supabase";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { WorkshopRegistration } from "@/types/supabase";
 import { 
-  updateRegistrationStatus, 
-  deleteRegistration, 
+  updateRegistrationStatus,
+  deleteRegistration,
   resetRegistration 
 } from "@/services/workshops";
 
 export const useRegistrationOperations = (
-  registrations: WorkshopRegistration[],
-  setRegistrations: React.Dispatch<React.SetStateAction<WorkshopRegistration[]>>,
-  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>
+  onRegistrationsUpdated: (updatedRegistration: WorkshopRegistration | null, action: 'update' | 'delete' | 'reset') => void
 ) => {
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
-  // Add a local operation state to prevent concurrent operations
-  const [isOperationInProgress, setIsOperationInProgress] = useState(false);
 
-  const handleUpdateRegistration = useCallback(async (registrationId: string, data: Partial<WorkshopRegistration>) => {
-    if (!registrationId || isOperationInProgress) return false;
-    
+  const handleUpdateRegistration = async (registrationId: string, data: Partial<WorkshopRegistration>) => {
     try {
-      setIsOperationInProgress(true);
       setIsProcessing(true);
       
-      await updateRegistrationStatus(registrationId, data);
+      // Log what's happening for debugging
+      console.log("Updating registration:", registrationId, "with data:", data);
       
-      // Update the local registrations list
-      setRegistrations(prevRegistrations => 
-        prevRegistrations.map(reg => 
-          reg.id === registrationId ? { ...reg, ...data } : reg
-        )
-      );
+      const updatedRegistration = await updateRegistrationStatus(registrationId, data);
       
       toast({
         title: "تم تحديث التسجيل بنجاح",
         description: "تم تحديث بيانات التسجيل بنجاح",
       });
+      
+      // Pass the updated registration back to the parent component
+      onRegistrationsUpdated(updatedRegistration, 'update');
       
       return true;
     } catch (error) {
@@ -48,29 +41,26 @@ export const useRegistrationOperations = (
       });
       return false;
     } finally {
-      setIsOperationInProgress(false);
       setIsProcessing(false);
     }
-  }, [setRegistrations, setIsProcessing, toast, isOperationInProgress]);
+  };
 
-  const handleRemoveRegistration = useCallback(async (registrationId: string) => {
-    if (!registrationId || isOperationInProgress) return false;
-    
+  const handleRemoveRegistration = async (registrationId: string) => {
     try {
-      setIsOperationInProgress(true);
       setIsProcessing(true);
       
-      await deleteRegistration(registrationId);
+      // Log what's happening for debugging
+      console.log("Deleting registration:", registrationId);
       
-      // Update the local registrations list
-      setRegistrations(prevRegistrations => 
-        prevRegistrations.filter(reg => reg.id !== registrationId)
-      );
+      await deleteRegistration(registrationId);
       
       toast({
         title: "تم حذف التسجيل بنجاح",
         description: "تم حذف التسجيل من قاعدة البيانات",
       });
+      
+      // Notify parent that a registration was deleted
+      onRegistrationsUpdated(null, 'delete');
       
       return true;
     } catch (error) {
@@ -82,36 +72,26 @@ export const useRegistrationOperations = (
       });
       return false;
     } finally {
-      setIsOperationInProgress(false);
       setIsProcessing(false);
     }
-  }, [setRegistrations, setIsProcessing, toast, isOperationInProgress]);
+  };
 
-  const handleResetConfirmation = useCallback(async (registrationId: string) => {
-    if (!registrationId || isOperationInProgress) return false;
-    
+  const handleResetRegistration = async (registrationId: string) => {
     try {
-      setIsOperationInProgress(true);
       setIsProcessing(true);
+      
+      // Log what's happening for debugging
+      console.log("Resetting registration:", registrationId);
       
       await resetRegistration(registrationId);
       
-      // Update the local registrations list with proper type casting
-      setRegistrations(prevRegistrations => 
-        prevRegistrations.map(reg => 
-          reg.id === registrationId ? { 
-            ...reg, 
-            status: 'canceled' as const, 
-            payment_status: 'failed' as const,
-            admin_notes: 'Reset by admin to allow re-registration' 
-          } : reg
-        )
-      );
-      
       toast({
         title: "تم إعادة ضبط التسجيل بنجاح",
-        description: "يمكن للمستخدم الآن التسجيل في الورشة مرة أخرى",
+        description: "تم إعادة ضبط التسجيل للسماح بإعادة التسجيل",
       });
+      
+      // Notify parent that a registration was reset
+      onRegistrationsUpdated(null, 'reset');
       
       return true;
     } catch (error) {
@@ -123,14 +103,14 @@ export const useRegistrationOperations = (
       });
       return false;
     } finally {
-      setIsOperationInProgress(false);
       setIsProcessing(false);
     }
-  }, [setRegistrations, setIsProcessing, toast, isOperationInProgress]);
+  };
 
   return {
+    isProcessing,
     handleUpdateRegistration,
     handleRemoveRegistration,
-    handleResetConfirmation
+    handleResetRegistration
   };
 };

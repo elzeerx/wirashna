@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchWorkshops } from "@/services/workshopService";
+import { fetchWorkshops } from "@/services/workshops";
 import { Workshop } from "@/types/supabase";
 
 const SupervisorDashboard = () => {
@@ -31,11 +31,11 @@ const SupervisorDashboard = () => {
     loadData();
   }, []);
 
-  // Calculate statistics for supervisor dashboard with corrected logic
+  // Calculate statistics for supervisor dashboard using correct seat accounting
   const totalWorkshops = workshops.length;
   const totalSeats = workshops.reduce((sum, w) => sum + w.total_seats, 0);
   
-  // Use confirmed seats only for calculations
+  // Use confirmed/paid seats only for calculations (which is what available_seats now tracks)
   const confirmedSeats = workshops.reduce((sum, w) => sum + (w.total_seats - w.available_seats), 0);
   
   const upcomingWorkshops = workshops.filter(w => w.date.includes('٢٠٢٥')).length;

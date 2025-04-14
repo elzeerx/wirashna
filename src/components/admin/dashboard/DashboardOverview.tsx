@@ -18,18 +18,20 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
     return workshopDate >= currentDate;
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Calculate some basic stats with corrected logic
+  // Calculate some basic stats
   const totalWorkshops = workshops.length;
   
-  // Calculate confirmed participants (those with 'paid' payment status)
+  // Calculate confirmed participants (those with 'confirmed' status AND 'paid' payment status)
+  // This matches our database logic now
   const confirmedParticipants = workshops.reduce((sum, workshop) => {
+    // Only count confirmed and paid registrations
     const confirmedSeats = workshop.total_seats - workshop.available_seats;
     return sum + confirmedSeats;
   }, 0);
   
-  // Calculate revenue only from confirmed payments (paid status)
+  // Calculate revenue only from confirmed and paid registrations
   const confirmedRevenue = workshops.reduce((sum, workshop) => {
-    // Only count revenue from confirmed seats
+    // Only count revenue from confirmed and paid registrations
     const confirmedSeats = workshop.total_seats - workshop.available_seats;
     return sum + (workshop.price * confirmedSeats);
   }, 0);
