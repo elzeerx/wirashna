@@ -16,9 +16,13 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
       throw checkError;
     }
 
-    // If there's an existing registration with a failed or unpaid payment, update it
-    if (existingRegistration && ['failed', 'unpaid', 'processing'].includes(existingRegistration.payment_status)) {
-      console.log("Updating existing registration with status:", existingRegistration.payment_status);
+    // If there's an existing registration with a failed or unpaid payment status,
+    // or the registration was canceled, update it to allow re-registration
+    if (existingRegistration && 
+        (existingRegistration.status === 'canceled' || 
+         ['failed', 'unpaid', 'processing'].includes(existingRegistration.payment_status))) {
+      console.log("Updating existing registration with status:", existingRegistration.status, 
+                 "payment status:", existingRegistration.payment_status);
       
       const { data, error } = await supabase
         .from('workshop_registrations')
@@ -141,6 +145,23 @@ export const updateRegistrationStatus = async (registrationId: string, updates: 
   }
 
   return data as WorkshopRegistration;
+};
+
+export const resetRegistration = async (registrationId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('workshop_registrations')
+    .update({ 
+      status: 'canceled', 
+      payment_status: 'failed',
+      updated_at: new Date().toISOString(),
+      admin_notes: 'Reset by admin to allow re-registration'
+    })
+    .eq('id', registrationId);
+
+  if (error) {
+    console.error(`Error resetting registration ${registrationId}:`, error);
+    throw error;
+  }
 };
 
 export const deleteRegistration = async (registrationId: string): Promise<void> => {

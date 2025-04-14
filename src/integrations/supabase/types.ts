@@ -82,7 +82,15 @@ export type Database = {
           user_id?: string | null
           workshop_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_payment_logs_workshop"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "workshops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_settings: {
         Row: {

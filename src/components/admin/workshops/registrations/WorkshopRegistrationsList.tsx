@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { WorkshopRegistration } from "@/types/supabase";
-import { fetchWorkshopRegistrations, updateRegistrationStatus, deleteRegistration } from "@/services/workshops";
+import { fetchWorkshopRegistrations, updateRegistrationStatus, deleteRegistration, resetRegistration } from "@/services/workshops";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import EditRegistrationDialog from "../EditRegistrationDialog";
 import DeleteRegistrationDialog from "../DeleteRegistrationDialog";
@@ -24,6 +25,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
   const [selectedRegistration, setSelectedRegistration] = useState<WorkshopRegistration | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,6 +89,11 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
     setIsDeleteDialogOpen(true);
   };
 
+  const handleResetRegistration = (registration: WorkshopRegistration) => {
+    setSelectedRegistration(registration);
+    setIsResetDialogOpen(true);
+  };
+
   const handleUpdateRegistration = async (registrationId: string, data: Partial<WorkshopRegistration>) => {
     try {
       await updateRegistrationStatus(registrationId, data);
@@ -138,6 +145,42 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
       toast({
         title: "خطأ في حذف التسجيل",
         description: "حدث خطأ أثناء حذف التسجيل. الرجاء المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const handleResetConfirmation = async () => {
+    if (!selectedRegistration) return false;
+    
+    try {
+      await resetRegistration(selectedRegistration.id);
+      
+      // Update the local registrations list
+      const updatedRegistrations = registrations.map(reg => 
+        reg.id === selectedRegistration.id ? { 
+          ...reg, 
+          status: 'canceled', 
+          payment_status: 'failed',
+          admin_notes: 'Reset by admin to allow re-registration' 
+        } : reg
+      );
+      
+      setRegistrations(updatedRegistrations);
+      
+      toast({
+        title: "تم إعادة ضبط التسجيل بنجاح",
+        description: "يمكن للمستخدم الآن التسجيل في الورشة مرة أخرى",
+      });
+      
+      setIsResetDialogOpen(false);
+      return true;
+    } catch (error) {
+      console.error("Error resetting registration:", error);
+      toast({
+        title: "خطأ في إعادة ضبط التسجيل",
+        description: "حدث خطأ أثناء إعادة ضبط التسجيل. الرجاء المحاولة مرة أخرى.",
         variant: "destructive",
       });
       return false;
@@ -201,6 +244,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
             registrations={filteredRegistrations}
             onEdit={handleEditRegistration}
             onDelete={handleDeleteRegistration}
+            onReset={handleResetRegistration}
           />
         </div>
       </CardContent>
@@ -218,6 +262,22 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
         registration={selectedRegistration}
         onDelete={handleRemoveRegistration}
       />
+
+      <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>إعادة ضبط التسجيل</AlertDialogTitle>
+            <AlertDialogDescription>
+              هذا الإجراء سيقوم بتغيير حالة تسجيل المشارك إلى "ملغي" وحالة الدفع إلى "فشل"، مما يسمح له بإعادة التسجيل في الورشة مرة أخرى.
+              هل أنت متأكد من المتابعة؟
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetConfirmation}>تأكيد</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
