@@ -5,14 +5,20 @@ type StatusType = 'confirmed' | 'pending' | 'canceled' | 'attended';
 type PaymentStatusType = 'paid' | 'processing' | 'unpaid' | 'refunded' | 'failed';
 
 interface StatusBadgeProps {
-  status: string;
-  type: 'status' | 'payment';
+  status?: string;
+  paymentStatus?: string;
+  type?: 'status' | 'payment';
 }
 
-const RegistrationStatusBadge = ({ status, type }: StatusBadgeProps) => {
-  const getStatusBadgeVariant = (status: string, type: 'status' | 'payment') => {
-    if (type === 'status') {
-      switch (status) {
+const RegistrationStatusBadge = ({ status, paymentStatus, type = 'status' }: StatusBadgeProps) => {
+  // Determine which status to use based on the props
+  const statusValue = type === 'status' ? status : paymentStatus;
+  
+  if (!statusValue) return null;
+  
+  const getStatusBadgeVariant = (value: string, statusType: 'status' | 'payment') => {
+    if (statusType === 'status') {
+      switch (value) {
         case "confirmed": return "success";
         case "pending": return "warning";
         case "canceled": return "destructive";
@@ -20,7 +26,7 @@ const RegistrationStatusBadge = ({ status, type }: StatusBadgeProps) => {
         default: return "secondary";
       }
     } else {
-      switch (status) {
+      switch (value) {
         case "paid": return "success";
         case "processing": return "warning";
         case "unpaid": return "secondary";
@@ -31,29 +37,29 @@ const RegistrationStatusBadge = ({ status, type }: StatusBadgeProps) => {
     }
   };
 
-  const getStatusLabel = (status: string, type: 'status' | 'payment') => {
-    if (type === 'status') {
-      switch (status) {
+  const getStatusLabel = (value: string, statusType: 'status' | 'payment') => {
+    if (statusType === 'status') {
+      switch (value) {
         case "confirmed": return "تم التأكيد";
         case "pending": return "قيد الانتظار";
         case "canceled": return "ملغي";
         case "attended": return "حضر";
-        default: return status;
+        default: return value;
       }
     } else {
-      switch (status) {
+      switch (value) {
         case "paid": return "مدفوع";
         case "processing": return "قيد المعالجة";
         case "unpaid": return "غير مدفوع";
         case "refunded": return "تم الإرجاع";
         case "failed": return "فشل الدفع";
-        default: return status;
+        default: return value;
       }
     }
   };
 
-  const variant = getStatusBadgeVariant(status, type);
-  const label = getStatusLabel(status, type);
+  const variant = getStatusBadgeVariant(statusValue, type);
+  const label = getStatusLabel(statusValue, type);
   
   return <Badge variant={variant as any}>{label}</Badge>;
 };

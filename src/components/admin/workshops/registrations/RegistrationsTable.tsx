@@ -74,10 +74,10 @@ const RegistrationsTable = ({
                 <TableCell dir="ltr">{registration.phone || "-"}</TableCell>
                 <TableCell>{formatDate(registration.created_at)}</TableCell>
                 <TableCell>
-                  <RegistrationStatusBadge status={registration.status} />
+                  <RegistrationStatusBadge status={registration.status} type="status" />
                 </TableCell>
                 <TableCell>
-                  <RegistrationStatusBadge paymentStatus={registration.payment_status} />
+                  <RegistrationStatusBadge paymentStatus={registration.payment_status} type="payment" />
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

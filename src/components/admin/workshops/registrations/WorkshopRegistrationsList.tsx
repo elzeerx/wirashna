@@ -103,7 +103,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
         reg.id === registrationId ? { ...reg, ...data } : reg
       );
       
-      setRegistrations(updatedRegistrations);
+      setRegistrations(updatedRegistrations as WorkshopRegistration[]);
       
       toast({
         title: "تم تحديث التسجيل بنجاح",
@@ -157,12 +157,12 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
     try {
       await resetRegistration(selectedRegistration.id);
       
-      // Update the local registrations list
+      // Update the local registrations list with proper type casting
       const updatedRegistrations = registrations.map(reg => 
         reg.id === selectedRegistration.id ? { 
           ...reg, 
-          status: 'canceled', 
-          payment_status: 'failed',
+          status: 'canceled' as const, 
+          payment_status: 'failed' as const,
           admin_notes: 'Reset by admin to allow re-registration' 
         } : reg
       );
