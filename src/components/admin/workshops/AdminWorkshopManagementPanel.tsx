@@ -43,7 +43,6 @@ const AdminWorkshopManagementPanel = ({
         <AdminWorkshopForm
           initialData={workshop}
           onSubmit={handleWorkshopUpdate}
-          showCancelButton
           onCancel={onClose}
         />
       </TabsContent>

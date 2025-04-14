@@ -24,7 +24,7 @@ const Register = () => {
       <main className="flex-grow pt-24">
         <div className="wirashna-container py-12">
           <div className="max-w-md mx-auto">
-            <AuthCard initialView="signup" />
+            <AuthCard />
           </div>
         </div>
       </main>
