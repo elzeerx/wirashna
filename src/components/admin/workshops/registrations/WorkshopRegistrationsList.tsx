@@ -8,6 +8,7 @@ import RegistrationsTable from "./RegistrationsTable";
 import ResetRegistrationDialog from "./ResetRegistrationDialog";
 import { useRegistrationsList } from "./hooks/useRegistrationsList";
 import { Suspense, useCallback } from "react";
+import { WorkshopRegistration } from "@/types/supabase";
 
 interface WorkshopRegistrationsListProps {
   workshopId: string;
@@ -52,6 +53,24 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
   const handleTableResetRegistration = useCallback((registration) => {
     handleResetRegistration(registration);
   }, [handleResetRegistration]);
+
+  // Handler for the EditRegistrationDialog that adapter to the expected signature
+  const handleEditSubmit = async (data: Partial<WorkshopRegistration>) => {
+    if (!selectedRegistration) return false;
+    return await handleUpdateRegistration(selectedRegistration.id, data);
+  };
+
+  // Handler for the DeleteRegistrationDialog that adapts to expected signature
+  const handleDeleteSubmit = async () => {
+    if (!selectedRegistration) return false;
+    return await handleRemoveRegistration(selectedRegistration.id);
+  };
+
+  // Handler for the ResetRegistrationDialog that adapts to expected signature
+  const handleResetSubmit = async () => {
+    if (!selectedRegistration) return false;
+    return await handleResetConfirmation(selectedRegistration.id);
+  };
 
   if (isLoading) {
     return (
@@ -124,7 +143,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
           isOpen={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           registration={selectedRegistration}
-          onSubmit={handleUpdateRegistration}
+          onSubmit={handleEditSubmit}
         />
       )}
       
@@ -133,7 +152,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
           isOpen={isDeleteDialogOpen}
           onOpenChange={setIsDeleteDialogOpen}
           registration={selectedRegistration}
-          onDelete={handleRemoveRegistration}
+          onDelete={handleDeleteSubmit}
         />
       )}
 
@@ -142,7 +161,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
           isOpen={isResetDialogOpen}
           onOpenChange={setIsResetDialogOpen}
           registration={selectedRegistration}
-          onReset={handleResetConfirmation}
+          onReset={handleResetSubmit}
         />
       )}
     </Card>
