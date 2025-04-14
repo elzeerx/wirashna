@@ -9,6 +9,7 @@ import { LocationSection } from "./workshop-form/LocationSection";
 import { CapacityPriceSection } from "./workshop-form/CapacityPriceSection";
 import { InstructorSection } from "./workshop-form/InstructorSection";
 import { BenefitsRequirementsSection } from "./workshop-form/BenefitsRequirementsSection";
+import { ObjectivesTargetSection } from "./workshop-form/ObjectivesTargetSection";
 import { GalleryUploader } from "./workshop-form/GalleryUploader";
 import { useWorkshopForm } from "@/hooks/useWorkshopForm";
 import { Workshop } from "@/types/supabase";
@@ -57,8 +58,9 @@ const AdminWorkshopForm = ({
         <DateTimeSection />
         <LocationSection />
         <CapacityPriceSection />
-        <InstructorSection />
+        <ObjectivesTargetSection />
         <BenefitsRequirementsSection />
+        <InstructorSection />
 
         <div className="flex justify-end space-x-2 space-x-reverse pt-4">
           <Button 

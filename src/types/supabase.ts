@@ -1,4 +1,3 @@
-
 export type Workshop = {
   id: string;
   title: string;
@@ -18,6 +17,8 @@ export type Workshop = {
   instructor_image?: string;
   requirements?: string[];
   benefits?: string[];
+  objectives?: string[];
+  target_audience?: string[];
   created_at: string;
   updated_at: string;
 };

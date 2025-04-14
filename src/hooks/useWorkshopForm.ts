@@ -43,6 +43,8 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       gallery: initialData?.gallery || [],
       benefits: initialData?.benefits || [],
       requirements: initialData?.requirements || [],
+      objectives: initialData?.objectives || [],
+      target_audience: initialData?.target_audience || [],
     },
   });
 

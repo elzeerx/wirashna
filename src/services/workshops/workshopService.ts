@@ -57,7 +57,9 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     instructor_bio: workshop.instructor_bio,
     instructor_image: workshop.instructor_image,
     benefits: workshop.benefits || [],
-    requirements: workshop.requirements || []
+    requirements: workshop.requirements || [],
+    objectives: workshop.objectives || [],
+    target_audience: workshop.target_audience || []
   };
 
   console.log("Sending workshop data to database:", workshopData);
