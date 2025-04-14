@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentResult } from './types';
 import { logPaymentAction } from './paymentLogs';
+import { recalculateWorkshopSeats } from '@/services/workshops';
 
 /**
  * Verifies a payment with the Tap payment gateway
@@ -44,6 +45,16 @@ export const verifyTapPayment = async (tapId: string): Promise<PaymentResult> =>
         status: "success",
         payment_id: tapId
       });
+      
+      // If payment is successful, also ensure we update the workshop seats
+      if (data.payment.metadata && data.payment.metadata.workshopId) {
+        try {
+          await recalculateWorkshopSeats(data.payment.metadata.workshopId);
+        } catch (error) {
+          console.error("Error recalculating workshop seats:", error);
+          // We don't want to fail the payment verification due to this error
+        }
+      }
       
       return { success: true, status: "CAPTURED" };
     }

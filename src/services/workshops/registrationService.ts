@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopRegistration } from "@/types/supabase";
 
@@ -21,6 +22,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     if (existingRegistration && 
         (existingRegistration.status === 'canceled' || 
          ['failed', 'unpaid', 'processing'].includes(existingRegistration.payment_status))) {
+      
       console.log("Updating existing registration with status:", existingRegistration.status, 
                  "payment status:", existingRegistration.payment_status);
       
@@ -32,11 +34,11 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
           phone: registration.phone,
           notes: registration.notes,
           status: 'pending',
-          payment_status: 'unpaid',
+          payment_status: 'processing',  // Changed from 'unpaid' to 'processing'
           updated_at: new Date().toISOString()
         })
         .eq('id', existingRegistration.id)
-        .select()
+        .select('*')
         .single();
 
       if (error) {
@@ -60,13 +62,13 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     const registrationData = {
       ...registration,
       status: 'pending' as const,
-      payment_status: 'unpaid' as const
+      payment_status: 'processing' as const  // Changed from 'unpaid' to 'processing'
     };
 
     const { data, error } = await supabase
       .from('workshop_registrations')
       .insert(registrationData)
-      .select()
+      .select('*')
       .single();
 
     if (error) {
@@ -132,46 +134,116 @@ export const fetchWorkshopRegistrations = async (workshopId: string): Promise<Wo
 };
 
 export const updateRegistrationStatus = async (registrationId: string, updates: Partial<WorkshopRegistration>): Promise<WorkshopRegistration> => {
-  const { data, error } = await supabase
-    .from('workshop_registrations')
-    .update(updates)
-    .eq('id', registrationId)
-    .select()
-    .single();
+  try {
+    // Add updated_at timestamp
+    const updatedData = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    
+    const { data, error } = await supabase
+      .from('workshop_registrations')
+      .update(updatedData)
+      .eq('id', registrationId)
+      .select('*')
+      .single();
 
-  if (error) {
-    console.error(`Error updating registration ${registrationId}:`, error);
+    if (error) {
+      console.error(`Error updating registration ${registrationId}:`, error);
+      throw error;
+    }
+
+    // If the status is changing to 'confirmed' and payment_status to 'paid', 
+    // ensure available seats are correctly calculated
+    if (updatedData.status === 'confirmed' || updatedData.payment_status === 'paid') {
+      try {
+        // Get the workshop ID
+        const workshopId = data.workshop_id;
+        await recalculateWorkshopSeats(workshopId);
+      } catch (recalcError) {
+        console.error("Error recalculating seats after status update:", recalcError);
+        // Continue despite error - we don't want to fail the update
+      }
+    }
+
+    return data as WorkshopRegistration;
+  } catch (error) {
+    console.error(`Error in updateRegistrationStatus:`, error);
     throw error;
   }
-
-  return data as WorkshopRegistration;
 };
 
 export const resetRegistration = async (registrationId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('workshop_registrations')
-    .update({ 
-      status: 'canceled', 
-      payment_status: 'failed',
-      updated_at: new Date().toISOString(),
-      admin_notes: 'Reset by admin to allow re-registration'
-    })
-    .eq('id', registrationId);
+  try {
+    // First get the registration to get the workshop ID
+    const { data: registration, error: getError } = await supabase
+      .from('workshop_registrations')
+      .select('workshop_id')
+      .eq('id', registrationId)
+      .single();
+      
+    if (getError) {
+      console.error(`Error getting registration ${registrationId}:`, getError);
+      throw getError;
+    }
+    
+    const workshopId = registration.workshop_id;
+    
+    // Now update the registration
+    const { error } = await supabase
+      .from('workshop_registrations')
+      .update({ 
+        status: 'canceled', 
+        payment_status: 'failed',
+        updated_at: new Date().toISOString(),
+        admin_notes: 'Reset by admin to allow re-registration'
+      })
+      .eq('id', registrationId);
 
-  if (error) {
-    console.error(`Error resetting registration ${registrationId}:`, error);
+    if (error) {
+      console.error(`Error resetting registration ${registrationId}:`, error);
+      throw error;
+    }
+    
+    // Recalculate seats after reset
+    await recalculateWorkshopSeats(workshopId);
+  } catch (error) {
+    console.error(`Error in resetRegistration:`, error);
     throw error;
   }
 };
 
 export const deleteRegistration = async (registrationId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('workshop_registrations')
-    .delete()
-    .eq('id', registrationId);
+  try {
+    // First get the registration to get the workshop ID
+    const { data: registration, error: getError } = await supabase
+      .from('workshop_registrations')
+      .select('workshop_id')
+      .eq('id', registrationId)
+      .single();
+      
+    if (getError) {
+      console.error(`Error getting registration ${registrationId}:`, getError);
+      throw getError;
+    }
+    
+    const workshopId = registration.workshop_id;
+    
+    // Now delete the registration
+    const { error } = await supabase
+      .from('workshop_registrations')
+      .delete()
+      .eq('id', registrationId);
 
-  if (error) {
-    console.error(`Error deleting registration ${registrationId}:`, error);
+    if (error) {
+      console.error(`Error deleting registration ${registrationId}:`, error);
+      throw error;
+    }
+    
+    // Recalculate seats after deletion
+    await recalculateWorkshopSeats(workshopId);
+  } catch (error) {
+    console.error(`Error in deleteRegistration:`, error);
     throw error;
   }
 };
@@ -210,6 +282,9 @@ export const cleanupFailedRegistrations = async (workshopId: string): Promise<vo
       }
       
       console.log(`Successfully cleaned up ${failedRegistrations.length} failed registrations`);
+      
+      // Recalculate seats after cleanup
+      await recalculateWorkshopSeats(workshopId);
     } else {
       console.log(`No failed registrations found for workshop ${workshopId}`);
     }
@@ -221,6 +296,8 @@ export const cleanupFailedRegistrations = async (workshopId: string): Promise<vo
 
 export const recalculateWorkshopSeats = async (workshopId: string): Promise<void> => {
   try {
+    console.log(`Starting recalculation of seats for workshop ${workshopId}`);
+    
     // Get workshop details
     const { data: workshop, error: workshopError } = await supabase
       .from('workshops')
@@ -233,12 +310,11 @@ export const recalculateWorkshopSeats = async (workshopId: string): Promise<void
       throw workshopError;
     }
     
-    // Count confirmed registrations
+    // Count confirmed and paid registrations only
     const { count, error: countError } = await supabase
       .from('workshop_registrations')
       .select('*', { count: 'exact', head: true })
       .eq('workshop_id', workshopId)
-      .eq('status', 'confirmed')
       .eq('payment_status', 'paid');
     
     if (countError) {
@@ -250,7 +326,7 @@ export const recalculateWorkshopSeats = async (workshopId: string): Promise<void
     const confirmedRegistrations = count || 0;
     const availableSeats = Math.max(0, totalSeats - confirmedRegistrations);
     
-    console.log(`Workshop ${workshopId}: Total seats ${totalSeats}, Confirmed registrations ${confirmedRegistrations}, Available seats ${availableSeats}`);
+    console.log(`Workshop ${workshopId}: Total seats ${totalSeats}, Confirmed paid registrations ${confirmedRegistrations}, Available seats ${availableSeats}`);
     
     // Update workshop available seats
     const { error: updateError } = await supabase

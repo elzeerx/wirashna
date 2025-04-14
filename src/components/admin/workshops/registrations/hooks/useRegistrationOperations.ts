@@ -5,7 +5,8 @@ import { WorkshopRegistration } from "@/types/supabase";
 import { 
   updateRegistrationStatus,
   deleteRegistration,
-  resetRegistration 
+  resetRegistration,
+  recalculateWorkshopSeats
 } from "@/services/workshops";
 
 export const useRegistrationOperations = (
@@ -22,6 +23,16 @@ export const useRegistrationOperations = (
       console.log("Updating registration:", registrationId, "with data:", data);
       
       const updatedRegistration = await updateRegistrationStatus(registrationId, data);
+      
+      // Recalculate seats if status or payment status is being updated
+      if (data.status || data.payment_status) {
+        try {
+          await recalculateWorkshopSeats(updatedRegistration.workshop_id);
+        } catch (recalcError) {
+          console.error("Error recalculating seats after update:", recalcError);
+          // Continue despite the error - we don't want to fail the entire operation
+        }
+      }
       
       toast({
         title: "تم تحديث التسجيل بنجاح",

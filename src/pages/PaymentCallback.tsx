@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { verifyTapPayment } from "@/services/payment";
+import { recalculateWorkshopSeats } from "@/services/workshops"; 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
@@ -13,6 +14,7 @@ const PaymentCallback = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [workshopId, setWorkshopId] = useState<string | null>(null);
+  const [verificationAttempts, setVerificationAttempts] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -40,39 +42,78 @@ const PaymentCallback = () => {
           return;
         }
 
-        // If status is already provided and is CAPTURED, we can use it directly
+        // If status is already provided and is CAPTURED, we can optimize flow
         if (status === "CAPTURED") {
           setPaymentStatus("success");
+          
+          // Still verify in the background to update the database
+          const result = await verifyTapPayment(tapId);
+          
+          // Make sure seats are recalculated even if status is already known
+          if (workshopIdParam) {
+            try {
+              await recalculateWorkshopSeats(workshopIdParam);
+            } catch (error) {
+              console.error("Error recalculating seats:", error);
+            }
+          }
+          
           toast({
             title: "تمت عملية الدفع بنجاح",
             description: "تم تأكيد تسجيلك في الورشة",
           });
         } else {
-          // Verify payment status with the backend
-          const result = await verifyTapPayment(tapId);
+          // Verify payment status with the backend - multiple attempts for reliability
+          let maxAttempts = 2;
+          let attempts = 0;
+          let success = false;
           
-          if (result.success) {
-            if (result.status === "CAPTURED") {
-              setPaymentStatus("success");
+          while (!success && attempts < maxAttempts) {
+            attempts++;
+            setVerificationAttempts(prev => prev + 1);
+            console.log(`Verification attempt ${attempts} for payment ${tapId}`);
+            
+            // Add slight delay between attempts
+            if (attempts > 1) {
+              await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+            
+            const result = await verifyTapPayment(tapId);
+            
+            if (result.success) {
+              success = true;
+              if (result.status === "CAPTURED") {
+                setPaymentStatus("success");
+                
+                // Ensure seats are recalculated
+                if (workshopIdParam) {
+                  try {
+                    await recalculateWorkshopSeats(workshopIdParam);
+                  } catch (error) {
+                    console.error("Error recalculating seats:", error);
+                  }
+                }
+                
+                toast({
+                  title: "تمت عملية الدفع بنجاح",
+                  description: "تم تأكيد تسجيلك في الورشة",
+                });
+              } else {
+                setPaymentStatus("failed");
+                toast({
+                  title: "فشلت عملية الدفع",
+                  description: "لم يتم اكتمال عملية الدفع بنجاح",
+                  variant: "destructive",
+                });
+              }
+            } else if (attempts >= maxAttempts) {
+              setPaymentStatus("error");
               toast({
-                title: "تمت عملية الدفع بنجاح",
-                description: "تم تأكيد تسجيلك في الورشة",
-              });
-            } else {
-              setPaymentStatus("failed");
-              toast({
-                title: "فشلت عملية الدفع",
-                description: "لم يتم اكتمال عملية الدفع بنجاح",
+                title: "خطأ في التحقق من الدفع",
+                description: result.error || "حدث خطأ أثناء التحقق من حالة الدفع",
                 variant: "destructive",
               });
             }
-          } else {
-            setPaymentStatus("error");
-            toast({
-              title: "خطأ في التحقق من الدفع",
-              description: result.error || "حدث خطأ أثناء التحقق من حالة الدفع",
-              variant: "destructive",
-            });
           }
         }
       } catch (error) {
@@ -109,7 +150,10 @@ const PaymentCallback = () => {
         <div className="text-center">
           <div className="wirashna-loader mx-auto mb-4"></div>
           <h2 className="text-xl font-bold mb-2">جاري التحقق من عملية الدفع</h2>
-          <p className="text-gray-600 mb-8">يرجى الانتظار بينما نتحقق من حالة الدفع...</p>
+          <p className="text-gray-600 mb-8">
+            يرجى الانتظار بينما نتحقق من حالة الدفع...
+            {verificationAttempts > 0 && ` (محاولة ${verificationAttempts})`}
+          </p>
         </div>
       );
     }
@@ -181,4 +225,3 @@ const PaymentCallback = () => {
 };
 
 export default PaymentCallback;
-

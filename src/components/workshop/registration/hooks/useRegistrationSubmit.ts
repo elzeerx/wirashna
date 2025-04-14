@@ -65,12 +65,17 @@ export const useRegistrationSubmit = ({
         console.error("Registration step error:", registrationError);
         
         // Handle specific registration errors
-        if (registrationError.name === "DuplicateRegistrationError") {
-          toast({
-            title: "لا يمكن التسجيل مرة أخرى",
-            description: registrationError.message || "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
-            variant: "destructive",
-          });
+        if (registrationError.message && 
+            (registrationError.message.includes("duplicate key") || 
+             registrationError.name === "DuplicateRegistrationError")) {
+          // Don't show error for retries, as they might have existing registrations
+          if (!isRetry) {
+            toast({
+              title: "لا يمكن التسجيل مرة أخرى",
+              description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً. إذا كنت تحاول إعادة الدفع، يرجى استخدام خيار إعادة المحاولة من صفحة الملف الشخصي.",
+              variant: "destructive",
+            });
+          }
           setIsSubmitting(false);
           return;
         }
@@ -157,23 +162,25 @@ export const useRegistrationSubmit = ({
       }
       
       // If it's a DuplicateRegistrationError, show a specific message
-      if (error.name === "DuplicateRegistrationError") {
-        toast({
-          title: "لا يمكن التسجيل مرة أخرى",
-          description: error.message || "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
-          variant: "destructive",
-        });
+      if (error.name === "DuplicateRegistrationError" || (error.message && error.message.includes("duplicate key"))) {
+        if (isRetry) {
+          toast({
+            title: "جاري معالجة طلبك السابق",
+            description: "يبدو أن لديك تسجيل سابق قيد المعالجة. يرجى الانتظار حتى اكتمال العملية أو التواصل مع الدعم الفني.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "لا يمكن التسجيل مرة أخرى",
+            description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
+            variant: "destructive",
+          });
+        }
       } else if (error.code === "PGRST116") {
         // This is the "JSON object requested, multiple (or no) rows returned" error
         toast({
           title: "خطأ في نظام التسجيل",
           description: "هناك مشكلة في بيانات التسجيل. يرجى المحاولة مرة أخرى لاحقاً أو التواصل مع الدعم الفني.",
-          variant: "destructive",
-        });
-      } else if (error.message && error.message.includes("duplicate key")) {
-        toast({
-          title: "لا يمكن التسجيل مرة أخرى",
-          description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
           variant: "destructive",
         });
       } else {

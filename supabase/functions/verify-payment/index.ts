@@ -96,12 +96,13 @@ serve(async (req) => {
           .from("workshop_registrations")
           .update({ 
             payment_status: "paid",
+            status: "confirmed", // Also update status to confirmed
             payment_id: tap_id,
             updated_at: new Date().toISOString()
           })
           .eq("workshop_id", workshopId)
           .eq("user_id", userId)
-          .eq("payment_status", "processing");
+          .in("payment_status", ["processing", "unpaid", "failed"]); // Updated to handle multiple possible statuses
           
         if (error) {
           console.error("Error updating registration:", error);
@@ -126,6 +127,14 @@ serve(async (req) => {
             workshopId,
             ip_address: ip
           });
+          
+          // Also recalculate seats
+          try {
+            // Update workshop available seats
+            await recalculateWorkshopSeats(supabase, workshopId);
+          } catch (recalcError) {
+            console.error("Error recalculating seats:", recalcError);
+          }
         }
       } else {
         console.error("Missing metadata in payment response: workshopId or userId not found");
@@ -224,5 +233,59 @@ async function logPaymentAction({
   } catch (error) {
     console.error("Exception logging payment action:", error);
     return { success: false };
+  }
+}
+
+// Helper function to recalculate workshop seats
+async function recalculateWorkshopSeats(supabase, workshopId) {
+  try {
+    console.log(`Recalculating seats for workshop ${workshopId}`);
+    
+    // Get workshop details
+    const { data: workshop, error: workshopError } = await supabase
+      .from('workshops')
+      .select('total_seats')
+      .eq('id', workshopId)
+      .single();
+    
+    if (workshopError) {
+      console.error(`Error fetching workshop ${workshopId}:`, workshopError);
+      throw workshopError;
+    }
+    
+    // Count confirmed and paid registrations only
+    const { count, error: countError } = await supabase
+      .from('workshop_registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('workshop_id', workshopId)
+      .eq('payment_status', 'paid');
+    
+    if (countError) {
+      console.error(`Error counting paid registrations:`, countError);
+      throw countError;
+    }
+    
+    const totalSeats = workshop.total_seats;
+    const confirmedRegistrations = count || 0;
+    const availableSeats = Math.max(0, totalSeats - confirmedRegistrations);
+    
+    console.log(`Workshop ${workshopId}: Total ${totalSeats}, Paid ${confirmedRegistrations}, Available ${availableSeats}`);
+    
+    // Update workshop available seats
+    const { error: updateError } = await supabase
+      .from('workshops')
+      .update({ available_seats: availableSeats })
+      .eq('id', workshopId);
+    
+    if (updateError) {
+      console.error(`Error updating workshop available seats:`, updateError);
+      throw updateError;
+    }
+    
+    console.log(`Successfully updated available seats for workshop ${workshopId} to ${availableSeats}`);
+    return true;
+  } catch (error) {
+    console.error(`Error in recalculateWorkshopSeats:`, error);
+    throw error;
   }
 }
