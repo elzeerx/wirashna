@@ -1,43 +1,45 @@
 
-import { useState } from "react";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronUp, Users, Calendar, DollarSign, BarChart2, Plus } from "lucide-react";
-import { Workshop, WorkshopRegistration } from "@/types/supabase";
+import { Workshop } from "@/types/supabase";
 import { Link } from "react-router-dom";
+import { useMemoizedWorkshops } from "@/hooks/useMemoizedWorkshops";
+import StatisticsCard from "@/components/dashboard/StatisticsCard";
+import SkeletonLoader from "@/components/ui/skeleton-loader";
 
 interface DashboardOverviewProps {
   workshops: Workshop[];
   onNavigate?: (tab: string) => void;
+  isLoading?: boolean;
 }
 
-const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) => {
-  const currentDate = new Date();
-  const upcomingWorkshops = workshops.filter(workshop => {
-    const workshopDate = new Date(workshop.date);
-    return workshopDate >= currentDate;
-  }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+const DashboardOverview = memo(({ workshops, onNavigate, isLoading = false }: DashboardOverviewProps) => {
+  const { statistics, nextWorkshops } = useMemoizedWorkshops(workshops);
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">لوحة المعلومات</h2>
+        </div>
 
-  // Calculate some basic stats
-  const totalWorkshops = workshops.length;
-  
-  // Calculate confirmed participants - only count confirmed and paid registrations
-  const confirmedParticipants = workshops.reduce((sum, workshop) => {
-    // Only count registrations with both 'confirmed' status AND 'paid' payment status
-    // which is reflected by the available_seats calculation
-    const confirmedSeats = workshop.total_seats - workshop.available_seats;
-    return sum + confirmedSeats;
-  }, 0);
-  
-  // Calculate revenue only from confirmed and paid registrations
-  const confirmedRevenue = workshops.reduce((sum, workshop) => {
-    // Revenue calculation based on confirmed paid seats
-    const confirmedSeats = workshop.total_seats - workshop.available_seats;
-    return sum + (workshop.price * confirmedSeats);
-  }, 0);
-  
-  // Get next 3 upcoming workshops
-  const nextWorkshops = upcomingWorkshops.slice(0, 3);
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    );
+  }
+
+  const { totalWorkshops, confirmedParticipants, confirmedRevenue } = statistics;
 
   return (
     <div className="space-y-6">
@@ -52,42 +54,24 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الورش</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalWorkshops}</div>
-            <p className="text-xs text-muted-foreground">
-              ورشة مسجلة في النظام
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">عدد المشاركين</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{confirmedParticipants}</div>
-            <p className="text-xs text-muted-foreground">
-              مشارك في جميع الورش
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">الإيرادات</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{confirmedRevenue} د.ك</div>
-            <p className="text-xs text-muted-foreground">
-              إجمالي الإيرادات من الورش
-            </p>
-          </CardContent>
-        </Card>
+        <StatisticsCard
+          title="إجمالي الورش"
+          value={totalWorkshops}
+          icon={<Calendar className="h-4 w-4" />}
+          description="ورشة مسجلة في النظام"
+        />
+        <StatisticsCard
+          title="عدد المشاركين"
+          value={confirmedParticipants}
+          icon={<Users className="h-4 w-4" />}
+          description="مشارك في جميع الورش"
+        />
+        <StatisticsCard
+          title="الإيرادات"
+          value={`${confirmedRevenue} د.ك`}
+          icon={<DollarSign className="h-4 w-4" />}
+          description="إجمالي الإيرادات من الورش"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -176,6 +160,11 @@ const DashboardOverview = ({ workshops, onNavigate }: DashboardOverviewProps) =>
       </div>
     </div>
   );
-};
+});
+
+DashboardOverview.displayName = 'DashboardOverview';
+
+// Import Skeleton component
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default DashboardOverview;

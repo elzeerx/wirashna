@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Users, Calendar, Award, ActivitySquare } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import StatisticsCard from "@/components/dashboard/StatisticsCard";
@@ -9,11 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchWorkshops } from "@/services/workshops";
 import { Workshop } from "@/types/supabase";
+import { useMemoizedWorkshops } from "@/hooks/useMemoizedWorkshops";
+import SkeletonLoader from "@/components/ui/skeleton-loader";
 
 const SupervisorDashboard = () => {
   const { userProfile } = useAuth();
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Use our memoized hook for calculated statistics
+  const { statistics, upcomingWorkshops } = useMemoizedWorkshops(workshops);
   
   useEffect(() => {
     const loadData = async () => {
@@ -31,19 +36,9 @@ const SupervisorDashboard = () => {
     loadData();
   }, []);
 
-  // Calculate statistics for supervisor dashboard using correct seat accounting
-  const totalWorkshops = workshops.length;
-  const totalSeats = workshops.reduce((sum, w) => sum + w.total_seats, 0);
-  
-  // Use confirmed/paid seats only for calculations (which is what available_seats now tracks)
-  const confirmedSeats = workshops.reduce((sum, w) => sum + (w.total_seats - w.available_seats), 0);
-  
-  const upcomingWorkshops = workshops.filter(w => {
-    // Compare with current date to determine if workshop is upcoming
-    const workshopDate = new Date(w.date);
-    const currentDate = new Date();
-    return workshopDate >= currentDate;
-  }).length;
+  // Get values from our memoized statistics
+  const { totalWorkshops, confirmedParticipants, totalSeats, occupancyRate } = statistics;
+  const upcomingWorkshopsCount = upcomingWorkshops.length;
 
   return (
     <DashboardLayout title={`لوحة المشرف - ${userProfile?.full_name || ''}`} requireRole="supervisor">
@@ -60,13 +55,13 @@ const SupervisorDashboard = () => {
         />
         <StatisticsCard
           title="نسبة الحجز"
-          value={`${totalSeats > 0 ? Math.round((confirmedSeats / totalSeats) * 100) : 0}%`}
+          value={`${occupancyRate}%`}
           icon={<Award className="h-4 w-4" />}
-          description={`${confirmedSeats} من ${totalSeats} مقعد`}
+          description={`${confirmedParticipants} من ${totalSeats} مقعد`}
         />
         <StatisticsCard
           title="الورش القادمة"
-          value={upcomingWorkshops}
+          value={upcomingWorkshopsCount}
           icon={<ActivitySquare className="h-4 w-4" />}
         />
       </div>
@@ -78,9 +73,7 @@ const SupervisorDashboard = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex justify-center py-4">
-                <div className="wirashna-loader"></div>
-              </div>
+              <SkeletonLoader count={3} />
             ) : (
               <div className="overflow-auto">
                 <Table>
@@ -121,9 +114,7 @@ const SupervisorDashboard = () => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="flex justify-center py-4">
-                <div className="wirashna-loader"></div>
-              </div>
+              <SkeletonLoader count={5} />
             ) : (
               <div className="space-y-4">
                 {workshops.slice(0, 5).map((workshop) => (
@@ -156,9 +147,7 @@ const SupervisorDashboard = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center py-4">
-              <div className="wirashna-loader"></div>
-            </div>
+            <SkeletonLoader count={4} />
           ) : (
             <div className="overflow-auto">
               <Table>
@@ -172,19 +161,17 @@ const SupervisorDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {workshops
-                    .filter(w => w.date.includes('٢٠٢٥'))
-                    .map((workshop) => (
-                      <TableRow key={workshop.id}>
-                        <TableCell className="font-medium">{workshop.title}</TableCell>
-                        <TableCell>{workshop.date}</TableCell>
-                        <TableCell>{workshop.venue}</TableCell>
-                        <TableCell>{workshop.available_seats}/{workshop.total_seats}</TableCell>
-                        <TableCell>
-                          {Math.round(((workshop.total_seats - workshop.available_seats) / workshop.total_seats) * 100)}%
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {upcomingWorkshops.slice(0, 5).map((workshop) => (
+                    <TableRow key={workshop.id}>
+                      <TableCell className="font-medium">{workshop.title}</TableCell>
+                      <TableCell>{workshop.date}</TableCell>
+                      <TableCell>{workshop.venue}</TableCell>
+                      <TableCell>{workshop.available_seats}/{workshop.total_seats}</TableCell>
+                      <TableCell>
+                        {Math.round(((workshop.total_seats - workshop.available_seats) / workshop.total_seats) * 100)}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

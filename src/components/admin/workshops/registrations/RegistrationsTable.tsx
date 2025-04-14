@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { WorkshopRegistration } from "@/types/supabase";
 import RegistrationStatusBadge from "./RegistrationStatusBadge";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 
 interface RegistrationsTableProps {
   registrations: WorkshopRegistration[];
@@ -28,44 +28,50 @@ interface RegistrationsTableProps {
   onReset: (registration: WorkshopRegistration) => void;
 }
 
-// Memoize the component to prevent unnecessary re-renders
+// Memoize the table cell to prevent re-renders
+const MemoizedTableCell = memo(TableCell);
+
+// Memoize status badges
+const MemoizedStatusBadge = memo(RegistrationStatusBadge);
+
+// Memoize the entire component to prevent unnecessary re-renders
 const RegistrationsTable = memo(({ 
   registrations, 
   onEdit, 
   onDelete,
   onReset
 }: RegistrationsTableProps) => {
-  // Format date for display using Gregorian calendar
-  const formatDate = (dateString: string) => {
+  // Format date for display using memoization to avoid recalculating
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('ar-SA', {
-      calendar: 'gregory', // Explicitly use Gregorian calendar
+      calendar: 'gregory',
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric'
     }).format(date);
-  };
+  }, []);
 
-  // Create handlers that don't require closure creation in the render loop
-  const handleEdit = (registration: WorkshopRegistration) => (e: React.MouseEvent) => {
+  // Create handlers with useCallback
+  const handleEdit = useCallback((registration: WorkshopRegistration) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onEdit(registration);
-  };
+  }, [onEdit]);
 
-  const handleDelete = (registration: WorkshopRegistration) => (e: React.MouseEvent) => {
+  const handleDelete = useCallback((registration: WorkshopRegistration) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onDelete(registration);
-  };
+  }, [onDelete]);
 
-  const handleReset = (registration: WorkshopRegistration) => (e: React.MouseEvent) => {
+  const handleReset = useCallback((registration: WorkshopRegistration) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onReset(registration);
-  };
+  }, [onReset]);
 
   return (
     <div className="border rounded-md overflow-hidden">
@@ -84,24 +90,24 @@ const RegistrationsTable = memo(({
         <TableBody>
           {registrations.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-6 text-gray-500">
+              <MemoizedTableCell colSpan={7} className="text-center py-6 text-gray-500">
                 لا توجد تسجيلات لهذه الورشة
-              </TableCell>
+              </MemoizedTableCell>
             </TableRow>
           ) : (
             registrations.map((registration) => (
               <TableRow key={registration.id}>
-                <TableCell>{registration.full_name}</TableCell>
-                <TableCell>{registration.email}</TableCell>
-                <TableCell dir="ltr">{registration.phone || "-"}</TableCell>
-                <TableCell>{formatDate(registration.created_at)}</TableCell>
-                <TableCell>
-                  <RegistrationStatusBadge status={registration.status} type="status" />
-                </TableCell>
-                <TableCell>
-                  <RegistrationStatusBadge paymentStatus={registration.payment_status} type="payment" />
-                </TableCell>
-                <TableCell>
+                <MemoizedTableCell>{registration.full_name}</MemoizedTableCell>
+                <MemoizedTableCell>{registration.email}</MemoizedTableCell>
+                <MemoizedTableCell dir="ltr">{registration.phone || "-"}</MemoizedTableCell>
+                <MemoizedTableCell>{formatDate(registration.created_at)}</MemoizedTableCell>
+                <MemoizedTableCell>
+                  <MemoizedStatusBadge status={registration.status} type="status" />
+                </MemoizedTableCell>
+                <MemoizedTableCell>
+                  <MemoizedStatusBadge paymentStatus={registration.payment_status} type="payment" />
+                </MemoizedTableCell>
+                <MemoizedTableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
@@ -133,7 +139,7 @@ const RegistrationsTable = memo(({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
+                </MemoizedTableCell>
               </TableRow>
             ))
           )}
