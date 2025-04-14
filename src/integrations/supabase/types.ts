@@ -289,9 +289,11 @@ export type Database = {
           instructor_image: string | null
           location: string
           long_description: string | null
+          objectives: string[] | null
           price: number
           requirements: string[] | null
           short_description: string
+          target_audience: string[] | null
           time: string
           title: string
           total_seats: number
@@ -311,9 +313,11 @@ export type Database = {
           instructor_image?: string | null
           location: string
           long_description?: string | null
+          objectives?: string[] | null
           price: number
           requirements?: string[] | null
           short_description: string
+          target_audience?: string[] | null
           time: string
           title: string
           total_seats: number
@@ -333,9 +337,11 @@ export type Database = {
           instructor_image?: string | null
           location?: string
           long_description?: string | null
+          objectives?: string[] | null
           price?: number
           requirements?: string[] | null
           short_description?: string
+          target_audience?: string[] | null
           time?: string
           title?: string
           total_seats?: number

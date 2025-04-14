@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Workshop } from "@/types/supabase";
 
@@ -89,7 +88,11 @@ export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): P
 
   const { data, error } = await supabase
     .from('workshops')
-    .update(workshop)
+    .update({
+      ...workshop,
+      objectives: workshop.objectives || [],
+      target_audience: workshop.target_audience || []
+    })
     .eq('id', id)
     .select()
     .single();
