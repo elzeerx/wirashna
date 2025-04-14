@@ -33,10 +33,11 @@ const RegistrationsTable = ({
   onDelete,
   onReset
 }: RegistrationsTableProps) => {
-  // Format date for display
+  // Format date for display using Gregorian calendar
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('ar-SA', {
+      calendar: 'gregory', // Explicitly use Gregorian calendar
       year: 'numeric',
       month: 'short',
       day: 'numeric',
