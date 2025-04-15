@@ -13,61 +13,30 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
-import { formatTimeWithPeriod, calculateEndTime } from "@/utils/dateUtils";
+import { useWorkshopDates } from "@/hooks/useWorkshopDates";
 
 export const DateTimeSection = () => {
   const form = useFormContext();
+  const { dates, addDate, removeDate } = useWorkshopDates(form.getValues("dates") || []);
 
   const handleAddDate = () => {
-    const currentDates = form.getValues("dates") || [];
     const tempDate = form.getValues("tempDate");
     const tempTime = form.getValues("tempTime");
-    const duration = Number(form.getValues("duration")) || 1;
+    const duration = form.getValues("duration") || "1";
     
-    console.log("Adding date:", { tempDate, tempTime, duration });
-    
-    if (tempDate && tempTime) {
-      const formattedDate = format(tempDate, "yyyy-MM-dd");
-      const endTime = calculateEndTime(tempTime, duration);
-      
-      const newDate = {
-        date: formattedDate,
-        time: tempTime,
-        endTime: format(endTime, 'HH:mm'),
-        displayTime: `من ${formatTimeWithPeriod(tempTime)} إلى ${formatTimeWithPeriod(format(endTime, 'HH:mm'))}`
-      };
-      
-      console.log("New date object:", newDate);
-      
-      // Check if this date and time combination already exists
-      const dateExists = currentDates.some(
-        (d) => d.date === formattedDate && d.time === tempTime
-      );
-      
-      if (!dateExists) {
-        const updatedDates = [...currentDates, newDate];
-        form.setValue("dates", updatedDates);
-        console.log("Updated dates:", updatedDates);
-        form.setValue("tempTime", "");
-        // Don't reset tempDate to allow for quick multiple selections
-      } else {
-        console.log("Date already exists, not adding duplicate");
-      }
-    } else {
-      console.log("Missing date or time:", { tempDate, tempTime });
+    if (addDate(tempDate, tempTime, duration)) {
+      form.setValue("dates", dates);
+      form.setValue("tempTime", "");
+      // Don't reset tempDate to allow for quick multiple selections
     }
   };
 
   const handleRemoveDate = (index: number) => {
-    const currentDates = form.getValues("dates") || [];
-    form.setValue(
-      "dates",
-      currentDates.filter((_, i) => i !== index)
-    );
+    removeDate(index);
+    form.setValue("dates", dates.filter((_, i) => i !== index));
   };
 
   const selectedDate = form.watch("tempDate");
-  const dates = form.watch("dates") || [];
 
   return (
     <div className="space-y-6">
