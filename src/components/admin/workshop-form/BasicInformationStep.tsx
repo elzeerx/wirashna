@@ -1,24 +1,43 @@
 
 import { FormSection } from "./FormSection";
 import { Button } from "@/components/ui/button";
-import { Save, Plus, X } from "lucide-react";
+import { Save, Plus, X, CalendarIcon } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export const BasicInformationStep = () => {
   const form = useFormContext();
 
   const handleAddDate = () => {
     const currentDates = form.getValues("dates") || [];
-    const newDate = {
-      date: form.getValues("tempDate") || "",
-      time: form.getValues("tempTime") || ""
-    };
+    const tempDate = form.getValues("tempDate");
+    const tempTime = form.getValues("tempTime");
     
-    if (newDate.date && newDate.time) {
-      form.setValue("dates", [...currentDates, newDate]);
-      form.setValue("tempDate", "");
-      form.setValue("tempTime", "");
+    if (tempDate && tempTime) {
+      const formattedDate = format(tempDate, "yyyy-MM-dd");
+      const newDate = {
+        date: formattedDate,
+        time: tempTime
+      };
+      
+      // Check if this date and time combination already exists
+      const dateExists = currentDates.some(
+        (d: any) => d.date === formattedDate && d.time === tempTime
+      );
+      
+      if (!dateExists) {
+        form.setValue("dates", [...currentDates, newDate]);
+        form.setValue("tempTime", "");
+        // Don't reset the date to allow for quick multiple selections
+      }
     }
   };
 
@@ -31,6 +50,7 @@ export const BasicInformationStep = () => {
   };
 
   const dates = form.watch("dates") || [];
+  const selectedDate = form.watch("tempDate");
 
   return (
     <div className="space-y-6">
@@ -56,13 +76,36 @@ export const BasicInformationStep = () => {
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormSection
-              name="tempDate"
-              label="التاريخ"
-              type="date"
-              required={false}
-              placeholder="dd/mm/yyyy"
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium">التاريخ</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-right font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="ml-2 h-4 w-4" />
+                    {selectedDate ? (
+                      format(selectedDate, "dd/MM/yyyy")
+                    ) : (
+                      <span>اختر التاريخ</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => form.setValue("tempDate", date)}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
             <div className="space-y-2">
               <FormSection
