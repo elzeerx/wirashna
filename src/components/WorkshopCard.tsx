@@ -28,7 +28,10 @@ const WorkshopCard = ({
   status = 'متاح'
 }: WorkshopCardProps) => {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+    <Link 
+      to={`/workshops/${id}`}
+      className="block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1"
+    >
       <div className="relative">
         <img
           src={image}
@@ -71,18 +74,22 @@ const WorkshopCard = ({
             )}
           </div>
           
-          <Link to={`/workshops/${id}`}>
-            <Button 
-              variant="default"
-              className={status === 'قريباً' ? 'bg-gray-500' : ''}
-              disabled={status === 'قريباً'}
-            >
-              سجل الآن
-            </Button>
-          </Link>
+          <Button 
+            variant="default"
+            className={status === 'قريباً' ? 'bg-gray-500 pointer-events-none' : ''}
+            disabled={status === 'قريباً'}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent card click when clicking the button
+              if (status !== 'قريباً') {
+                window.location.href = `/workshops/${id}`;
+              }
+            }}
+          >
+            سجل الآن
+          </Button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
