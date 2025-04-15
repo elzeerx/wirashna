@@ -1,41 +1,46 @@
-
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PageData } from "@/types/page";
 import { fetchPageByPath } from "@/services/pageService";
-import { useToast } from "@/hooks/use-toast";
+import { MainLayout } from "@/components/layouts/MainLayout";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useLoadingState } from "@/hooks/useLoadingState";
 import { Helmet } from "react-helmet-async";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 const DynamicPage = () => {
   const { path } = useParams();
   const [page, setPage] = useState<PageData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+  const { isLoading, wrapAsync } = useLoadingState({
+    errorMessage: "حدث خطأ أثناء تحميل الصفحة. الرجاء المحاولة مرة أخرى."
+  });
 
   useEffect(() => {
-    const loadPage = async () => {
-      if (!path) return;
-      
-      try {
-        setIsLoading(true);
-        const pageData = await fetchPageByPath(`/${path}`);
-        setPage(pageData);
-      } catch (error) {
-        console.error("Error loading page:", error);
-        toast({
-          title: "خطأ في تحميل الصفحة",
-          description: "حدث خطأ أثناء تحميل بيانات الصفحة. الرجاء المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (!path) return;
+    
+    wrapAsync(async () => {
+      const pageData = await fetchPageByPath(`/${path}`);
+      setPage(pageData);
+    });
+  }, [path, wrapAsync]);
 
-    loadPage();
-  }, [path, toast]);
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <LoadingSpinner />
+      </MainLayout>
+    );
+  }
+
+  if (!page) {
+    return (
+      <MainLayout>
+        <div className="wirashna-container py-12">
+          <h1 className="text-2xl font-bold mb-4">الصفحة غير موجودة</h1>
+          <p>الصفحة التي تبحث عنها غير موجودة أو ربما تم حذفها.</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   const renderPageContent = () => {
     if (!page || !page.content || !Array.isArray(page.content)) {
@@ -80,55 +85,20 @@ const DynamicPage = () => {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow pt-24">
-          <div className="wirashna-container py-12 flex justify-center items-center">
-            <div className="wirashna-loader"></div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!page) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow pt-24">
-          <div className="wirashna-container py-12">
-            <h1 className="text-2xl font-bold mb-4">الصفحة غير موجودة</h1>
-            <p>الصفحة التي تبحث عنها غير موجودة أو ربما تم حذفها.</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <MainLayout>
       <Helmet>
         <title>{page.title}</title>
         {page.meta_description && <meta name="description" content={page.meta_description} />}
       </Helmet>
       
-      <Navbar />
-      
-      <main className="flex-grow pt-24">
-        <div className="wirashna-container py-12">
-          <h1 className="text-3xl font-bold mb-6">{page.title}</h1>
-          <div className="page-content">
-            {renderPageContent()}
-          </div>
+      <div className="wirashna-container py-12">
+        <h1 className="text-3xl font-bold mb-6">{page.title}</h1>
+        <div className="page-content">
+          {renderPageContent()}
         </div>
-      </main>
-      
-      <Footer />
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 
