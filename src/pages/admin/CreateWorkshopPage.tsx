@@ -5,26 +5,15 @@ import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayou
 import { useToast } from "@/hooks/use-toast";
 import { createWorkshop } from "@/services/workshops";
 import { useAuth } from "@/contexts/AuthContext";
-import { BasicInformationStep } from "@/components/admin/workshop-form/BasicInformationStep";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
+import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
 
 const CreateWorkshopPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, userRole } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm({
-    defaultValues: {
-      title: "",
-      description: "",
-      dates: [],
-      tempDate: "",
-      tempTime: "",
-      duration: "",
-    }
-  });
 
   const handleSubmit = async (data: any) => {
     if (!user) {
@@ -87,11 +76,11 @@ const CreateWorkshopPage = () => {
 
   return (
     <AdminDashboardLayout>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          <BasicInformationStep />
-        </form>
-      </Form>
+      <AdminWorkshopForm 
+        onSubmit={handleSubmit} 
+        onCancel={() => navigate("/admin")}
+        isSubmitting={isSubmitting}
+      />
     </AdminDashboardLayout>
   );
 };
