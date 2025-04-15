@@ -1,4 +1,6 @@
 
+import { Workshop } from "@/types/supabase";
+
 export interface WorkshopDate {
   date: string;
   time: string;
