@@ -22,4 +22,3 @@ export function useWorkshopFetch(id: string | undefined) {
 
   return { workshop, isLoading };
 }
-
