@@ -49,7 +49,6 @@ export const useRegistrationSubmit = ({
       if (workshopPrice > 0) {
         await handlePayment(values);
       } else {
-        // Free workshop, just show success message and redirect
         toast({
           title: "تم تسجيل طلبك بنجاح",
           description: "شكراً لتسجيلك في الورشة",
@@ -69,3 +68,4 @@ export const useRegistrationSubmit = ({
     handleSubmit
   };
 };
+

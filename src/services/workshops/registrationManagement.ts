@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopRegistration } from "@/types/supabase";
+import { recalculateWorkshopSeats } from './registrationSeats';
 
 export const fetchUserRegistrations = async (userId: string): Promise<WorkshopRegistration[]> => {
   const { data, error } = await supabase
