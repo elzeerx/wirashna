@@ -1,17 +1,14 @@
 
 import { useState, useEffect } from "react";
-import WorkshopCard, { workshopToCardProps } from "./WorkshopCard";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { fetchWorkshops } from "@/services/workshops";
 import { Workshop } from "@/types/supabase";
+import { fetchWorkshops } from "@/services/workshops";
 import { useToast } from "@/hooks/use-toast";
+import WorkshopCard, { workshopToCardProps } from "./WorkshopCard";
 
 const WorkshopShowcase = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
   const { toast } = useToast();
-  const workshopsPerPage = 3;
   
   useEffect(() => {
     const loadWorkshops = async () => {
@@ -33,49 +30,11 @@ const WorkshopShowcase = () => {
 
     loadWorkshops();
   }, [toast]);
-  
-  const totalPages = Math.ceil(workshops.length / workshopsPerPage);
-  
-  const displayedWorkshops = workshops
-    .slice(
-      currentPage * workshopsPerPage,
-      (currentPage + 1) * workshopsPerPage
-    );
-  
-  const nextPage = () => {
-    setCurrentPage((prev) => (prev + 1) % Math.max(1, totalPages));
-  };
-  
-  const prevPage = () => {
-    setCurrentPage((prev) => (prev - 1 + Math.max(1, totalPages)) % Math.max(1, totalPages));
-  };
 
   return (
-    <section className="wirashna-section bg-wirashna-primary">
+    <section className="py-16 bg-gray-50">
       <div className="wirashna-container">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold">الورش القادمة</h2>
-          
-          <div className="flex space-x-2 space-x-reverse">
-            <button 
-              onClick={prevPage}
-              className="p-2 rounded-full bg-wirashna-secondary hover:bg-wirashna-accent hover:text-white transition-colors"
-              aria-label="Previous page"
-              disabled={workshops.length === 0}
-            >
-              <ArrowRight size={20} />
-            </button>
-            
-            <button 
-              onClick={nextPage}
-              className="p-2 rounded-full bg-wirashna-secondary hover:bg-wirashna-accent hover:text-white transition-colors"
-              aria-label="Next page"
-              disabled={workshops.length === 0}
-            >
-              <ArrowLeft size={20} />
-            </button>
-          </div>
-        </div>
+        <h2 className="text-2xl font-bold mb-8">الورش المتاحة</h2>
         
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
@@ -87,8 +46,8 @@ const WorkshopShowcase = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayedWorkshops.map((workshop) => (
-              <div key={workshop.id} className="flex justify-center">
+            {workshops.map((workshop) => (
+              <div key={workshop.id}>
                 <WorkshopCard {...workshopToCardProps(workshop)} />
               </div>
             ))}

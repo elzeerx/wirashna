@@ -1,88 +1,103 @@
 
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import { Workshop } from "@/types/supabase";
 
 export interface WorkshopCardProps {
   id: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
-  venue: string;
-  availableSeats: number;
+  instructor: {
+    name: string;
+    title: string;
+    image: string;
+  };
+  price: number;
   image: string;
+  status?: 'قريباً' | 'متاح';
 }
 
-// This component receives props in a different format than the Supabase Workshop type
 const WorkshopCard = ({
   id,
   title,
   description,
-  date,
-  time,
-  venue,
-  availableSeats,
+  instructor,
+  price,
   image,
+  status = 'متاح'
 }: WorkshopCardProps) => {
-  // Default image fallback if no image is provided
-  const imageUrl = image && typeof image === 'string' && image !== '{}' && !image.includes('{}')
-    ? image 
-    : "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
-  
   return (
-    <Link to={`/workshops/${id}`} className="block h-full">
-      <div className="wirashna-card group overflow-hidden flex flex-col h-full hover:shadow-md transition-all duration-300">
-        <div className="relative h-48 mb-4 overflow-hidden rounded-md">
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="relative">
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-48 object-cover"
+        />
+        {status && (
+          <Badge 
+            className={`absolute top-4 right-4 ${
+              status === 'قريباً' ? 'bg-amber-500' : 'bg-emerald-500'
+            }`}
+          >
+            {status}
+          </Badge>
+        )}
+      </div>
+
+      <div className="p-6">
+        <div className="flex items-center gap-3 mb-4">
           <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            src={instructor.image}
+            alt={instructor.name}
+            className="w-10 h-10 rounded-full object-cover"
           />
-        </div>
-        
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
-        
-        <div className="flex items-center text-gray-600 mb-2">
-          <Calendar size={16} className="ml-2" />
-          <span className="text-sm">{date} | {time}</span>
-        </div>
-        
-        <div className="flex items-center text-gray-600 mb-2">
-          <MapPin size={16} className="ml-2" />
-          <span className="text-sm">{venue}</span>
-        </div>
-        
-        <div className="flex items-center text-gray-600 mb-4">
-          <Users size={16} className="ml-2" />
-          <span className="text-sm">{availableSeats} مقعد متبقي</span>
-        </div>
-        
-        <div className="mt-auto">
-          <div className="wirashna-btn-primary block text-center">
-            سجل الآن
+          <div>
+            <h4 className="font-medium">{instructor.name}</h4>
+            <p className="text-sm text-gray-600">{instructor.title}</p>
           </div>
         </div>
+
+        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
+
+        <div className="flex items-center justify-between">
+          <div className="text-sm">
+            {status === 'قريباً' ? (
+              <span className="text-amber-500">قريباً</span>
+            ) : (
+              <span className="text-[#3B49DF] font-bold">{price} د.ك</span>
+            )}
+          </div>
+          
+          <Link to={`/workshops/${id}`}>
+            <Button 
+              variant="default"
+              className={status === 'قريباً' ? 'bg-gray-500' : ''}
+              disabled={status === 'قريباً'}
+            >
+              سجل الآن
+            </Button>
+          </Link>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
-// Helper to convert from Supabase Workshop type to WorkshopCardProps
-export const workshopToCardProps = (workshop: Workshop): WorkshopCardProps => {
-  return {
-    id: workshop.id,
-    title: workshop.title,
-    description: workshop.short_description,
-    date: workshop.date,
-    time: workshop.time,
-    venue: workshop.venue,
-    availableSeats: workshop.available_seats,
-    image: workshop.cover_image && typeof workshop.cover_image === 'string' && workshop.cover_image !== '{}'
-      ? workshop.cover_image 
-      : "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-  };
-};
+export const workshopToCardProps = (workshop: Workshop): WorkshopCardProps => ({
+  id: workshop.id,
+  title: workshop.title,
+  description: workshop.short_description,
+  instructor: {
+    name: workshop.instructor,
+    title: "خبير في المجال",
+    image: workshop.instructor_image || "/placeholder.svg"
+  },
+  price: workshop.price,
+  image: workshop.cover_image || "/placeholder.svg",
+  status: workshop.available_seats > 0 ? 'متاح' : 'قريباً'
+});
 
 export default WorkshopCard;

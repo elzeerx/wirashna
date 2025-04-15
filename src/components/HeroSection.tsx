@@ -1,36 +1,64 @@
 
-import { ArrowRight } from "lucide-react";
+import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
 const HeroSection = () => {
   return (
-    <div className="relative h-[80vh] min-h-[500px] w-full mt-16">
-      <div className="absolute inset-0">
-        <img
-          src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81"
-          alt="Workshop"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div className="relative h-[600px] bg-[#3B49DF] overflow-hidden">
+      <div className="absolute inset-0 flex">
+        <div className="w-24 bg-[#2D3BBA]" />
+        <div className="flex-1">
+          <img
+            src="/lovable-uploads/bfb1fc0a-8b07-4699-bd9d-b3580c646c44.png"
+            alt="Workshop Environment"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[#3B49DF] bg-opacity-80" />
+        </div>
       </div>
-      
-      <div className="wirashna-container relative h-full flex flex-col justify-center items-start">
-        <div className="max-w-2xl animate-fade-in">
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-            اكتشف قوة التدريب العملي وجهًا لوجه
+
+      <div className="wirashna-container relative h-full">
+        <div className="pt-32 max-w-2xl">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            اكتشف ورش عمل متخصصة في صناعة المحتوى والذكاء الاصطناعي
           </h1>
-          
-          <p className="text-lg md:text-xl text-white opacity-90 mb-8">
-            ورش عمل متخصصة لصناعة المحتوى والذكاء الاصطناعي في الكويت والخليج
+          <p className="text-lg text-white/90 mb-8">
+            منصة تعليمية متكاملة تقدم ورش عمل احترافية مع خبراء في المجال
           </p>
-          
-          <Link 
-            to="/workshops" 
-            className="wirashna-btn-primary flex items-center justify-center w-full md:w-auto"
-          >
-            <span>استعرض الورش</span>
-            <ArrowRight size={18} className="mr-2" />
-          </Link>
+          <div className="flex gap-4">
+            <Button variant="default" className="bg-white text-[#3B49DF] hover:bg-white/90">
+              استكشف الورش
+            </Button>
+            <Button variant="outline" className="border-white text-white hover:bg-white/10">
+              كن مدرباً
+            </Button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-0 right-0">
+          <div className="bg-white p-4 rounded-lg shadow-lg flex gap-4">
+            <div className="flex-1">
+              <input
+                type="search"
+                placeholder="ابحث عن ورشة عمل..."
+                className="w-full p-2 border rounded-md"
+              />
+            </div>
+            <div className="w-48">
+              <select className="w-full p-2 border rounded-md">
+                <option>جميع التصنيفات</option>
+              </select>
+            </div>
+            <div className="w-48">
+              <select className="w-full p-2 border rounded-md">
+                <option>السعر</option>
+              </select>
+            </div>
+            <Button type="submit" className="!px-8">
+              <Search className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
