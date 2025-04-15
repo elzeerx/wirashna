@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Workshop } from "@/types/supabase";
+import { WorkshopFormData } from "@/types/workshop";
 
 interface UseWorkshopFormProps {
   initialData?: Partial<Workshop>;
@@ -24,7 +25,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
   );
   
   // Initialize form with default values or initial data
-  const form = useForm({
+  const form = useForm<WorkshopFormData>({
     defaultValues: {
       title: initialData?.title || "",
       short_description: initialData?.short_description || "",
@@ -47,11 +48,11 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       tempDate: null,
       tempTime: "",
       duration: "1",
-      dates: initialData?.dates || [],
+      dates: [],
     },
   });
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: WorkshopFormData) => {
     console.log("Form submit data before processing:", data);
     
     // If in edit mode, preserve the ID
@@ -79,11 +80,10 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     }
 
     // Clean up temporary date selection fields
-    delete data.tempDate;
-    delete data.tempTime;
+    const { tempDate, tempTime, ...cleanedData } = data;
     
-    console.log("Final form data to submit:", data);
-    onSubmit(data);
+    console.log("Final form data to submit:", cleanedData);
+    onSubmit(cleanedData);
   };
 
   // Sync images with form values if needed
@@ -110,4 +110,3 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     handleSubmit: form.handleSubmit(handleSubmit),
   };
 };
-
