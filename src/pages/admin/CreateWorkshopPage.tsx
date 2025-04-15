@@ -1,17 +1,29 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import { useToast } from "@/hooks/use-toast";
 import { createWorkshop } from "@/services/workshops";
 import { useAuth } from "@/contexts/AuthContext";
+import { BasicInformationStep } from "@/components/admin/workshop-form/BasicInformationStep";
+import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
 const CreateWorkshopPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, userRole } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      date: "",
+      time: "",
+      duration: "",
+      venue_type: "physical",
+    }
+  });
 
   const handleSubmit = async (data: any) => {
     if (!user) {
@@ -39,7 +51,6 @@ const CreateWorkshopPage = () => {
       setIsSubmitting(true);
       console.log("Submitting workshop data:", data);
       
-      // Ensure available_seats matches total_seats for new workshops
       await createWorkshop({
         ...data,
         available_seats: data.total_seats,
@@ -50,7 +61,6 @@ const CreateWorkshopPage = () => {
         description: "تمت إضافة الورشة الجديدة إلى قائمة الورش",
       });
       
-      // Navigate back to admin dashboard after successful creation
       navigate("/admin");
     } catch (error: any) {
       console.error("Error creating workshop:", error);
@@ -64,24 +74,13 @@ const CreateWorkshopPage = () => {
     }
   };
 
-  const handleCancel = () => {
-    navigate("/admin");
-  };
-
   return (
     <AdminDashboardLayout>
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">إضافة ورشة جديدة</h2>
-        <p className="text-gray-600">أدخل تفاصيل الورشة الجديدة.</p>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow p-6">
-        <AdminWorkshopForm 
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-        />
-      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <BasicInformationStep />
+        </form>
+      </Form>
     </AdminDashboardLayout>
   );
 };
