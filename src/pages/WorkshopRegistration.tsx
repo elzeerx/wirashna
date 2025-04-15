@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Clock, Calendar, Users } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import RegistrationForm from "@/components/workshop/RegistrationForm";
@@ -10,6 +10,7 @@ import { LogIn } from "lucide-react";
 import { Workshop } from "@/types/supabase";
 import { fetchWorkshopById } from "@/services/workshops";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 const WorkshopRegistration = () => {
   const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null);
@@ -88,40 +89,57 @@ const WorkshopRegistration = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       
-      <main className="flex-grow pt-24">
-        <div className="wirashna-container py-12">
-          <div className="max-w-2xl mx-auto">
-            <div className="wirashna-card">
-              <h1 className="text-2xl font-bold mb-6 text-center">
-                {isRetry ? "إعادة محاولة الدفع" : "تسجيل في ورشة"}
-                {selectedWorkshop && ` "${selectedWorkshop.title}"`}
-              </h1>
-              
-              {isRetry && (
-                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
-                  <p className="text-amber-700 font-semibold">
-                    فشلت عملية الدفع السابقة، يمكنك المحاولة مرة أخرى الآن.
-                  </p>
+      <main className="flex-grow pt-6">
+        <div className="wirashna-container">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            className="mb-6"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="ml-2" />
+            عودة
+          </Button>
+
+          {selectedWorkshop && (
+            <div className="max-w-5xl mx-auto">
+              {/* Workshop Image and Details */}
+              <div className="bg-white rounded-lg overflow-hidden shadow-sm mb-8">
+                <img 
+                  src={selectedWorkshop.cover_image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c"} 
+                  alt={selectedWorkshop.title}
+                  className="w-full h-64 object-cover"
+                />
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h1 className="text-2xl font-bold">{selectedWorkshop.title}</h1>
+                    {selectedWorkshop.available_seats > 0 && (
+                      <Badge className="bg-emerald-500">متاح</Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-primary" />
+                      <span>تاريخ البدء: {selectedWorkshop.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-primary" />
+                      <span>المدة: {selectedWorkshop.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-primary" />
+                      <span>المقاعد المتبقية: {selectedWorkshop.available_seats} من {selectedWorkshop.total_seats}</span>
+                    </div>
+                  </div>
                 </div>
-              )}
-              
-              {selectedWorkshop && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                  <p className="font-bold text-lg">معلومات الورشة:</p>
-                  <p>التاريخ: {selectedWorkshop.date}</p>
-                  <p>الوقت: {selectedWorkshop.time}</p>
-                  <p>المكان: {selectedWorkshop.venue}</p>
-                  <p className="font-bold text-wirashna-accent">
-                    السعر: {selectedWorkshop.price} د.ك
-                  </p>
-                </div>
-              )}
-              
+              </div>
+
+              {/* Registration Form */}
               {!user ? (
-                <div className="text-center py-8">
+                <div className="text-center py-8 bg-white rounded-lg shadow-sm">
                   <p className="mb-6 text-lg">
                     يرجى تسجيل الدخول أو إنشاء حساب للتسجيل في الورشة
                   </p>
@@ -134,19 +152,19 @@ const WorkshopRegistration = () => {
                   </Button>
                 </div>
               ) : (
-                <RegistrationForm 
-                  workshopId={selectedWorkshop?.id}
-                  userEmail={user.email || ""}
-                  workshopPrice={selectedWorkshop?.price || 0}
-                  isRetry={isRetry}
-                />
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <RegistrationForm 
+                    workshopId={selectedWorkshop.id}
+                    userEmail={user.email || ""}
+                    workshopPrice={selectedWorkshop.price || 0}
+                    isRetry={isRetry}
+                  />
+                </div>
               )}
             </div>
-          </div>
+          )}
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

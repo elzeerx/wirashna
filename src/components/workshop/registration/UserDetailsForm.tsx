@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const formSchema = z.object({
   fullName: z.string().min(3, { message: "الرجاء إدخال الاسم الكامل" }),
@@ -37,6 +38,8 @@ const UserDetailsForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <h3 className="text-lg font-semibold mb-6">تفاصيل الدفع</h3>
+        
         <FormField
           control={form.control}
           name="fullName"
@@ -46,7 +49,11 @@ const UserDetailsForm = ({
               <FormControl>
                 <div className="flex">
                   <User size={18} className="absolute mt-3 mr-3 text-gray-400" />
-                  <Input className="pr-10" placeholder="أدخل اسمك الكامل" {...field} />
+                  <Input 
+                    className="pr-10 bg-gray-50" 
+                    placeholder="أدخل اسمك الكامل" 
+                    {...field} 
+                  />
                 </div>
               </FormControl>
               <FormMessage />
@@ -64,9 +71,9 @@ const UserDetailsForm = ({
                 <div className="flex">
                   <Mail size={18} className="absolute mt-3 mr-3 text-gray-400" />
                   <Input 
-                    className="pr-10" 
+                    className="pr-10 bg-gray-50" 
                     type="email" 
-                    placeholder="example@example.com" 
+                    placeholder="your@email.com" 
                     {...field} 
                     readOnly={readOnlyEmail} 
                   />
@@ -86,7 +93,11 @@ const UserDetailsForm = ({
               <FormControl>
                 <div className="flex">
                   <Phone size={18} className="absolute mt-3 mr-3 text-gray-400" />
-                  <Input className="pr-10" placeholder="+965 XXXX XXXX" {...field} />
+                  <Input 
+                    className="pr-10 bg-gray-50" 
+                    placeholder="00965xxxxxxxx" 
+                    {...field} 
+                  />
                 </div>
               </FormControl>
               <FormMessage />
