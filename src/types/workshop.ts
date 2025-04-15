@@ -14,3 +14,26 @@ export interface WorkshopFormData extends Omit<Workshop, 'date' | 'time'> {
   tempTime: string;
   duration: string;
 }
+
+export interface WorkshopGalleryProps {
+  mainImage?: string;
+  gallery?: string[];
+  title: string;
+}
+
+export interface WorkshopSidebarProps {
+  dates: WorkshopDate[];
+  venue: string;
+  location: string;
+  availableSeats: number;
+  totalSeats: number;
+  price: string | number;
+  workshopId: string;
+}
+
+export interface WorkshopDetailsSectionProps {
+  objectives?: string[];
+  benefits?: string[];
+  requirements?: string[];
+  targetAudience?: string[];
+}
