@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { registerForWorkshop, recalculateWorkshopSeats, cleanupFailedRegistrations } from "@/services/workshops";
-import { createTapPayment } from "@/services/payment";
 import { UserFormData } from "../UserDetailsForm";
+import { useRegistrationValidation } from "./useRegistrationValidation";
+import { useRegistrationHandler } from "./useRegistrationHandler";
+import { usePaymentHandler } from "./usePaymentHandler";
 
 type UseRegistrationSubmitProps = {
   workshopId?: string;
@@ -18,125 +18,36 @@ export const useRegistrationSubmit = ({
   workshopPrice = 0,
   isRetry = false
 }: UseRegistrationSubmitProps) => {
-  const { toast } = useToast();
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { validateRegistration } = useRegistrationValidation();
+  
+  const userId = "user?.id"; // This will be replaced by the actual user ID from auth context
+  
+  const { handleRegistration, isProcessing: isRegistrationProcessing } = 
+    useRegistrationHandler({ workshopId: workshopId!, userId, isRetry });
+  
+  const { handlePayment, isProcessing: isPaymentProcessing } = 
+    usePaymentHandler({ workshopId: workshopId!, userId, price: workshopPrice, isRetry });
 
   const handleSubmit = async (values: UserFormData) => {
-    if (!workshopId || !user) {
-      toast({
-        title: "خطأ في التسجيل",
-        description: "يرجى تسجيل الدخول والتأكد من اختيار ورشة صحيحة",
-        variant: "destructive",
-      });
+    if (!validateRegistration(workshopId, userId)) {
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      console.log("Starting registration process for workshop:", workshopId, "User:", user.id, "Is retry:", isRetry);
+      const registrationSuccess = await handleRegistration(values);
       
-      // If it's not a retry, first cleanup any failed registrations
-      if (!isRetry) {
-        try {
-          await cleanupFailedRegistrations(workshopId);
-        } catch (cleanupError) {
-          // Log but continue if cleanup fails
-          console.error("Failed to cleanup registrations, but continuing:", cleanupError);
-        }
+      if (!registrationSuccess) {
+        setIsSubmitting(false);
+        return;
       }
-      
-      // Register for the workshop first (or update existing registration if it's a retry)
-      let registration;
-      try {
-        registration = await registerForWorkshop({
-          workshop_id: workshopId,
-          user_id: user.id,
-          full_name: values.fullName,
-          email: values.email,
-          phone: values.phone,
-          notes: isRetry ? "Payment Retry" : "Payment Method: credit"
-        });
-        
-        console.log("Registration successful:", registration);
-      } catch (registrationError: any) {
-        console.error("Registration step error:", registrationError);
-        
-        // Handle specific registration errors
-        if (registrationError.message && 
-            (registrationError.message.includes("duplicate key") || 
-             registrationError.name === "DuplicateRegistrationError")) {
-          // Don't show error for retries, as they might have existing registrations
-          if (!isRetry) {
-            toast({
-              title: "لا يمكن التسجيل مرة أخرى",
-              description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً. إذا كنت تحاول إعادة الدفع، يرجى استخدام خيار إعادة المحاولة من صفحة الملف الشخصي.",
-              variant: "destructive",
-            });
-          }
-          setIsSubmitting(false);
-          return;
-        }
-        
-        // If it's any other registration error, rethrow it to be caught by the outer try/catch
-        throw registrationError;
-      }
-      
-      // Process online payment
+
       if (workshopPrice > 0) {
-        console.log("Processing payment for amount:", workshopPrice);
-        try {
-          const paymentResult = await createTapPayment(
-            workshopPrice,
-            workshopId,
-            user.id,
-            {
-              name: values.fullName,
-              email: values.email,
-              phone: values.phone
-            },
-            isRetry
-          );
-          
-          if (paymentResult.success && paymentResult.redirect_url) {
-            console.log("Payment created successfully, redirecting to:", paymentResult.redirect_url);
-            // Redirect to Tap payment page
-            window.location.href = paymentResult.redirect_url;
-            return;
-          } else {
-            console.error("Payment creation failed:", paymentResult.error);
-            
-            // Attempt to recalculate seats
-            try {
-              await recalculateWorkshopSeats(workshopId);
-            } catch (recalcError) {
-              console.error("Failed to recalculate seats:", recalcError);
-            }
-            
-            toast({
-              title: "خطأ في معالجة الدفع",
-              description: paymentResult.error || "حدث خطأ أثناء إنشاء عملية الدفع",
-              variant: "destructive",
-            });
-          }
-        } catch (paymentError: any) {
-          console.error("Payment processing error:", paymentError);
-          
-          // Attempt to recalculate seats
-          try {
-            await recalculateWorkshopSeats(workshopId);
-          } catch (recalcError) {
-            console.error("Failed to recalculate seats:", recalcError);
-          }
-          
-          toast({
-            title: "خطأ في معالجة الدفع",
-            description: paymentError.message || "حدث خطأ أثناء معالجة عملية الدفع",
-            variant: "destructive",
-          });
-        }
+        await handlePayment(values);
       } else {
         // Free workshop, just show success message and redirect
         toast({
@@ -144,51 +55,9 @@ export const useRegistrationSubmit = ({
           description: "شكراً لتسجيلك في الورشة",
         });
         
-        // Redirect to home page after successful registration
         setTimeout(() => {
           navigate("/");
         }, 2000);
-      }
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      
-      // Try to recalculate seats in case of error
-      if (workshopId) {
-        try {
-          await recalculateWorkshopSeats(workshopId);
-        } catch (recalcError) {
-          console.error("Failed to recalculate seats:", recalcError);
-        }
-      }
-      
-      // If it's a DuplicateRegistrationError, show a specific message
-      if (error.name === "DuplicateRegistrationError" || (error.message && error.message.includes("duplicate key"))) {
-        if (isRetry) {
-          toast({
-            title: "جاري معالجة طلبك السابق",
-            description: "يبدو أن لديك تسجيل سابق قيد المعالجة. يرجى الانتظار حتى اكتمال العملية أو التواصل مع الدعم الفني.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "لا يمكن التسجيل مرة أخرى",
-            description: "لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى.",
-            variant: "destructive",
-          });
-        }
-      } else if (error.code === "PGRST116") {
-        // This is the "JSON object requested, multiple (or no) rows returned" error
-        toast({
-          title: "خطأ في نظام التسجيل",
-          description: "هناك مشكلة في بيانات التسجيل. يرجى المحاولة مرة أخرى لاحقاً أو التواصل مع الدعم الفني.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "خطأ في التسجيل",
-          description: error.message || "حدث خطأ أثناء التسجيل. الرجاء المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
       }
     } finally {
       setIsSubmitting(false);
@@ -196,7 +65,7 @@ export const useRegistrationSubmit = ({
   };
 
   return {
-    isSubmitting,
+    isSubmitting: isSubmitting || isRegistrationProcessing || isPaymentProcessing,
     handleSubmit
   };
 };
