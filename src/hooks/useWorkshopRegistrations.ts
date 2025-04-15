@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchUserRegistrations, fetchUserCertificates } from "@/services/workshopService";
+import { fetchUserRegistrations } from "@/services/workshopService";
+import { fetchUserCertificates } from "@/services/certificateService";
 import { WorkshopRegistration } from "@/types/supabase";
 
 export const useWorkshopRegistrations = () => {
