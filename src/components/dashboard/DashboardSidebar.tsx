@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, ChevronLeft, LayoutDashboard, Calendar, FileText, Settings, Award, Users, BookOpen } from "lucide-react";
@@ -58,16 +57,9 @@ const DashboardSidebar = () => {
 
       <div className="p-4">
         <div className="space-y-1">
-          {/* Common links for all roles */}
+          {/* Subscriber links */}
           {userRole === 'subscriber' && (
             <>
-              <SidebarLink
-                href="/dashboard"
-                icon={<LayoutDashboard size={20} />}
-                label="لوحة التحكم"
-                isActive={isActive("/dashboard")}
-                isCollapsed={isCollapsed}
-              />
               <SidebarLink
                 href="/dashboard/workshops"
                 icon={<Calendar size={20} />}
@@ -87,40 +79,6 @@ const DashboardSidebar = () => {
                 icon={<FileText size={20} />}
                 label="المواد التعليمية"
                 isActive={isActive("/dashboard/materials")}
-                isCollapsed={isCollapsed}
-              />
-            </>
-          )}
-
-          {/* Supervisor links */}
-          {userRole === 'supervisor' && (
-            <>
-              <SidebarLink
-                href="/supervisor"
-                icon={<LayoutDashboard size={20} />}
-                label="لوحة التحكم"
-                isActive={isActive("/supervisor")}
-                isCollapsed={isCollapsed}
-              />
-              <SidebarLink
-                href="/supervisor/workshops"
-                icon={<Calendar size={20} />}
-                label="إدارة الورش"
-                isActive={isActive("/supervisor/workshops")}
-                isCollapsed={isCollapsed}
-              />
-              <SidebarLink
-                href="/supervisor/materials"
-                icon={<BookOpen size={20} />}
-                label="إدارة المواد"
-                isActive={isActive("/supervisor/materials")}
-                isCollapsed={isCollapsed}
-              />
-              <SidebarLink
-                href="/supervisor/statistics"
-                icon={<FileText size={20} />}
-                label="الإحصائيات"
-                isActive={isActive("/supervisor/statistics")}
                 isCollapsed={isCollapsed}
               />
             </>

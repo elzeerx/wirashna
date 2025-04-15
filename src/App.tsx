@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,10 +22,6 @@ const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage")
 const CreateWorkshopPage = lazy(() => import("@/pages/admin/CreateWorkshopPage"));
 const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
 const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
-
-// User dashboard
-const SubscriberDashboard = lazy(() => import("@/pages/SubscriberDashboard"));
-const SupervisorDashboard = lazy(() => import("@/pages/SupervisorDashboard"));
 
 function App() {
   const { isAdmin, isSupervisor } = useAuth();
@@ -82,20 +77,12 @@ function App() {
           
           {/* User dashboard routes */}
           <Route 
-            path="/supervisor" 
-            element={
-              <ProtectedRoute condition={isSupervisor || isAdmin}>
-                <SupervisorDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route 
             path="/dashboard" 
             element={
               <ProtectedRoute>
                 {isAdmin ? <Navigate to="/admin" replace /> : 
-                 isSupervisor ? <Navigate to="/supervisor" replace /> : 
-                 <SubscriberDashboard />}
+                 isSupervisor ? <Navigate to="/admin" replace /> : 
+                 <Navigate to="/dashboard/workshops" replace />}
               </ProtectedRoute>
             }
           />
