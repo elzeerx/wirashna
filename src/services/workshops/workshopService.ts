@@ -18,7 +18,7 @@ export const fetchWorkshops = async (): Promise<Workshop[]> => {
 export const fetchWorkshopById = async (id: string): Promise<Workshop | null> => {
   const { data, error } = await supabase
     .from('workshops')
-    .select('*')
+    .select('*, workshop_materials(*)')
     .eq('id', id)
     .single();
 
