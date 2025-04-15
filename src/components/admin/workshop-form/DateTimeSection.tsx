@@ -95,6 +95,10 @@ export const DateTimeSection = () => {
               { value: "2", label: "ساعتان" },
               { value: "3", label: "3 ساعات" },
               { value: "4", label: "4 ساعات" },
+              { value: "5", label: "5 ساعات" },
+              { value: "6", label: "6 ساعات" },
+              { value: "7", label: "7 ساعات" },
+              { value: "8", label: "8 ساعات" },
             ]}
             required
           />
