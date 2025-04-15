@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Workshop } from "@/types/supabase";
@@ -28,8 +29,6 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       title: initialData?.title || "",
       short_description: initialData?.short_description || "",
       long_description: initialData?.long_description || "",
-      date: initialData?.date || "",
-      time: initialData?.time || "",
       venue: initialData?.venue || "",
       location: initialData?.location || "",
       available_seats: initialData?.available_seats || 0,
@@ -44,6 +43,11 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       requirements: initialData?.requirements || [],
       objectives: initialData?.objectives || [],
       target_audience: initialData?.target_audience || [],
+      // Add fields for date selection
+      tempDate: null,
+      tempTime: "",
+      duration: "1",
+      dates: initialData?.dates || [],
     },
   });
 
@@ -61,7 +65,6 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     data.price = Number(data.price);
     
     // Make sure image URLs from state are included in submission
-    // This ensures they don't get lost if the form state doesn't have them
     if (coverImage && !data.cover_image) {
       data.cover_image = coverImage;
     }
@@ -74,6 +77,10 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     if (!data.gallery || data.gallery.length === 0) {
       data.gallery = data.cover_image ? [data.cover_image] : [];
     }
+
+    // Clean up temporary date selection fields
+    delete data.tempDate;
+    delete data.tempTime;
     
     console.log("Final form data to submit:", data);
     onSubmit(data);
@@ -103,3 +110,4 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     handleSubmit: form.handleSubmit(handleSubmit),
   };
 };
+
