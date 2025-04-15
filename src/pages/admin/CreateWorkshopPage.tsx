@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
@@ -18,8 +19,9 @@ const CreateWorkshopPage = () => {
     defaultValues: {
       title: "",
       description: "",
-      date: "",
-      time: "",
+      dates: [],
+      tempDate: "",
+      tempTime: "",
       duration: "",
     }
   });
@@ -34,9 +36,6 @@ const CreateWorkshopPage = () => {
       return;
     }
 
-    console.log("Current user role:", userRole);
-    console.log("Current user ID:", user.id);
-    
     if (userRole !== 'admin' && userRole !== 'supervisor') {
       toast({
         title: "غير مصرح",
@@ -46,14 +45,27 @@ const CreateWorkshopPage = () => {
       return;
     }
 
+    if (!data.dates || data.dates.length === 0) {
+      toast({
+        title: "خطأ في البيانات",
+        description: "يجب إضافة موعد واحد على الأقل للورشة",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       console.log("Submitting workshop data:", data);
       
-      await createWorkshop({
-        ...data,
-        available_seats: data.total_seats,
-      });
+      // Submit each date as a separate workshop
+      for (const dateInfo of data.dates) {
+        await createWorkshop({
+          ...data,
+          date: dateInfo.date,
+          time: dateInfo.time,
+        });
+      }
       
       toast({
         title: "تم إنشاء الورشة بنجاح",
