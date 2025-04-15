@@ -55,6 +55,7 @@ export const BasicInformationStep = () => {
             <div className="relative">
               <FormSection
                 name="time"
+                label="وقت البدء"
                 placeholder="--:--"
                 type="time"
                 required
