@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,6 +24,11 @@ const CreateWorkshopPage = lazy(() => import("@/pages/admin/CreateWorkshopPage")
 const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
 const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
 
+// Subscriber routes
+const SubscriberWorkshopsPage = lazy(() => import("@/pages/SubscriberWorkshops"));
+const SubscriberCertificatesPage = lazy(() => import("@/pages/SubscriberCertificates"));
+const SubscriberMaterialsPage = lazy(() => import("@/pages/SubscriberMaterials"));
+
 function App() {
   const { isAdmin, isSupervisor } = useAuth();
 
@@ -45,7 +51,7 @@ function App() {
           <Route 
             path="/admin" 
             element={
-              <ProtectedRoute condition={isAdmin}>
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <AdminDashboardPage />
               </ProtectedRoute>
             }
@@ -53,7 +59,7 @@ function App() {
           <Route 
             path="/admin/workshops/create" 
             element={
-              <ProtectedRoute condition={isAdmin}>
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <CreateWorkshopPage />
               </ProtectedRoute>
             }
@@ -61,7 +67,7 @@ function App() {
           <Route 
             path="/admin/workshops/edit/:id" 
             element={
-              <ProtectedRoute condition={isAdmin}>
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <EditWorkshopPage />
               </ProtectedRoute>
             }
@@ -69,8 +75,34 @@ function App() {
           <Route 
             path="/admin/system-repair" 
             element={
-              <ProtectedRoute condition={isAdmin}>
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <SystemRepairPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Subscriber routes */}
+          <Route 
+            path="/dashboard/workshops" 
+            element={
+              <ProtectedRoute>
+                <SubscriberWorkshopsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/dashboard/certificates" 
+            element={
+              <ProtectedRoute>
+                <SubscriberCertificatesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/dashboard/materials" 
+            element={
+              <ProtectedRoute>
+                <SubscriberMaterialsPage />
               </ProtectedRoute>
             }
           />
@@ -80,8 +112,7 @@ function App() {
             path="/dashboard" 
             element={
               <ProtectedRoute>
-                {isAdmin ? <Navigate to="/admin" replace /> : 
-                 isSupervisor ? <Navigate to="/admin" replace /> : 
+                {isAdmin || isSupervisor ? <Navigate to="/admin" replace /> : 
                  <Navigate to="/dashboard/workshops" replace />}
               </ProtectedRoute>
             }
