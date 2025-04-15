@@ -10,7 +10,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
       .select('*')
       .eq('user_id', registration.user_id)
       .eq('workshop_id', registration.workshop_id)
-      .maybeSingle();  // Use maybeSingle() instead of single()
+      .maybeSingle();
 
     if (checkError) {
       console.error("Error checking existing workshop registration:", checkError);
@@ -34,7 +34,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
           phone: registration.phone,
           notes: registration.notes,
           status: 'pending',
-          payment_status: 'processing',  // Changed from 'unpaid' to 'processing'
+          payment_status: 'processing',
           updated_at: new Date().toISOString()
         })
         .eq('id', existingRegistration.id)
@@ -62,7 +62,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     const registrationData = {
       ...registration,
       status: 'pending' as const,
-      payment_status: 'processing' as const  // Changed from 'unpaid' to 'processing'
+      payment_status: 'processing' as const
     };
 
     const { data, error } = await supabase
@@ -74,7 +74,6 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     if (error) {
       console.error("Error registering for workshop:", error);
       
-      // If the error is about a duplicate, provide a more helpful error message
       if (error.message && error.message.includes("duplicate key value violates unique constraint")) {
         const duplicateError = new Error("لقد قمت بالتسجيل في هذه الورشة مسبقاً ولا يمكن التسجيل مرة أخرى");
         duplicateError.name = "DuplicateRegistrationError";
@@ -91,257 +90,6 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
   }
 };
 
-export const fetchUserRegistrations = async (userId: string): Promise<WorkshopRegistration[]> => {
-  const { data, error } = await supabase
-    .from('workshop_registrations')
-    .select('*, workshops(*)')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error("Error fetching user registrations:", error);
-    throw error;
-  }
-
-  return (data || []) as WorkshopRegistration[];
-};
-
-export const cancelRegistration = async (registrationId: string): Promise<void> => {
-  const { error } = await supabase
-    .from('workshop_registrations')
-    .update({ status: 'canceled' as const })
-    .eq('id', registrationId);
-
-  if (error) {
-    console.error(`Error canceling registration ${registrationId}:`, error);
-    throw error;
-  }
-};
-
-export const fetchWorkshopRegistrations = async (workshopId: string): Promise<WorkshopRegistration[]> => {
-  const { data, error } = await supabase
-    .from('workshop_registrations')
-    .select('*')
-    .eq('workshop_id', workshopId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error(`Error fetching registrations for workshop ${workshopId}:`, error);
-    throw error;
-  }
-
-  return (data || []) as WorkshopRegistration[];
-};
-
-export const updateRegistrationStatus = async (registrationId: string, updates: Partial<WorkshopRegistration>): Promise<WorkshopRegistration> => {
-  try {
-    // Add updated_at timestamp
-    const updatedData = {
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
-    
-    const { data, error } = await supabase
-      .from('workshop_registrations')
-      .update(updatedData)
-      .eq('id', registrationId)
-      .select('*')
-      .single();
-
-    if (error) {
-      console.error(`Error updating registration ${registrationId}:`, error);
-      throw error;
-    }
-
-    // If the status is changing to 'confirmed' and payment_status to 'paid', 
-    // ensure available seats are correctly calculated
-    if (updatedData.status === 'confirmed' || updatedData.payment_status === 'paid') {
-      try {
-        // Get the workshop ID
-        const workshopId = data.workshop_id;
-        await recalculateWorkshopSeats(workshopId);
-      } catch (recalcError) {
-        console.error("Error recalculating seats after status update:", recalcError);
-        // Continue despite error - we don't want to fail the update
-      }
-    }
-
-    return data as WorkshopRegistration;
-  } catch (error) {
-    console.error(`Error in updateRegistrationStatus:`, error);
-    throw error;
-  }
-};
-
-export const resetRegistration = async (registrationId: string): Promise<void> => {
-  try {
-    // First get the registration to get the workshop ID
-    const { data: registration, error: getError } = await supabase
-      .from('workshop_registrations')
-      .select('workshop_id')
-      .eq('id', registrationId)
-      .single();
-      
-    if (getError) {
-      console.error(`Error getting registration ${registrationId}:`, getError);
-      throw getError;
-    }
-    
-    const workshopId = registration.workshop_id;
-    
-    // Now update the registration
-    const { error } = await supabase
-      .from('workshop_registrations')
-      .update({ 
-        status: 'canceled', 
-        payment_status: 'failed',
-        updated_at: new Date().toISOString(),
-        admin_notes: 'Reset by admin to allow re-registration'
-      })
-      .eq('id', registrationId);
-
-    if (error) {
-      console.error(`Error resetting registration ${registrationId}:`, error);
-      throw error;
-    }
-    
-    // Recalculate seats after reset
-    await recalculateWorkshopSeats(workshopId);
-  } catch (error) {
-    console.error(`Error in resetRegistration:`, error);
-    throw error;
-  }
-};
-
-export const deleteRegistration = async (registrationId: string): Promise<void> => {
-  try {
-    // First get the registration to get the workshop ID
-    const { data: registration, error: getError } = await supabase
-      .from('workshop_registrations')
-      .select('workshop_id')
-      .eq('id', registrationId)
-      .single();
-      
-    if (getError) {
-      console.error(`Error getting registration ${registrationId}:`, getError);
-      throw getError;
-    }
-    
-    const workshopId = registration.workshop_id;
-    
-    // Now delete the registration
-    const { error } = await supabase
-      .from('workshop_registrations')
-      .delete()
-      .eq('id', registrationId);
-
-    if (error) {
-      console.error(`Error deleting registration ${registrationId}:`, error);
-      throw error;
-    }
-    
-    // Recalculate seats after deletion
-    await recalculateWorkshopSeats(workshopId);
-  } catch (error) {
-    console.error(`Error in deleteRegistration:`, error);
-    throw error;
-  }
-};
-
-export const cleanupFailedRegistrations = async (workshopId: string): Promise<void> => {
-  try {
-    // Get all registrations for this workshop with failed or processing payment status
-    const { data: failedRegistrations, error: fetchError } = await supabase
-      .from('workshop_registrations')
-      .select('id')
-      .eq('workshop_id', workshopId)
-      .in('payment_status', ['failed', 'processing'])
-      .eq('status', 'pending');
-    
-    if (fetchError) {
-      console.error(`Error fetching failed registrations for workshop ${workshopId}:`, fetchError);
-      throw fetchError;
-    }
-    
-    if (failedRegistrations && failedRegistrations.length > 0) {
-      console.log(`Found ${failedRegistrations.length} failed registrations to cleanup`);
-      
-      // Update all failed registrations to canceled status
-      const registrationIds = failedRegistrations.map(reg => reg.id);
-      const { error: updateError } = await supabase
-        .from('workshop_registrations')
-        .update({ 
-          status: 'canceled',
-          updated_at: new Date().toISOString()
-        })
-        .in('id', registrationIds);
-      
-      if (updateError) {
-        console.error(`Error updating failed registrations:`, updateError);
-        throw updateError;
-      }
-      
-      console.log(`Successfully cleaned up ${failedRegistrations.length} failed registrations`);
-      
-      // Recalculate seats after cleanup
-      await recalculateWorkshopSeats(workshopId);
-    } else {
-      console.log(`No failed registrations found for workshop ${workshopId}`);
-    }
-  } catch (error) {
-    console.error(`Error cleaning up failed registrations:`, error);
-    throw error;
-  }
-};
-
-export const recalculateWorkshopSeats = async (workshopId: string): Promise<void> => {
-  try {
-    console.log(`Starting recalculation of seats for workshop ${workshopId}`);
-    
-    // Get workshop details
-    const { data: workshop, error: workshopError } = await supabase
-      .from('workshops')
-      .select('total_seats')
-      .eq('id', workshopId)
-      .single();
-    
-    if (workshopError) {
-      console.error(`Error fetching workshop ${workshopId}:`, workshopError);
-      throw workshopError;
-    }
-    
-    // Count confirmed and paid registrations only
-    const { count, error: countError } = await supabase
-      .from('workshop_registrations')
-      .select('*', { count: 'exact', head: true })
-      .eq('workshop_id', workshopId)
-      .eq('payment_status', 'paid');
-    
-    if (countError) {
-      console.error(`Error counting confirmed registrations:`, countError);
-      throw countError;
-    }
-    
-    const totalSeats = workshop.total_seats;
-    const confirmedRegistrations = count || 0;
-    const availableSeats = Math.max(0, totalSeats - confirmedRegistrations);
-    
-    console.log(`Workshop ${workshopId}: Total seats ${totalSeats}, Confirmed paid registrations ${confirmedRegistrations}, Available seats ${availableSeats}`);
-    
-    // Update workshop available seats
-    const { error: updateError } = await supabase
-      .from('workshops')
-      .update({ available_seats: availableSeats })
-      .eq('id', workshopId);
-    
-    if (updateError) {
-      console.error(`Error updating workshop available seats:`, updateError);
-      throw updateError;
-    }
-    
-    console.log(`Successfully recalculated available seats for workshop ${workshopId}`);
-  } catch (error) {
-    console.error(`Error recalculating workshop seats:`, error);
-    throw error;
-  }
-};
+export * from './registrationManagement';
+export * from './registrationStatus';
+export * from './registrationSeats';
