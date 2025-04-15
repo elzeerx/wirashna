@@ -1,19 +1,18 @@
 
 import { useState, useEffect } from "react";
 import { Calendar, Award, BookOpen, UserRound } from "lucide-react";
-import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import StatisticsCard from "@/components/dashboard/StatisticsCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import StatisticsOverview from "@/components/admin/dashboard/StatisticsOverview";
+import QuickActions from "@/components/admin/dashboard/QuickActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchUserRegistrations } from "@/services/workshopService";
 import { fetchUserCertificates } from "@/services/certificateService";
-import { WorkshopRegistration, WorkshopCertificate } from "@/types/supabase";
 
 const SubscriberDashboard = () => {
   const { user, userProfile } = useAuth();
-  const [registrations, setRegistrations] = useState<WorkshopRegistration[]>([]);
-  const [certificates, setCertificates] = useState<WorkshopCertificate[]>([]);
+  const [registrations, setRegistrations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,13 +21,8 @@ const SubscriberDashboard = () => {
       
       try {
         setIsLoading(true);
-        const [registrationsData, certificatesData] = await Promise.all([
-          fetchUserRegistrations(user.id),
-          fetchUserCertificates(user.id)
-        ]);
-        
+        const registrationsData = await fetchUserRegistrations(user.id);
         setRegistrations(registrationsData);
-        setCertificates(certificatesData);
       } catch (error) {
         console.error("Error loading user data:", error);
       } finally {
@@ -39,141 +33,96 @@ const SubscriberDashboard = () => {
     loadUserData();
   }, [user]);
 
-  // Function to get recommended workshops based on user's history
-  // This would be more sophisticated in a real app using AI
-  const getRecommendedWorkshops = () => {
-    return [
-      {
-        id: "1",
-        title: "تطوير تطبيقات الويب",
-        date: "١٥ مايو ٢٠٢٥",
-        image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=2888&auto=format&fit=crop"
-      },
-      {
-        id: "2",
-        title: "تصميم واجهات المستخدم",
-        date: "٢٠ مايو ٢٠٢٥",
-        image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?q=80&w=2940&auto=format&fit=crop"
-      }
-    ];
-  };
+  const stats = [
+    {
+      title: "الورش المسجلة",
+      value: registrations.length,
+      icon: <Calendar className="h-5 w-5" />,
+      color: "bg-blue-100",
+      bgClass: "text-blue-500",
+    },
+    {
+      title: "الشهادات",
+      value: "6",
+      icon: <Award className="h-5 w-5" />,
+      color: "bg-green-100",
+      bgClass: "text-green-500",
+    },
+    {
+      title: "الدروس المكتملة",
+      value: "8/6",
+      icon: <BookOpen className="h-5 w-5" />,
+      color: "bg-purple-100",
+      bgClass: "text-purple-500",
+    },
+    {
+      title: "الملف الشخصي",
+      value: "مكتمل",
+      icon: <UserRound className="h-5 w-5" />,
+      color: "bg-orange-100",
+      bgClass: "text-orange-500",
+    },
+  ];
 
-  const recommendedWorkshops = getRecommendedWorkshops();
+  const quickActions = [
+    {
+      id: "workshops",
+      title: "الورش",
+      icon: <Calendar className="h-6 w-6" />,
+      color: "bg-blue-100 text-blue-500",
+      onClick: () => {},
+    },
+    {
+      id: "certificates",
+      title: "الشهادات",
+      icon: <Award className="h-6 w-6" />,
+      color: "bg-green-100 text-green-500",
+      onClick: () => {},
+    },
+    {
+      id: "schedule",
+      title: "الجدول",
+      icon: <Calendar className="h-6 w-6" />,
+      color: "bg-purple-100 text-purple-500",
+      onClick: () => {},
+    },
+    {
+      id: "support",
+      title: "الدعم الفني",
+      icon: <UserRound className="h-6 w-6" />,
+      color: "bg-orange-100 text-orange-500",
+      onClick: () => {},
+    },
+  ];
 
   return (
     <DashboardLayout title="لوحة التحكم" requireRole="subscriber">
-      <div className="mb-8">
-        <h2 className="text-xl mb-4">مرحباً {userProfile?.full_name || user?.email}</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatisticsCard
-            title="الورش المسجلة"
-            value={registrations.length}
-            icon={<Calendar className="h-4 w-4" />}
-          />
-          <StatisticsCard
-            title="الشهادات"
-            value={certificates.length}
-            icon={<Award className="h-4 w-4" />}
-          />
-          <StatisticsCard
-            title="المواد التعليمية"
-            value="23"
-            icon={<BookOpen className="h-4 w-4" />}
-          />
-          <StatisticsCard
-            title="الملف الشخصي"
-            value="مكتمل"
-            icon={<UserRound className="h-4 w-4" />}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">الورش القادمة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-4">
-                <div className="wirashna-loader"></div>
-              </div>
-            ) : registrations.length > 0 ? (
-              <div className="space-y-4">
-                {registrations.slice(0, 3).map((registration: any) => (
-                  <div key={registration.id} className="flex items-center p-3 border rounded-md">
-                    <div className="ml-3">
-                      <span className="text-sm text-gray-500">
-                        {registration.workshops?.date}
-                      </span>
-                      <h3 className="font-medium">
-                        {registration.workshops?.title}
-                      </h3>
-                    </div>
-                    <Link 
-                      to={`/workshops/${registration.workshop_id}`}
-                      className="mr-auto text-sm text-wirashna-accent hover:underline"
-                    >
-                      التفاصيل
-                    </Link>
-                  </div>
-                ))}
-                
-                <div className="text-center pt-2">
-                  <Link 
-                    to="/dashboard/workshops"
-                    className="text-sm text-wirashna-accent hover:underline"
-                  >
-                    عرض كل الورش المسجلة
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-6 text-gray-500">
-                لم تقم بالتسجيل في أي ورش بعد
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="space-y-8">
+        <StatisticsOverview stats={stats} />
+        <QuickActions 
+          title="الوصول السريع" 
+          actions={quickActions}
+        />
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">ورش مقترحة لك</CardTitle>
+            <CardTitle>آخر الورش المسجلة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recommendedWorkshops.map((workshop) => (
-                <div key={workshop.id} className="flex items-center p-3 border rounded-md">
-                  <div className="h-12 w-12 rounded-md overflow-hidden ml-3">
-                    <img 
-                      src={workshop.image} 
-                      alt={workshop.title} 
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-500">{workshop.date}</span>
-                    <h3 className="font-medium">{workshop.title}</h3>
-                  </div>
-                  <Link 
-                    to={`/workshops/${workshop.id}`}
-                    className="mr-auto text-sm text-wirashna-accent hover:underline"
-                  >
-                    التفاصيل
-                  </Link>
+            {registrations.slice(0, 5).map((reg: any) => (
+              <div
+                key={reg.id}
+                className="flex items-center justify-between border-b py-4 last:border-0"
+              >
+                <div>
+                  <h4 className="font-medium">{reg.workshops?.title}</h4>
+                  <p className="text-sm text-gray-500">{reg.workshops?.date}</p>
                 </div>
-              ))}
-              
-              <div className="text-center pt-2">
-                <Link 
-                  to="/workshops"
-                  className="text-sm text-wirashna-accent hover:underline"
-                >
-                  عرض كل الورش المتاحة
-                </Link>
+                <Button variant="outline" size="sm">
+                  عرض التفاصيل
+                </Button>
               </div>
-            </div>
+            ))}
           </CardContent>
         </Card>
       </div>
