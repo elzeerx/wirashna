@@ -1,43 +1,33 @@
 
-import { useState, useEffect, lazy, Suspense, useMemo } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import { Workshop } from "@/types/supabase";
 import { fetchWorkshops } from "@/services/workshops";
-import { 
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage 
-} from "@/components/ui/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonLoader from "@/components/ui/skeleton-loader";
+import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
+import {
+  BarChart3,
+  Users,
+  CalendarDays,
+  DollarSign,
+  AlertTriangle,
+  FileText,
+  UserPlus,
+  Plus,
+  PencilRuler
+} from "lucide-react";
+import { Card } from "@/components/ui/card";
 
-// Lazy load components to reduce initial bundle size
-const DashboardOverview = lazy(() => import("@/components/admin/dashboard/DashboardOverview"));
-const AdminWorkshopList = lazy(() => import("@/components/admin/workshops/AdminWorkshopList"));
-const SiteSettings = lazy(() => import("@/components/admin/settings/SiteSettings"));
-const WorkshopRegistrationsList = lazy(() => import("@/components/admin/workshops/registrations").then(
-  module => ({ default: module.WorkshopRegistrationsList })
-));
-
-// Loading fallback component
-const TabContentLoader = () => (
-  <div className="p-4">
-    <SkeletonLoader count={5} />
-  </div>
-);
+// Lazy load components
+const StatisticsOverview = lazy(() => import("@/components/admin/dashboard/StatisticsOverview"));
+const RecentActivities = lazy(() => import("@/components/admin/dashboard/RecentActivities"));
+const QuickActions = lazy(() => import("@/components/admin/dashboard/QuickActions"));
 
 const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
@@ -63,12 +53,6 @@ const AdminDashboardPage = () => {
     loadWorkshops();
   }, [toast]);
 
-  // Memoize the selected workshop 
-  const selectedWorkshop = useMemo(() => {
-    if (!selectedWorkshopId) return null;
-    return workshops.find(w => w.id === selectedWorkshopId) || null;
-  }, [selectedWorkshopId, workshops]);
-
   useEffect(() => {
     // Redirect non-admin users
     if (!isAdmin && !isLoading) {
@@ -81,100 +65,137 @@ const AdminDashboardPage = () => {
     }
   }, [isAdmin, isLoading, navigate, toast]);
 
-  const handleWorkshopSelect = (workshopId: string) => {
-    setSelectedWorkshopId(workshopId);
-    setActiveTab("registrations");
-  };
-
-  const handleNavigate = (tab: string) => {
-    setActiveTab(tab);
-  };
-
-  const clearSelectedWorkshop = () => {
-    setSelectedWorkshopId(null);
-  };
-
   if (isLoading) {
     return (
       <AdminDashboardLayout isLoading={true} />
     );
   }
 
+  // Calculate statistics from workshops
+  const totalWorkshops = workshops.length;
+  const totalParticipants = workshops.reduce((sum, workshop) => 
+    sum + (workshop.total_seats - workshop.available_seats), 0);
+  const totalRevenue = workshops.reduce((sum, workshop) => 
+    sum + (workshop.price * (workshop.total_seats - workshop.available_seats)), 0);
+  const completionRate = workshops.length > 0 
+    ? Math.round((totalParticipants / workshops.reduce((sum, w) => sum + w.total_seats, 0)) * 100) 
+    : 0;
+
+  // Mock data for recent activities
+  const recentActivities = [
+    {
+      id: '1',
+      type: 'registration',
+      title: 'تسجيل مشترك جديد',
+      description: 'محمد أحمد - ورشة تطوير المحتوى',
+      time: 'قبل 5 دقائق',
+      icon: <Users className="text-green-500" />
+    },
+    {
+      id: '2',
+      type: 'payment',
+      title: 'دفع جديد',
+      description: '299 د.ك - ورشة التسويق الرقمي',
+      time: 'قبل 15 دقيقة',
+      icon: <DollarSign className="text-blue-500" />
+    },
+    {
+      id: '3',
+      type: 'content',
+      title: 'تحديث محتوى',
+      description: 'تم تحديث محتوى ورشة تحليل البيانات',
+      time: 'قبل ساعة',
+      icon: <PencilRuler className="text-amber-500" />
+    }
+  ];
+
+  // Quick actions data
+  const quickActions = [
+    {
+      id: '1',
+      title: 'تقارير النظام',
+      icon: <AlertTriangle size={24} />,
+      color: 'bg-red-100 text-red-600',
+      onClick: () => navigate('/admin/system-repair')
+    },
+    {
+      id: '2',
+      title: 'تقرير المبيعات',
+      icon: <FileText size={24} />,
+      color: 'bg-amber-100 text-amber-600',
+      onClick: () => navigate('/admin')
+    },
+    {
+      id: '3',
+      title: 'إضافة مشترك',
+      icon: <UserPlus size={24} />,
+      color: 'bg-green-100 text-green-600',
+      onClick: () => navigate('/admin/users')
+    },
+    {
+      id: '4',
+      title: 'إضافة ورشة جديدة',
+      icon: <Plus size={24} />,
+      color: 'bg-blue-100 text-blue-600',
+      onClick: () => navigate('/admin/workshops/create')
+    }
+  ];
+
   return (
     <AdminDashboardLayout>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-8">
-          <TabsTrigger value="overview">لوحة المعلومات</TabsTrigger>
-          <TabsTrigger value="workshops">إدارة الورش</TabsTrigger>
-          <TabsTrigger value="registrations">التسجيلات</TabsTrigger>
-          <TabsTrigger value="settings">إعدادات الموقع</TabsTrigger>
-        </TabsList>
-        
-        <Suspense fallback={<TabContentLoader />}>
-          <TabsContent value="overview" className="mt-6">
-            <DashboardOverview 
-              workshops={workshops} 
-              onNavigate={handleNavigate}
-              isLoading={isLoading}
-            />
-          </TabsContent>
-          
-          <TabsContent value="workshops" className="mt-6">
-            <AdminWorkshopList 
-              workshops={workshops} 
-              onWorkshopsUpdated={setWorkshops}
-              onWorkshopSelect={handleWorkshopSelect}
-            />
-          </TabsContent>
-          
-          <TabsContent value="registrations" className="mt-6">
-            {selectedWorkshopId ? (
-              <>
-                <Breadcrumb className="mb-4">
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink onClick={() => clearSelectedWorkshop()}>جميع الورش</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>{selectedWorkshop?.title || "تسجيلات الورشة"}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </Breadcrumb>
-                <WorkshopRegistrationsList workshopId={selectedWorkshopId} />
-              </>
-            ) : (
-              <div className="space-y-6">
-                <div className="bg-muted/50 p-6 rounded-lg text-center">
-                  <h3 className="text-xl font-semibold mb-2">قائمة الورش</h3>
-                  <p className="text-gray-500 mb-4">الرجاء اختيار ورشة من القائمة أدناه لعرض التسجيلات الخاصة بها</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {workshops.map(workshop => (
-                    <div 
-                      key={workshop.id}
-                      className="border rounded-lg p-4 cursor-pointer hover:bg-muted/30 transition-colors"
-                      onClick={() => handleWorkshopSelect(workshop.id)}
-                    >
-                      <h4 className="font-medium mb-2">{workshop.title}</h4>
-                      <p className="text-sm text-gray-500 mb-2">{workshop.short_description}</p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span>التاريخ: {workshop.date}</span>
-                        <span className="text-muted-foreground">اضغط لعرض التسجيلات</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="settings" className="mt-6">
-            <SiteSettings />
-          </TabsContent>
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-2xl font-bold mb-1">القائمة الرئيسية</h2>
+          <p className="text-gray-500">مرحباً بك في لوحة التحكم</p>
+        </div>
+
+        <Suspense fallback={<SkeletonLoader count={4} className="h-24" />}>
+          <StatisticsOverview 
+            stats={[
+              { 
+                title: 'إجمالي الورش',
+                value: totalWorkshops,
+                icon: <CalendarDays className="text-white" />,
+                color: 'bg-blue-500',
+                bgClass: 'bg-blue-100'
+              },
+              { 
+                title: 'المشتركين النشطين',
+                value: totalParticipants,
+                icon: <Users className="text-white" />,
+                color: 'bg-green-500',
+                bgClass: 'bg-green-100'
+              },
+              { 
+                title: 'إجمالي المبيعات',
+                value: `${totalRevenue.toFixed(0)} د.ك`,
+                icon: <DollarSign className="text-white" />,
+                color: 'bg-amber-500',
+                bgClass: 'bg-amber-100'
+              },
+              { 
+                title: 'معدل الإكتمال',
+                value: `${completionRate}%`,
+                icon: <BarChart3 className="text-white" />,
+                color: 'bg-purple-500',
+                bgClass: 'bg-purple-100'
+              }
+            ]}
+          />
         </Suspense>
-      </Tabs>
+
+        <Suspense fallback={<SkeletonLoader count={1} className="h-48" />}>
+          <QuickActions title="إجراءات سريعة" actions={quickActions} />
+        </Suspense>
+
+        <Suspense fallback={<SkeletonLoader count={1} className="h-64" />}>
+          <RecentActivities 
+            title="النشاطات الأخيرة" 
+            activities={recentActivities} 
+            onViewAll={() => navigate('/admin')} 
+          />
+        </Suspense>
+      </div>
     </AdminDashboardLayout>
   );
 };
