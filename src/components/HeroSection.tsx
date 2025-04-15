@@ -1,3 +1,4 @@
+
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -26,9 +27,11 @@ const HeroSection = () => {
             منصة تعليمية متكاملة تقدم ورش عمل احترافية مع خبراء في المجال
           </p>
           <div className="flex gap-4">
-            <Button variant="default" className="bg-white text-[#3B49DF] hover:bg-white/90">
-              استكشف الورش
-            </Button>
+            <Link to="/workshops">
+              <Button variant="default" className="bg-white text-[#3B49DF] hover:bg-white/90">
+                استكشف الورش
+              </Button>
+            </Link>
           </div>
         </div>
 
