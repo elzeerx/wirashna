@@ -1,4 +1,3 @@
-
 import { FormSection } from "./FormSection";
 import { Button } from "@/components/ui/button";
 import { Plus, X, CalendarIcon, Clock } from "lucide-react";
@@ -12,7 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { formatTimeWithPeriod } from "@/utils/dateUtils";
+import { formatTimeWithPeriod, calculateEndTime } from "@/utils/dateUtils";
 
 export const BasicInformationStep = () => {
   const form = useFormContext();
@@ -25,18 +24,13 @@ export const BasicInformationStep = () => {
     
     if (tempDate && tempTime) {
       const formattedDate = format(tempDate, "yyyy-MM-dd");
-      
-      // Calculate end time
-      const [hours, minutes] = tempTime.split(':');
-      const startTime = new Date();
-      startTime.setHours(parseInt(hours), parseInt(minutes), 0);
-      const endTime = addHours(startTime, duration);
+      const endTime = calculateEndTime(tempTime, duration);
       
       const newDate = {
         date: formattedDate,
         time: tempTime,
         endTime: format(endTime, 'HH:mm'),
-        displayTime: `من ${formatTimeWithPeriod(tempTime)} إلى ${format(endTime, 'h:mm a')}`
+        displayTime: `من ${formatTimeWithPeriod(tempTime)} إلى ${formatTimeWithPeriod(format(endTime, 'HH:mm'))}`
       };
       
       // Check if this date and time combination already exists
@@ -47,7 +41,7 @@ export const BasicInformationStep = () => {
       if (!dateExists) {
         form.setValue("dates", [...currentDates, newDate]);
         form.setValue("tempTime", "");
-        // Don't reset the date to allow for quick multiple selections
+        // Don't reset tempDate to allow for quick multiple selections
       }
     }
   };
