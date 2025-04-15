@@ -1,13 +1,6 @@
-
 import { FormSection } from "./FormSection";
-import { 
-  RadioGroup, 
-  RadioGroupItem 
-} from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Clock, Save } from "lucide-react";
-import { FormField, FormItem } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
 
 export const BasicInformationStep = () => {
@@ -51,17 +44,13 @@ export const BasicInformationStep = () => {
           />
 
           <div className="space-y-2">
-            <Label>وقت البدء</Label>
-            <div className="relative">
-              <FormSection
-                name="time"
-                label="وقت البدء"
-                placeholder="--:--"
-                type="time"
-                required
-              />
-              <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            </div>
+            <FormSection
+              name="time"
+              label="وقت البدء"
+              placeholder="--:--"
+              type="time"
+              required
+            />
           </div>
 
           <FormSection
@@ -78,30 +67,6 @@ export const BasicInformationStep = () => {
             required
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="venue_type"
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <Label>نوع الموقع</Label>
-              <RadioGroup
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                className="flex gap-4"
-              >
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="physical" id="physical" />
-                  <Label htmlFor="physical">موقع فعلي</Label>
-                </div>
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="online" id="online" />
-                  <Label htmlFor="online">عبر الإنترنت</Label>
-                </div>
-              </RadioGroup>
-            </FormItem>
-          )}
-        />
 
         <div className="flex justify-between pt-6">
           <Button variant="outline" className="gap-2">

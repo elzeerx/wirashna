@@ -21,7 +21,6 @@ const CreateWorkshopPage = () => {
       date: "",
       time: "",
       duration: "",
-      venue_type: "physical",
     }
   });
 
