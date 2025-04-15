@@ -39,7 +39,11 @@ export const useRegistrationSubmit = ({
     setIsSubmitting(true);
 
     try {
-      const registrationSuccess = await handleRegistration(values);
+      const registrationSuccess = await handleRegistration({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone
+      });
       
       if (!registrationSuccess) {
         setIsSubmitting(false);
@@ -47,7 +51,11 @@ export const useRegistrationSubmit = ({
       }
 
       if (workshopPrice > 0) {
-        await handlePayment(values);
+        await handlePayment({
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone
+        });
       } else {
         toast({
           title: "تم تسجيل طلبك بنجاح",
