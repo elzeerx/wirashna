@@ -1,6 +1,6 @@
-
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { fetchWorkshopById } from "@/services/workshops";
@@ -9,6 +9,9 @@ import { Workshop } from "@/types/supabase";
 import { Badge } from "@/components/ui/badge";
 import WorkshopSidebar from "@/components/workshop/WorkshopSidebar";
 import WorkshopDetailsSection from "@/components/workshop/WorkshopDetailsSection";
+import WorkshopDescription from "@/components/workshop/WorkshopDescription";
+import WorkshopGallery from "@/components/workshop/WorkshopGallery";
+import InstructorCard from "@/components/workshop/InstructorCard";
 import { WorkshopDate } from "@/types/workshop";
 
 const WorkshopDetail = () => {
@@ -70,7 +73,6 @@ const WorkshopDetail = () => {
     );
   }
 
-  // Convert workshop dates to WorkshopDate format
   const workshopDates: WorkshopDate[] = [{
     date: workshop.date,
     time: workshop.time,
@@ -84,35 +86,18 @@ const WorkshopDetail = () => {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <div className="relative h-[500px]">
-          <img 
-            src={workshop.cover_image || "https://images.unsplash.com/photo-1519389950473-47ba0277781c"} 
-            alt={workshop.title} 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70">
-            <div className="wirashna-container h-full flex flex-col justify-end pb-12">
-              {workshop.available_seats > 0 && (
-                <Badge className="mb-4 bg-emerald-500 self-start">متاح للتسجيل</Badge>
-              )}
-              <h1 className="text-4xl font-bold text-white mb-2">{workshop.title}</h1>
-              <p className="text-gray-200 text-lg">{workshop.short_description}</p>
-            </div>
-          </div>
-        </div>
+        <WorkshopGallery
+          mainImage={workshop.cover_image}
+          gallery={workshop.gallery || []}
+          title={workshop.title}
+        />
 
         {/* Content Section */}
         <div className="wirashna-container py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Description */}
-              <div>
-                <h2 className="text-2xl font-bold mb-4">نظرة عامة</h2>
-                <p className="text-gray-700 leading-relaxed">
-                  {workshop.long_description || workshop.short_description}
-                </p>
-              </div>
+              <WorkshopDescription description={workshop.long_description || workshop.short_description} />
 
               {/* Workshop Details */}
               <WorkshopDetailsSection
@@ -123,22 +108,11 @@ const WorkshopDetail = () => {
               />
 
               {/* Instructor */}
-              <div>
-                <h2 className="text-2xl font-bold mb-4">المدرب</h2>
-                <div className="bg-gray-50 rounded-lg p-6 flex items-center space-x-6 space-x-reverse">
-                  <div className="flex-shrink-0">
-                    <img 
-                      src={workshop.instructor_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(workshop.instructor)}`} 
-                      alt={workshop.instructor} 
-                      className="w-20 h-20 rounded-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">{workshop.instructor}</h3>
-                    <p className="text-gray-600">{workshop.instructor_bio}</p>
-                  </div>
-                </div>
-              </div>
+              <InstructorCard
+                name={workshop.instructor}
+                bio={workshop.instructor_bio || ""}
+                image={workshop.instructor_image}
+              />
             </div>
 
             {/* Sidebar */}
