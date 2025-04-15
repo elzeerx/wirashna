@@ -1,10 +1,10 @@
 
 import { FormSection } from "./FormSection";
 import { Button } from "@/components/ui/button";
-import { Save, Plus, X, CalendarIcon } from "lucide-react";
+import { Plus, X, CalendarIcon, Clock } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, addHours } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { formatTimeWithPeriod } from "@/utils/dateUtils";
 
 export const BasicInformationStep = () => {
   const form = useFormContext();
@@ -20,12 +21,22 @@ export const BasicInformationStep = () => {
     const currentDates = form.getValues("dates") || [];
     const tempDate = form.getValues("tempDate");
     const tempTime = form.getValues("tempTime");
+    const duration = Number(form.getValues("duration")) || 1;
     
     if (tempDate && tempTime) {
       const formattedDate = format(tempDate, "yyyy-MM-dd");
+      
+      // Calculate end time
+      const [hours, minutes] = tempTime.split(':');
+      const startTime = new Date();
+      startTime.setHours(parseInt(hours), parseInt(minutes), 0);
+      const endTime = addHours(startTime, duration);
+      
       const newDate = {
         date: formattedDate,
-        time: tempTime
+        time: tempTime,
+        endTime: format(endTime, 'HH:mm'),
+        displayTime: `من ${formatTimeWithPeriod(tempTime)} إلى ${format(endTime, 'h:mm a')}`
       };
       
       // Check if this date and time combination already exists
@@ -75,7 +86,7 @@ export const BasicInformationStep = () => {
         />
 
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">التاريخ</label>
               <Popover>
@@ -116,6 +127,22 @@ export const BasicInformationStep = () => {
                 required={false}
               />
             </div>
+
+            <div className="space-y-2">
+              <FormSection
+                name="duration"
+                label="المدة"
+                type="select"
+                placeholder="ساعة واحدة"
+                options={[
+                  { value: "1", label: "ساعة واحدة" },
+                  { value: "2", label: "ساعتان" },
+                  { value: "3", label: "3 ساعات" },
+                  { value: "4", label: "4 ساعات" },
+                ]}
+                required
+              />
+            </div>
           </div>
           
           <Button 
@@ -134,7 +161,7 @@ export const BasicInformationStep = () => {
                 variant="secondary"
                 className="flex items-center gap-2"
               >
-                {date.date} - {date.time}
+                {date.date} - {date.displayTime}
                 <button
                   type="button"
                   onClick={() => handleRemoveDate(index)}
@@ -146,20 +173,6 @@ export const BasicInformationStep = () => {
             ))}
           </div>
         </div>
-
-        <FormSection
-          name="duration"
-          label="المدة"
-          type="select"
-          placeholder="ساعة واحدة"
-          options={[
-            { value: "1", label: "ساعة واحدة" },
-            { value: "2", label: "ساعتان" },
-            { value: "3", label: "3 ساعات" },
-            { value: "4", label: "4 ساعات" },
-          ]}
-          required
-        />
 
         <div className="flex justify-end pt-6">
           <Button type="submit" className="gap-2">
