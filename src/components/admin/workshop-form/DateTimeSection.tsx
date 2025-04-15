@@ -5,7 +5,7 @@ import { FormSection } from "./FormSection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { X, Plus, CalendarIcon, Clock } from "lucide-react";
+import { X, Plus, CalendarIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -24,6 +24,8 @@ export const DateTimeSection = () => {
     const tempTime = form.getValues("tempTime");
     const duration = Number(form.getValues("duration")) || 1;
     
+    console.log("Adding date:", { tempDate, tempTime, duration });
+    
     if (tempDate && tempTime) {
       const formattedDate = format(tempDate, "yyyy-MM-dd");
       const endTime = calculateEndTime(tempTime, duration);
@@ -35,16 +37,24 @@ export const DateTimeSection = () => {
         displayTime: `من ${formatTimeWithPeriod(tempTime)} إلى ${formatTimeWithPeriod(format(endTime, 'HH:mm'))}`
       };
       
+      console.log("New date object:", newDate);
+      
       // Check if this date and time combination already exists
       const dateExists = currentDates.some(
-        (d: any) => d.date === formattedDate && d.time === tempTime
+        (d) => d.date === formattedDate && d.time === tempTime
       );
       
       if (!dateExists) {
-        form.setValue("dates", [...currentDates, newDate]);
+        const updatedDates = [...currentDates, newDate];
+        form.setValue("dates", updatedDates);
+        console.log("Updated dates:", updatedDates);
         form.setValue("tempTime", "");
         // Don't reset tempDate to allow for quick multiple selections
+      } else {
+        console.log("Date already exists, not adding duplicate");
       }
+    } else {
+      console.log("Missing date or time:", { tempDate, tempTime });
     }
   };
 
@@ -132,7 +142,7 @@ export const DateTimeSection = () => {
       </Button>
 
       <div className="flex flex-wrap gap-2 mt-2">
-        {dates.map((date: any, index: number) => (
+        {dates.map((date, index) => (
           <Badge 
             key={index} 
             variant="secondary"
