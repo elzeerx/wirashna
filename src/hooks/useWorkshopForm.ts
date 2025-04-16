@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Workshop } from "@/types/supabase";
@@ -44,7 +43,6 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       requirements: initialData?.requirements || [],
       objectives: initialData?.objectives || [],
       target_audience: initialData?.target_audience || [],
-      // Add fields for date selection
       tempDate: null,
       tempTime: "",
       duration: "1",
@@ -82,7 +80,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     }
 
     // Clean up temporary date selection fields
-    const { tempDate, tempTime, ...cleanedData } = data;
+    const { tempDate, tempTime, sessionDuration, duration, ...cleanedData } = data;
     
     console.log("Final form data to submit:", cleanedData);
     onSubmit(cleanedData);
