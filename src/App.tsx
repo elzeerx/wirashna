@@ -20,6 +20,7 @@ const PageNotFound = lazy(() => import("@/pages/NotFound"));
 
 // Admin routes
 const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
+const AdminWorkshopsPage = lazy(() => import("@/pages/admin/AdminWorkshopsPage"));
 const CreateWorkshopPage = lazy(() => import("@/pages/admin/CreateWorkshopPage"));
 const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
 const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
@@ -53,6 +54,14 @@ function App() {
             element={
               <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <AdminDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/workshops" 
+            element={
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
+                <AdminWorkshopsPage />
               </ProtectedRoute>
             }
           />
