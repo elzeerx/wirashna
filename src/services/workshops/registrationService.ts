@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopRegistration } from "@/types/supabase";
 
@@ -23,9 +22,6 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
         (existingRegistration.status === 'canceled' || 
          ['failed', 'unpaid', 'processing'].includes(existingRegistration.payment_status))) {
       
-      console.log("Updating existing registration with status:", existingRegistration.status, 
-                 "payment status:", existingRegistration.payment_status);
-      
       const { data, error } = await supabase
         .from('workshop_registrations')
         .update({
@@ -38,14 +34,10 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
           updated_at: new Date().toISOString()
         })
         .eq('id', existingRegistration.id)
-        .select('*')
+        .select()
         .single();
 
-      if (error) {
-        console.error("Error updating existing workshop registration:", error);
-        throw error;
-      }
-
+      if (error) throw error;
       return data as WorkshopRegistration;
     }
     
@@ -68,7 +60,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
     const { data, error } = await supabase
       .from('workshop_registrations')
       .insert(registrationData)
-      .select('*')
+      .select()
       .single();
 
     if (error) {

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopMaterial } from "@/types/supabase";
 
@@ -17,10 +16,15 @@ export const fetchWorkshopMaterials = async (workshopId: string): Promise<Worksh
   return data || [];
 };
 
-export const addWorkshopMaterial = async (material: Omit<WorkshopMaterial, 'id' | 'created_at'>): Promise<WorkshopMaterial> => {
+export const addWorkshopMaterial = async (material: Pick<WorkshopMaterial, 'workshop_id' | 'title' | 'description' | 'file_url'>): Promise<WorkshopMaterial> => {
   const { data, error } = await supabase
     .from('workshop_materials')
-    .insert(material)
+    .insert({
+      workshop_id: material.workshop_id,
+      title: material.title,
+      description: material.description,
+      file_url: material.file_url
+    })
     .select()
     .single();
 
