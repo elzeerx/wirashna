@@ -1,4 +1,6 @@
 
+import { WorkshopDate } from '@/types/workshop';
+
 export type Workshop = {
   id: string;
   title: string;
@@ -9,7 +11,7 @@ export type Workshop = {
   date: string;
   time: string;
   end_time?: string; // Add this property
-  dates?: WorkshopDate[]; // Add this property
+  dates?: WorkshopDate[]; // Add this property using imported type
   venue: string;
   location: string;
   total_seats: number;
