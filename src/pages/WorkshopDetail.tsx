@@ -14,6 +14,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { useLoadingState } from "@/hooks/useLoadingState";
 import { Workshop } from "@/types/supabase";
 import { WorkshopDate } from "@/types/workshop";
+import { formatTimeWithPeriod } from "@/utils/dateUtils";
 
 const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,12 +61,15 @@ const WorkshopDetail = () => {
     );
   }
 
-  const workshopDates: WorkshopDate[] = [{
-    date: workshop.date,
-    time: workshop.time,
-    endTime: "", 
-    displayTime: workshop.time,
-  }];
+  // تحديد مواعيد الورشة - إما من حقل dates أو من البيانات الأساسية
+  const workshopDates: WorkshopDate[] = workshop.dates && Array.isArray(workshop.dates) && workshop.dates.length > 0 
+    ? workshop.dates
+    : [{
+        date: workshop.date,
+        time: workshop.time,
+        endTime: workshop.end_time || "", 
+        displayTime: formatTimeWithPeriod(workshop.time),
+      }];
 
   return (
     <div className="min-h-screen flex flex-col">

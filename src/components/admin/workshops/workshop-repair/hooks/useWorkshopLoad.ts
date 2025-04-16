@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const useWorkshopLoad = (workshopId?: string) => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [selectedWorkshopId, setSelectedWorkshopId] = useState<string | null>(workshopId || null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -39,6 +40,8 @@ export const useWorkshopLoad = (workshopId?: string) => {
 
   return {
     workshops,
+    selectedWorkshopId,
+    setSelectedWorkshopId,
     isLoading
   };
 };

@@ -37,3 +37,21 @@ export const calculateEndTime = (startTime: string, durationHours: number): Date
     return new Date();
   }
 };
+
+export const calculateDurationHours = (startTime: string, endTime: string): number => {
+  if (!startTime || !endTime) return 0;
+  
+  try {
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+    
+    const startTotalMinutes = (startHours * 60) + startMinutes;
+    const endTotalMinutes = (endHours * 60) + endMinutes;
+    
+    // Calculate duration in hours (convert minutes to decimal hours)
+    return parseFloat(((endTotalMinutes - startTotalMinutes) / 60).toFixed(1));
+  } catch (error) {
+    console.error("Error calculating duration:", error);
+    return 0;
+  }
+};

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { WorkshopDate } from "@/types/workshop";
 import { Badge } from "@/components/ui/badge";
+import { calculateDurationHours } from "@/utils/dateUtils";
 
 interface WorkshopSidebarProps {
   dates: WorkshopDate[];
@@ -29,9 +30,9 @@ const WorkshopSidebar = ({
   const formattedPrice = typeof price === 'number' ? `${price.toFixed(2)} د.ك` : price;
   const isMobile = useIsMobile();
 
-  // Calculate total duration
+  // Calculate total duration correctly
   const totalHours = dates.reduce((total, date) => {
-    const duration = parseInt(date.endTime) - parseInt(date.time);
+    const duration = calculateDurationHours(date.time, date.endTime);
     return total + duration;
   }, 0);
 
@@ -47,12 +48,12 @@ const WorkshopSidebar = ({
             <div className="space-y-2 mt-2">
               {dates.map((date, index) => (
                 <Badge key={index} variant="secondary" className="block text-right">
-                  {date.date} - {date.displayTime}
+                  {date.date} - {date.displayTime || `${date.time} إلى ${date.endTime}`}
                 </Badge>
               ))}
             </div>
             <p className="text-sm text-gray-600 mt-2">
-              إجمالي عدد الساعات: {totalHours} ساعات
+              إجمالي عدد الساعات: {totalHours > 0 ? totalHours : 0} ساعات
             </p>
           </div>
         </div>
