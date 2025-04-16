@@ -282,6 +282,8 @@ export type Database = {
           cover_image: string | null
           created_at: string | null
           date: string
+          dates: Json | null
+          end_time: string | null
           gallery: string[] | null
           id: string
           instructor: string
@@ -292,6 +294,7 @@ export type Database = {
           objectives: string[] | null
           price: number
           requirements: string[] | null
+          session_duration: number | null
           short_description: string
           target_audience: string[] | null
           time: string
@@ -306,6 +309,8 @@ export type Database = {
           cover_image?: string | null
           created_at?: string | null
           date: string
+          dates?: Json | null
+          end_time?: string | null
           gallery?: string[] | null
           id?: string
           instructor: string
@@ -316,6 +321,7 @@ export type Database = {
           objectives?: string[] | null
           price: number
           requirements?: string[] | null
+          session_duration?: number | null
           short_description: string
           target_audience?: string[] | null
           time: string
@@ -330,6 +336,8 @@ export type Database = {
           cover_image?: string | null
           created_at?: string | null
           date?: string
+          dates?: Json | null
+          end_time?: string | null
           gallery?: string[] | null
           id?: string
           instructor?: string
@@ -340,6 +348,7 @@ export type Database = {
           objectives?: string[] | null
           price?: number
           requirements?: string[] | null
+          session_duration?: number | null
           short_description?: string
           target_audience?: string[] | null
           time?: string

@@ -21,9 +21,10 @@ export const DateTimeSection = () => {
   const handleAddDate = () => {
     const tempDate = form.getValues("tempDate");
     const tempTime = form.getValues("tempTime");
-    const duration = form.getValues("duration") || "1";
+    const daysDuration = form.getValues("duration") || "1";
+    const sessionDuration = form.getValues("sessionDuration") || "1";
     
-    if (addDate(tempDate, tempTime, duration)) {
+    if (addDate(tempDate, tempTime, daysDuration, sessionDuration)) {
       form.setValue("dates", dates);
       form.setValue("tempTime", "");
       // Don't reset tempDate to allow for quick multiple selections
@@ -41,7 +42,7 @@ export const DateTimeSection = () => {
     <div className="space-y-6">
       <h3 className="text-lg font-medium">المواعيد المتاحة</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">التاريخ</label>
           <Popover>
@@ -86,7 +87,7 @@ export const DateTimeSection = () => {
         <div className="space-y-2">
           <FormSection
             name="duration"
-            label="المدة"
+            label="عدد الأيام"
             type="select"
             placeholder="عدد الأيام"
             options={[
@@ -95,6 +96,24 @@ export const DateTimeSection = () => {
               { value: "3", label: "ثلاثة أيام" },
               { value: "4", label: "أربعة أيام" },
               { value: "5", label: "خمسة أيام" },
+            ]}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <FormSection
+            name="sessionDuration"
+            label="مدة الجلسة (ساعات)"
+            type="select"
+            placeholder="مدة الجلسة"
+            options={[
+              { value: "1", label: "ساعة واحدة" },
+              { value: "2", label: "ساعتان" },
+              { value: "3", label: "3 ساعات" },
+              { value: "4", label: "4 ساعات" },
+              { value: "5", label: "5 ساعات" },
+              { value: "6", label: "6 ساعات" },
             ]}
             required
           />
