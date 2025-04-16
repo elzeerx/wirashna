@@ -53,8 +53,8 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
   const sidebarItems = [
     { icon: <LayoutDashboard size={20} />, label: "لوحة التحكم", path: "/admin" },
     { icon: <CalendarDays size={20} />, label: "إدارة الورش", path: "/admin/workshops" },
-    { icon: <Users size={20} />, label: "المشتركين", path: "/admin/users" },
-    { icon: <CreditCard size={20} />, label: "المدفوعات", path: "#" },
+    { icon: <Users size={20} />, label: "المشتركين", path: "/admin/subscribers" },
+    { icon: <CreditCard size={20} />, label: "المدفوعات", path: "/admin/payments" },
     { icon: <Settings size={20} />, label: "الإعدادات العامة", path: "/admin/settings" },
     { icon: <Wrench size={20} />, label: "أدوات النظام", path: "/admin/system-repair" },
   ];

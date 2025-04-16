@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -24,11 +23,8 @@ const AdminWorkshopsPage = lazy(() => import("@/pages/admin/AdminWorkshopsPage")
 const CreateWorkshopPage = lazy(() => import("@/pages/admin/CreateWorkshopPage"));
 const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
 const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
-
-// Subscriber routes
-const SubscriberWorkshopsPage = lazy(() => import("@/pages/SubscriberWorkshops"));
-const SubscriberCertificatesPage = lazy(() => import("@/pages/SubscriberCertificates"));
-const SubscriberMaterialsPage = lazy(() => import("@/pages/SubscriberMaterials"));
+const AdminSubscribersPage = lazy(() => import("@/pages/admin/AdminSubscribersPage"));
+const AdminPaymentsPage = lazy(() => import("@/pages/admin/AdminPaymentsPage"));
 
 function App() {
   const { isAdmin, isSupervisor } = useAuth();
@@ -86,6 +82,22 @@ function App() {
             element={
               <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <SystemRepairPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/subscribers" 
+            element={
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
+                <AdminSubscribersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/payments" 
+            element={
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
+                <AdminPaymentsPage />
               </ProtectedRoute>
             }
           />
