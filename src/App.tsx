@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -25,6 +26,11 @@ const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
 const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
 const AdminSubscribersPage = lazy(() => import("@/pages/admin/AdminSubscribersPage"));
 const AdminPaymentsPage = lazy(() => import("@/pages/admin/AdminPaymentsPage"));
+
+// Subscriber routes
+const SubscriberWorkshops = lazy(() => import("@/pages/SubscriberWorkshops"));
+const SubscriberCertificates = lazy(() => import("@/pages/SubscriberCertificates"));
+const SubscriberMaterials = lazy(() => import("@/pages/SubscriberMaterials"));
 
 function App() {
   const { isAdmin, isSupervisor } = useAuth();
@@ -107,7 +113,7 @@ function App() {
             path="/dashboard/workshops" 
             element={
               <ProtectedRoute>
-                <SubscriberWorkshopsPage />
+                <SubscriberWorkshops />
               </ProtectedRoute>
             }
           />
@@ -115,7 +121,7 @@ function App() {
             path="/dashboard/certificates" 
             element={
               <ProtectedRoute>
-                <SubscriberCertificatesPage />
+                <SubscriberCertificates />
               </ProtectedRoute>
             }
           />
@@ -123,7 +129,7 @@ function App() {
             path="/dashboard/materials" 
             element={
               <ProtectedRoute>
-                <SubscriberMaterialsPage />
+                <SubscriberMaterials />
               </ProtectedRoute>
             }
           />
