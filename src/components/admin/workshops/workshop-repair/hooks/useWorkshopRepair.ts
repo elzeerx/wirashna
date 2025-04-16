@@ -4,40 +4,42 @@ import { useWorkshopLoad } from './useWorkshopLoad';
 import { useRepairOperations } from './useRepairOperations';
 
 export const useWorkshopRepair = (workshopId?: string) => {
-  const [selectedWorkshopId, setSelectedWorkshopId] = useState<string>(workshopId || "");
-  const [autoCleanup, setAutoCleanup] = useState<boolean>(true);
-  
-  const { workshops, isLoading: isLoadingWorkshops } = useWorkshopLoad(workshopId);
+  const [autoCleanup, setAutoCleanup] = useState(true);
+  const [cleanupCompleted, setCleanupCompleted] = useState(false);
+  const [recalculationCompleted, setRecalculationCompleted] = useState(false);
+
+  // Load workshops
   const {
-    isProcessing,
-    cleanupCompleted,
-    recalculationCompleted,
+    workshops,
+    selectedWorkshopId,
+    setSelectedWorkshopId,
+    isLoading
+  } = useWorkshopLoad(workshopId);
+
+  // Initialize repair operations
+  const {
     operationResults,
     handleCleanupRegistrations,
-    handleRecalculateSeats
-  } = useRepairOperations();
-
-  const handleRepairAll = async () => {
-    if (!selectedWorkshopId) return;
-    
-    await handleCleanupRegistrations(selectedWorkshopId, true);
-    if (!operationResults?.success) return;
-    
-    await handleRecalculateSeats(selectedWorkshopId);
-  };
+    handleRecalculateSeats,
+    handleRepairAll
+  } = useRepairOperations(
+    selectedWorkshopId,
+    setCleanupCompleted,
+    setRecalculationCompleted
+  );
 
   return {
     workshops,
     selectedWorkshopId,
     setSelectedWorkshopId,
-    isLoading: isLoadingWorkshops || isProcessing,
+    isLoading,
     operationResults,
     cleanupCompleted,
     recalculationCompleted,
     autoCleanup,
     setAutoCleanup,
-    handleCleanupRegistrations: () => handleCleanupRegistrations(selectedWorkshopId, autoCleanup),
-    handleRecalculateSeats: () => handleRecalculateSeats(selectedWorkshopId),
+    handleCleanupRegistrations,
+    handleRecalculateSeats,
     handleRepairAll
   };
 };

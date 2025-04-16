@@ -5,7 +5,7 @@ import WorkshopSelector from "./workshop-repair/WorkshopSelector";
 import OperationAlerts from "./workshop-repair/OperationAlerts";
 import RepairDescription from "./workshop-repair/RepairDescription";
 import RepairActions from "./workshop-repair/RepairActions";
-import { useWorkshopRepair } from "./workshop-repair/useWorkshopRepair";
+import { useWorkshopRepair } from "./workshop-repair/hooks/useWorkshopRepair"; // Fix import path
 
 interface WorkshopRepairToolProps {
   workshopId?: string;

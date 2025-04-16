@@ -1,3 +1,4 @@
+
 export type Workshop = {
   id: string;
   title: string;
@@ -7,6 +8,8 @@ export type Workshop = {
   gallery?: string[];
   date: string;
   time: string;
+  end_time?: string; // Add this property
+  dates?: WorkshopDate[]; // Add this property
   venue: string;
   location: string;
   total_seats: number;
