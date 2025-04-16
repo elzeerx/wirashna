@@ -8,7 +8,6 @@ export const useWorkshopRepair = (workshopId?: string) => {
   const [cleanupCompleted, setCleanupCompleted] = useState(false);
   const [recalculationCompleted, setRecalculationCompleted] = useState(false);
 
-  // Load workshops
   const {
     workshops,
     selectedWorkshopId,
@@ -16,23 +15,35 @@ export const useWorkshopRepair = (workshopId?: string) => {
     isLoading
   } = useWorkshopLoad(workshopId);
 
-  // Initialize repair operations
   const {
+    isProcessing,
     operationResults,
-    handleCleanupRegistrations,
-    handleRecalculateSeats,
-    handleRepairAll
-  } = useRepairOperations(
-    selectedWorkshopId,
-    setCleanupCompleted,
-    setRecalculationCompleted
-  );
+    handleCleanupRegistrations: baseHandleCleanup,
+    handleRecalculateSeats: baseHandleRecalculate,
+    handleRepairAll: baseHandleRepairAll
+  } = useRepairOperations(selectedWorkshopId, setCleanupCompleted, setRecalculationCompleted);
+
+  // Wrap the handlers with the current workshop ID
+  const handleCleanupRegistrations = async () => {
+    if (!selectedWorkshopId) return;
+    await baseHandleCleanup(selectedWorkshopId, autoCleanup);
+  };
+
+  const handleRecalculateSeats = async () => {
+    if (!selectedWorkshopId) return;
+    await baseHandleRecalculate(selectedWorkshopId);
+  };
+
+  const handleRepairAll = async () => {
+    if (!selectedWorkshopId) return;
+    await baseHandleRepairAll();
+  };
 
   return {
     workshops,
     selectedWorkshopId,
     setSelectedWorkshopId,
-    isLoading,
+    isLoading: isLoading || isProcessing,
     operationResults,
     cleanupCompleted,
     recalculationCompleted,

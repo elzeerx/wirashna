@@ -3,10 +3,12 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { recalculateWorkshopSeats, cleanupFailedRegistrations } from '@/services/workshops';
 
-export const useRepairOperations = () => {
+export const useRepairOperations = (
+  selectedWorkshopId: string | null,
+  setCleanupCompleted: (value: boolean) => void,
+  setRecalculationCompleted: (value: boolean) => void
+) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [cleanupCompleted, setCleanupCompleted] = useState(false);
-  const [recalculationCompleted, setRecalculationCompleted] = useState(false);
   const [operationResults, setOperationResults] = useState<{ success: boolean; message: string } | null>(null);
   const { toast } = useToast();
 
@@ -88,12 +90,20 @@ export const useRepairOperations = () => {
     }
   };
 
+  const handleRepairAll = async () => {
+    if (!selectedWorkshopId) return;
+    
+    await handleCleanupRegistrations(selectedWorkshopId, true);
+    if (!operationResults?.success) return;
+    
+    await handleRecalculateSeats(selectedWorkshopId);
+  };
+
   return {
     isProcessing,
-    cleanupCompleted,
-    recalculationCompleted,
     operationResults,
     handleCleanupRegistrations,
-    handleRecalculateSeats
+    handleRecalculateSeats,
+    handleRepairAll
   };
 };
