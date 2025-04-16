@@ -52,7 +52,7 @@ export const useRegistrationSubmit = ({
 
       if (workshopPrice > 0) {
         await handlePayment({
-          fullName: values.fullName,
+          name: values.fullName, // Changed from 'fullName' to 'name' to match UserDetails type
           email: values.email,
           phone: values.phone
         });
