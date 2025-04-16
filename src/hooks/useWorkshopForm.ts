@@ -48,6 +48,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       tempDate: null,
       tempTime: "",
       duration: "1",
+      sessionDuration: initialData?.session_duration?.toString() || "1",
       dates: [],
     },
   });
@@ -64,6 +65,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     data.available_seats = Number(data.available_seats);
     data.total_seats = Number(data.total_seats);
     data.price = Number(data.price);
+    data.session_duration = Number(data.sessionDuration);
     
     // Make sure image URLs from state are included in submission
     if (coverImage && !data.cover_image) {

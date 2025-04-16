@@ -1,4 +1,3 @@
-
 import { Workshop } from "@/types/supabase";
 
 export interface WorkshopDate {
@@ -13,6 +12,7 @@ export interface WorkshopFormData extends Omit<Workshop, 'date' | 'time'> {
   tempDate: Date | null;
   tempTime: string;
   duration: string;
+  sessionDuration: string;
 }
 
 export interface WorkshopGalleryProps {
