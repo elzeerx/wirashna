@@ -1,4 +1,4 @@
-
+import { Json } from '@/integrations/supabase/types';
 import { WorkshopDate } from '@/types/workshop';
 
 export type Workshop = {
@@ -10,8 +10,8 @@ export type Workshop = {
   gallery?: string[];
   date: string;
   time: string;
-  end_time?: string; // Add this property
-  dates?: WorkshopDate[]; // Add this property using imported type
+  end_time?: string;
+  dates?: WorkshopDate[] | Json;
   venue: string;
   location: string;
   total_seats: number;

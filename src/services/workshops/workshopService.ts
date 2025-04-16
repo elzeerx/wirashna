@@ -1,6 +1,22 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Workshop } from "@/types/supabase";
+import { WorkshopDate } from "@/types/workshop";
+import { Json } from "@/integrations/supabase/types";
+
+const transformDates = (data: any): Workshop => {
+  if (!data) return data;
+  
+  // Convert dates from Json to WorkshopDate[] if it exists
+  if (data.dates) {
+    try {
+      data.dates = Array.isArray(data.dates) ? data.dates : JSON.parse(data.dates as string);
+    } catch (e) {
+      console.error("Error parsing workshop dates:", e);
+      data.dates = [];
+    }
+  }
+  return data as Workshop;
+};
 
 export const fetchWorkshops = async (): Promise<Workshop[]> => {
   const { data, error } = await supabase
@@ -13,7 +29,7 @@ export const fetchWorkshops = async (): Promise<Workshop[]> => {
     throw error;
   }
 
-  return data || [];
+  return (data || []).map(transformDates);
 };
 
 export const fetchWorkshopById = async (id: string): Promise<Workshop | null> => {
@@ -28,7 +44,7 @@ export const fetchWorkshopById = async (id: string): Promise<Workshop | null> =>
     return null;
   }
 
-  return data;
+  return transformDates(data);
 };
 
 export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at' | 'updated_at'>): Promise<Workshop> => {
@@ -39,30 +55,11 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     workshop.gallery = [workshop.cover_image];
   }
 
-  // Create a clean workshop object with all fields
+  // Convert dates array to JSON string for storage
   const workshopData = {
-    title: workshop.title,
-    short_description: workshop.short_description,
-    long_description: workshop.long_description,
-    cover_image: workshop.cover_image,
-    gallery: workshop.gallery,
-    date: workshop.date,
-    time: workshop.time,
-    venue: workshop.venue,
-    location: workshop.location,
-    total_seats: workshop.total_seats,
-    available_seats: workshop.available_seats || workshop.total_seats,
-    price: workshop.price,
-    instructor: workshop.instructor,
-    instructor_bio: workshop.instructor_bio,
-    instructor_image: workshop.instructor_image,
-    benefits: workshop.benefits || [],
-    requirements: workshop.requirements || [],
-    objectives: workshop.objectives || [],
-    target_audience: workshop.target_audience || []
+    ...workshop,
+    dates: workshop.dates ? JSON.stringify(workshop.dates) : null
   };
-
-  console.log("Sending workshop data to database:", workshopData);
 
   const { data, error } = await supabase
     .from('workshops')
@@ -75,25 +72,22 @@ export const createWorkshop = async (workshop: Omit<Workshop, 'id' | 'created_at
     throw error;
   }
 
-  return data;
+  return transformDates(data);
 };
 
 export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): Promise<Workshop> => {
   console.log("Updating workshop with id:", id);
   console.log("Workshop data to update:", workshop);
   
-  // Ensure gallery includes cover_image if available
-  if (workshop.cover_image && (!workshop.gallery || workshop.gallery.length === 0)) {
-    workshop.gallery = [workshop.cover_image];
-  }
+  // Convert dates array to JSON string for storage
+  const workshopData = {
+    ...workshop,
+    dates: workshop.dates ? JSON.stringify(workshop.dates) : undefined
+  };
 
   const { data, error } = await supabase
     .from('workshops')
-    .update({
-      ...workshop,
-      objectives: workshop.objectives || [],
-      target_audience: workshop.target_audience || []
-    })
+    .update(workshopData)
     .eq('id', id)
     .select()
     .single();
@@ -103,7 +97,7 @@ export const updateWorkshop = async (id: string, workshop: Partial<Workshop>): P
     throw error;
   }
 
-  return data;
+  return transformDates(data);
 };
 
 export const deleteWorkshop = async (id: string): Promise<void> => {
