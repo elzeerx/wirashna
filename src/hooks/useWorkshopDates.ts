@@ -1,8 +1,8 @@
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { WorkshopDate } from "@/types/workshop";
-import { formatTimeWithPeriod, calculateEndTime } from "@/utils/dateUtils";
+import { formatTimeWithPeriod } from "@/utils/dateUtils";
 import { useToast } from "@/hooks/use-toast";
 
 export const useWorkshopDates = (
@@ -18,30 +18,41 @@ export const useWorkshopDates = (
         description: "الرجاء اختيار التاريخ والوقت",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    const formattedDate = format(tempDate, "yyyy-MM-dd");
-    const endTime = calculateEndTime(tempTime, Number(duration));
-    
-    const newDate: WorkshopDate = {
-      date: formattedDate,
-      time: tempTime,
-      endTime: format(endTime, 'HH:mm'),
-      displayTime: `من ${formatTimeWithPeriod(tempTime)} إلى ${formatTimeWithPeriod(format(endTime, 'HH:mm'))}`
-    };
-    
-    const dateExists = dates.some(
-      (d) => d.date === formattedDate && d.time === tempTime
-    );
-    
-    if (!dateExists) {
-      setDates([...dates, newDate]);
+    const numberOfDays = parseInt(duration);
+    const newDates: WorkshopDate[] = [];
+
+    // Generate dates for the specified number of days
+    for (let i = 0; i < numberOfDays; i++) {
+      const currentDate = addDays(tempDate, i);
+      const formattedDate = format(currentDate, "yyyy-MM-dd");
+      
+      const newDate: WorkshopDate = {
+        date: formattedDate,
+        time: tempTime,
+        endTime: tempTime, // Using the same time for consistency
+        displayTime: formatTimeWithPeriod(tempTime)
+      };
+      
+      // Check if this date and time combination already exists
+      const dateExists = dates.some(
+        (d) => d.date === formattedDate && d.time === tempTime
+      );
+      
+      if (!dateExists) {
+        newDates.push(newDate);
+      }
+    }
+
+    if (newDates.length > 0) {
+      setDates([...dates, ...newDates]);
       return true;
     } else {
       toast({
         title: "تنبيه",
-        description: "هذا الموعد موجود مسبقاً",
+        description: "هذه المواعيد موجودة مسبقاً",
         variant: "destructive",
       });
       return false;

@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -30,11 +29,11 @@ const WorkshopSidebar = ({
   const formattedPrice = typeof price === 'number' ? `${price.toFixed(2)} د.ك` : price;
   const isMobile = useIsMobile();
 
-  // Calculate total duration correctly
-  const totalHours = dates.reduce((total, date) => {
-    const duration = calculateDurationHours(date.time, date.endTime);
-    return total + duration;
-  }, 0);
+  // Calculate number of unique days
+  const uniqueDays = new Set(dates.map(date => date.date)).size;
+  const workshopDuration = uniqueDays > 1 
+    ? `${uniqueDays} أيام` 
+    : "يوم واحد";
 
   return (
     <div className="wirashna-card sticky top-24">
@@ -44,17 +43,14 @@ const WorkshopSidebar = ({
         <div className="flex items-start gap-3">
           <Calendar size={18} className="mt-1 text-wirashna-accent" />
           <div>
-            <p className="font-medium">المواعيد</p>
+            <p className="font-medium">المواعيد ({workshopDuration})</p>
             <div className="space-y-2 mt-2">
               {dates.map((date, index) => (
                 <Badge key={index} variant="secondary" className="block text-right">
-                  {date.date} - {date.displayTime || `${date.time} إلى ${date.endTime}`}
+                  {date.date} - {date.displayTime}
                 </Badge>
               ))}
             </div>
-            <p className="text-sm text-gray-600 mt-2">
-              إجمالي عدد الساعات: {totalHours > 0 ? totalHours : 0} ساعات
-            </p>
           </div>
         </div>
         

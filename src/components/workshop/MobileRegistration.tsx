@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -6,6 +5,7 @@ import { useEffect, useState } from "react";
 import { fetchWorkshopById } from "@/services/workshops";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 type MobileRegistrationProps = {
   workshopId: string;
@@ -39,18 +39,29 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
     return null;
   }
 
+  const uniqueDays = workshop.dates 
+    ? new Set(workshop.dates.map((d: any) => d.date)).size
+    : 1;
+    
+  const workshopDuration = uniqueDays > 1 
+    ? `${uniqueDays} أيام` 
+    : "يوم واحد";
+
   return (
     <div className="lg:hidden">
       <Card className="mb-8">
         <CardContent className="pt-6">
-          {/* تفاصيل الورشة */}
           <h3 className="text-xl font-bold mb-4">تفاصيل الورشة</h3>
           
           <div className="flex items-center mb-4">
             <Calendar size={18} className="ml-3 text-wirashna-accent" />
             <div>
-              <p className="font-medium">التاريخ</p>
-              <p className="text-gray-600">{workshop.date}</p>
+              <p className="font-medium">المواعيد ({workshopDuration})</p>
+              {workshop.dates?.map((date: any, index: number) => (
+                <Badge key={index} variant="secondary" className="block text-right mt-2">
+                  {date.date} - {date.displayTime}
+                </Badge>
+              ))}
             </div>
           </div>
           
@@ -88,7 +99,6 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
             </p>
           </div>
 
-          {/* سجل في الورشة */}
           <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
           {isSoldOut ? (
             <Button disabled className="w-full bg-gray-400">

@@ -1,18 +1,17 @@
 
-import React from "react";
-import { format } from "date-fns";
 import { FormSection } from "./FormSection";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Plus, X, CalendarIcon } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { X, Plus, CalendarIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useFormContext } from "react-hook-form";
 import { useWorkshopDates } from "@/hooks/useWorkshopDates";
 
 export const DateTimeSection = () => {
@@ -89,16 +88,13 @@ export const DateTimeSection = () => {
             name="duration"
             label="المدة"
             type="select"
-            placeholder="ساعة واحدة"
+            placeholder="عدد الأيام"
             options={[
-              { value: "1", label: "ساعة واحدة" },
-              { value: "2", label: "ساعتان" },
-              { value: "3", label: "3 ساعات" },
-              { value: "4", label: "4 ساعات" },
-              { value: "5", label: "5 ساعات" },
-              { value: "6", label: "6 ساعات" },
-              { value: "7", label: "7 ساعات" },
-              { value: "8", label: "8 ساعات" },
+              { value: "1", label: "يوم واحد" },
+              { value: "2", label: "يومان" },
+              { value: "3", label: "ثلاثة أيام" },
+              { value: "4", label: "أربعة أيام" },
+              { value: "5", label: "خمسة أيام" },
             ]}
             required
           />
@@ -121,7 +117,7 @@ export const DateTimeSection = () => {
             variant="secondary"
             className="flex items-center gap-2"
           >
-            {date.date} - {date.displayTime}
+            {date.date} ({date.displayTime})
             <button
               type="button"
               onClick={() => handleRemoveDate(index)}
