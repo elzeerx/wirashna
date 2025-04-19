@@ -3,8 +3,9 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { Workshop } from "@/types/supabase";
+import { Workshop } from "@/types/database";
 import { fetchWorkshops } from "@/services/workshops";
+import { supabase } from "@/integrations/supabase/client";
 import SkeletonLoader from "@/components/ui/skeleton-loader";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import {
@@ -12,37 +13,58 @@ import {
   Users,
   CalendarDays,
   DollarSign,
-  AlertTriangle,
-  FileText,
   UserPlus,
   Plus,
+  FileText,
+  AlertTriangle,
+  CreditCard,
   PencilRuler
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 
 // Lazy load components
 const StatisticsOverview = lazy(() => import("@/components/admin/dashboard/StatisticsOverview"));
 const RecentActivities = lazy(() => import("@/components/admin/dashboard/RecentActivities"));
 const QuickActions = lazy(() => import("@/components/admin/dashboard/QuickActions"));
 
+interface Activity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  created_at: string;
+  icon: string;
+}
+
 const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
   useEffect(() => {
-    const loadWorkshops = async () => {
+    const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchWorkshops();
-        setWorkshops(data);
+        // Fetch workshops
+        const workshopsData = await fetchWorkshops();
+        setWorkshops(workshopsData);
+
+        // Fetch recent activities
+        const { data: activitiesData, error } = await supabase
+          .rpc('dashboard_recent_activity');
+
+        if (error) {
+          throw error;
+        }
+
+        setActivities(activitiesData);
       } catch (error) {
-        console.error("Error loading workshops:", error);
+        console.error("Error loading dashboard data:", error);
         toast({
-          title: "خطأ في تحميل الورش",
-          description: "حدث خطأ أثناء تحميل بيانات الورش. الرجاء المحاولة مرة أخرى.",
+          title: "خطأ في تحميل البيانات",
+          description: "حدث خطأ أثناء تحميل بيانات لوحة التحكم. الرجاء المحاولة مرة أخرى.",
           variant: "destructive",
         });
       } finally {
@@ -50,7 +72,7 @@ const AdminDashboardPage = () => {
       }
     };
 
-    loadWorkshops();
+    loadData();
   }, [toast]);
 
   useEffect(() => {
@@ -80,34 +102,6 @@ const AdminDashboardPage = () => {
   const completionRate = workshops.length > 0 
     ? Math.round((totalParticipants / workshops.reduce((sum, w) => sum + w.total_seats, 0)) * 100) 
     : 0;
-
-  // Mock data for recent activities
-  const recentActivities = [
-    {
-      id: '1',
-      type: 'registration',
-      title: 'تسجيل مشترك جديد',
-      description: 'محمد أحمد - ورشة تطوير المحتوى',
-      time: 'قبل 5 دقائق',
-      icon: <Users className="text-green-500" />
-    },
-    {
-      id: '2',
-      type: 'payment',
-      title: 'دفع جديد',
-      description: '299 د.ك - ورشة التسويق الرقمي',
-      time: 'قبل 15 دقيقة',
-      icon: <DollarSign className="text-blue-500" />
-    },
-    {
-      id: '3',
-      type: 'content',
-      title: 'تحديث محتوى',
-      description: 'تم تحديث محتوى ورشة تحليل البيانات',
-      time: 'قبل ساعة',
-      icon: <PencilRuler className="text-amber-500" />
-    }
-  ];
 
   // Quick actions data
   const quickActions = [
@@ -191,13 +185,26 @@ const AdminDashboardPage = () => {
         <Suspense fallback={<SkeletonLoader count={1} className="h-64" />}>
           <RecentActivities 
             title="النشاطات الأخيرة" 
-            activities={recentActivities} 
+            activities={activities.map(activity => ({
+              ...activity,
+              icon: getLucideIcon(activity.icon)
+            }))} 
             onViewAll={() => navigate('/admin')} 
           />
         </Suspense>
       </div>
     </AdminDashboardLayout>
   );
+};
+
+// Helper function to map icon names to Lucide components
+const getLucideIcon = (iconName: string) => {
+  const icons = {
+    'user-plus': <UserPlus className="text-green-500" />,
+    'credit-card': <CreditCard className="text-blue-500" />,
+    'edit': <PencilRuler className="text-amber-500" />
+  };
+  return icons[iconName as keyof typeof icons] || <Users className="text-gray-500" />;
 };
 
 export default AdminDashboardPage;
