@@ -100,6 +100,14 @@ function App() {
             }
           />
           <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
+                <AdminSubscribersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
             path="/admin/payments" 
             element={
               <ProtectedRoute condition={isAdmin || isSupervisor}>

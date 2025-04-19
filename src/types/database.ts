@@ -1,83 +1,76 @@
 
-import type { Database } from "@/integrations/supabase/types";
-
-// Re-export common types from the database
-export type Workshop = Database["public"]["Tables"]["workshops"]["Row"];
-export type WorkshopRegistration = Database["public"]["Tables"]["workshop_registrations"]["Row"];
-export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
-export type WorkshopCertificate = Database["public"]["Tables"]["workshop_certificates"]["Row"];
-export type WorkshopMaterial = Database["public"]["Tables"]["workshop_materials"]["Row"];
-export type PaymentLog = Database["public"]["Tables"]["payment_logs"]["Row"];
-
-// Common interface for workshop dates
-export interface WorkshopDate {
-  date: string;
-  time: string;
-  endTime: string;
-  displayTime: string;
-}
-
-// Form data interface extending Workshop type
-export interface WorkshopFormData extends Omit<Workshop, 'date' | 'time'> {
-  dates: WorkshopDate[];
-  tempDate: Date | null;
-  tempTime: string;
-  duration: string;
-  sessionDuration: string;
-}
-
-// Re-export payment types
-export interface UserDetails {
-  name: string;
-  email: string;
-  phone: string;
-}
-
-export interface PaymentResult {
-  success: boolean;
-  redirect_url?: string;
-  status?: string;
-  error?: string;
-}
-
-export interface PaymentCallbackQuery {
-  tap_id?: string;
-  status?: string;
-}
-
-export interface PaymentLogData {
-  action: string;
-  status: string;
-  payment_id?: string | null;
-  amount?: number | null;
-  userId?: string | null;
-  workshopId?: string | null;
-  response_data?: any | null;
-  error_message?: string | null;
-}
-
-// Gallery props interface
-export interface WorkshopGalleryProps {
-  mainImage?: string;
-  gallery?: string[];
+// Common database types
+export interface Workshop {
+  id: string;
   title: string;
+  description?: string;
+  start_date: string;
+  end_date: string;
+  location?: string;
+  price: number;
+  total_seats: number;
+  available_seats: number;
+  instructor_name?: string;
+  image_url?: string;
+  status: 'active' | 'cancelled' | 'completed' | 'draft';
+  created_at: string;
+  updated_at: string;
 }
 
-// Sidebar props interface
-export interface WorkshopSidebarProps {
-  dates: WorkshopDate[];
-  venue: string;
-  location: string;
-  availableSeats: number;
-  totalSeats: number;
-  price: string | number;
-  workshopId: string;
+export interface UserProfile {
+  id: string;
+  user_id: string;
+  full_name?: string;
+  email: string;
+  phone?: string;
+  role: 'admin' | 'supervisor' | 'subscriber';
+  status: 'active' | 'suspended' | 'pending';
+  created_at: string;
+  updated_at: string;
 }
 
-// Details section props interface
-export interface WorkshopDetailsSectionProps {
-  objectives?: string[];
-  benefits?: string[];
-  requirements?: string[];
-  targetAudience?: string[];
+export interface WorkshopRegistration {
+  id: string;
+  workshop_id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  payment_status: 'paid' | 'pending' | 'failed' | 'processing';
+  payment_id?: string;
+  notes?: string;
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkshopMaterial {
+  id: string;
+  workshop_id: string;
+  title: string;
+  description?: string;
+  file_url: string;
+  created_at: string;
+}
+
+export interface Certificate {
+  id: string;
+  registration_id: string;
+  workshop_id: string;
+  user_id: string;
+  issue_date: string;
+  certificate_url: string;
+  created_at: string;
+}
+
+export interface Activity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  user_id?: string;
+  related_id?: string;
+  icon: string;
+  created_at: string;
 }

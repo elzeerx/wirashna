@@ -1,4 +1,3 @@
-
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -47,11 +46,9 @@ const AdminDashboardPage = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        // Fetch workshops
         const workshopsData = await fetchWorkshops();
         setWorkshops(workshopsData);
 
-        // Fetch recent activities
         const { data: activitiesData, error } = await supabase
           .rpc('dashboard_recent_activity');
 
@@ -76,7 +73,6 @@ const AdminDashboardPage = () => {
   }, [toast]);
 
   useEffect(() => {
-    // Redirect non-admin users
     if (!isAdmin && !isLoading) {
       navigate("/");
       toast({
@@ -93,7 +89,6 @@ const AdminDashboardPage = () => {
     );
   }
 
-  // Calculate statistics from workshops
   const totalWorkshops = workshops.length;
   const totalParticipants = workshops.reduce((sum, workshop) => 
     sum + (workshop.total_seats - workshop.available_seats), 0);
@@ -103,7 +98,6 @@ const AdminDashboardPage = () => {
     ? Math.round((totalParticipants / workshops.reduce((sum, w) => sum + w.total_seats, 0)) * 100) 
     : 0;
 
-  // Quick actions data
   const quickActions = [
     {
       id: '1',
@@ -124,7 +118,7 @@ const AdminDashboardPage = () => {
       title: 'إضافة مشترك',
       icon: <UserPlus size={24} />,
       color: 'bg-green-100 text-green-600',
-      onClick: () => navigate('/admin/users')
+      onClick: () => navigate('/admin/subscribers')
     },
     {
       id: '4',
@@ -197,7 +191,6 @@ const AdminDashboardPage = () => {
   );
 };
 
-// Helper function to map icon names to Lucide components
 const getLucideIcon = (iconName: string) => {
   const icons = {
     'user-plus': <UserPlus className="text-green-500" />,
