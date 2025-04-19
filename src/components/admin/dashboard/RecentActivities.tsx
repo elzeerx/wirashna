@@ -7,7 +7,7 @@ import { UserPlus, Edit, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
-interface Activity {
+export interface Activity {
   id: string;
   type: string;
   title: string;
@@ -16,20 +16,34 @@ interface Activity {
   icon: string;
 }
 
-interface RecentActivitiesProps {
+export interface ActivityItem {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  time: string;
+  icon: React.ReactNode;
+}
+
+export interface RecentActivitiesProps {
   title?: string;
+  activities?: ActivityItem[];
   onViewAll?: () => void;
 }
 
-export function RecentActivities({ title = "النشاطات الأخيرة", onViewAll }: RecentActivitiesProps) {
-  const [activities, setActivities] = useState<Activity[]>([]);
+export function RecentActivities({ 
+  title = "النشاطات الأخيرة", 
+  activities: providedActivities,
+  onViewAll 
+}: RecentActivitiesProps) {
+  const [fetchedActivities, setFetchedActivities] = useState<Activity[]>([]);
   const { toast } = useToast();
 
   const fetchActivities = async () => {
     try {
       const { data, error } = await supabase.rpc('dashboard_recent_activity');
       if (error) throw error;
-      setActivities(data);
+      setFetchedActivities(data);
     } catch (error) {
       console.error('Error fetching activities:', error);
       toast({
@@ -41,31 +55,34 @@ export function RecentActivities({ title = "النشاطات الأخيرة", on
   };
 
   useEffect(() => {
-    fetchActivities();
+    // Only fetch activities if none are provided
+    if (!providedActivities) {
+      fetchActivities();
 
-    // Subscribe to realtime changes
-    const channel = supabase.channel('dashboard')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'workshop_registrations' 
-      }, () => fetchActivities())
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'payment_logs' 
-      }, () => fetchActivities())
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'workshops' 
-      }, () => fetchActivities())
-      .subscribe();
+      // Subscribe to realtime changes
+      const channel = supabase.channel('dashboard')
+        .on('postgres_changes', { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'workshop_registrations' 
+        }, () => fetchActivities())
+        .on('postgres_changes', { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'payment_logs' 
+        }, () => fetchActivities())
+        .on('postgres_changes', { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'workshops' 
+        }, () => fetchActivities())
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [providedActivities]);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -80,6 +97,16 @@ export function RecentActivities({ title = "النشاطات الأخيرة", on
     }
   };
 
+  // Use provided activities if available, otherwise use fetched activities
+  const displayActivities = providedActivities || fetchedActivities.map(activity => ({
+    id: activity.id,
+    type: activity.type,
+    title: activity.title,
+    description: activity.description,
+    time: format(new Date(activity.created_at), 'dd/MM/yyyy HH:mm'),
+    icon: getIcon(activity.icon)
+  }));
+
   return (
     <Card className="border-none shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -92,16 +119,16 @@ export function RecentActivities({ title = "النشاطات الأخيرة", on
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {activities.map((activity) => (
+          {displayActivities.map((activity) => (
             <div key={activity.id} className="flex items-start">
               <div className="mt-1 ml-4">
-                {getIcon(activity.icon)}
+                {activity.icon}
               </div>
               <div className="flex-1">
                 <div className="flex justify-between">
                   <h4 className="font-medium">{activity.title}</h4>
                   <span className="text-sm text-gray-500">
-                    {format(new Date(activity.created_at), 'dd/MM/yyyy HH:mm')}
+                    {activity.time}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600">{activity.description}</p>
@@ -114,5 +141,5 @@ export function RecentActivities({ title = "النشاطات الأخيرة", on
   );
 }
 
-// Add default export to resolve the lazy loading issue
 export default RecentActivities;
+
