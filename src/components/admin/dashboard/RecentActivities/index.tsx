@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, CreditCard } from "lucide-react";
 
-import { Activity, ActivityItem } from "./types";
+import { Activity, ActivityItem, RecentActivitiesProps } from "./types";
 import { ActivityItem as ActivityItemComponent } from "./ActivityItem";
 
 export function RecentActivities({ 
