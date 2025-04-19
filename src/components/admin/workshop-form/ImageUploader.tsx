@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { BUCKET_ID, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
+import { BUCKETS, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
 
 interface ImageUploaderProps {
   name: string;
   label: string;
   required?: boolean;
   initialImageUrl?: string;
-  prefix: string;
+  bucketType: keyof typeof BUCKETS;
   onImageUploaded?: (url: string) => void;
 }
 
@@ -20,7 +20,7 @@ export const ImageUploader = ({
   label, 
   required = false, 
   initialImageUrl,
-  prefix,
+  bucketType,
   onImageUploaded 
 }: ImageUploaderProps) => {
   const { register, setValue, watch } = useFormContext();
@@ -72,12 +72,13 @@ export const ImageUploader = ({
 
       const fileExt = file.name.split('.').pop() || '';
       const fileName = getRandomFileName(fileExt);
-      const filePath = getStoragePath(prefix, fileName);
+      const bucketId = BUCKETS[bucketType];
+      const filePath = getStoragePath(bucketType.toLowerCase().replace('_', '-'), fileName);
       
-      console.log(`Uploading image to ${BUCKET_ID} bucket, path: ${filePath}`);
+      console.log(`Uploading image to ${bucketId} bucket, path: ${filePath}`);
       
       const { data, error } = await supabase.storage
-        .from(BUCKET_ID)
+        .from(bucketId)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -89,7 +90,7 @@ export const ImageUploader = ({
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from(BUCKET_ID)
+        .from(bucketId)
         .getPublicUrl(filePath);
 
       console.log("Uploaded image URL:", publicUrl);

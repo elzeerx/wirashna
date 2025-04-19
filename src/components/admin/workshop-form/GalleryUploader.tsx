@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { BUCKET_ID, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
+import { BUCKETS, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
 
 interface GalleryUploaderProps {
   name: string;
@@ -45,12 +45,13 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
 
       const fileExt = file.name.split('.').pop() || '';
       const fileName = getRandomFileName(fileExt);
+      const bucketId = BUCKETS.WORKSHOP_IMAGES;
       const filePath = getStoragePath('gallery', fileName);
       
-      console.log(`Uploading gallery image to ${BUCKET_ID} bucket, path: ${filePath}`);
+      console.log(`Uploading gallery image to ${bucketId} bucket, path: ${filePath}`);
       
       const { data, error } = await supabase.storage
-        .from(BUCKET_ID)
+        .from(bucketId)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -62,7 +63,7 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from(BUCKET_ID)
+        .from(bucketId)
         .getPublicUrl(filePath);
 
       console.log("Uploaded gallery image URL:", publicUrl);

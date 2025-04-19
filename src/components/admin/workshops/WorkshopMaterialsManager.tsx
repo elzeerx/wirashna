@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopMaterial } from "@/types/supabase";
 import { fetchWorkshopMaterials, addWorkshopMaterial, deleteWorkshopMaterial } from "@/services/materialService";
-import { BUCKET_ID, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
+import { BUCKETS, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
 
 interface WorkshopMaterialsManagerProps {
   workshopId: string;
@@ -70,10 +70,11 @@ const WorkshopMaterialsManager = ({ workshopId }: WorkshopMaterialsManagerProps)
       
       const fileExt = selectedFile.name.split('.').pop() || '';
       const fileName = getRandomFileName(fileExt);
+      const bucketId = BUCKETS.WORKSHOP_IMAGES;
       const filePath = getStoragePath(`materials/${workshopId}`, fileName);
       
       const { data: fileData, error: uploadError } = await supabase.storage
-        .from(BUCKET_ID)
+        .from(bucketId)
         .upload(filePath, selectedFile, {
           cacheControl: '3600',
           upsert: false
@@ -84,7 +85,7 @@ const WorkshopMaterialsManager = ({ workshopId }: WorkshopMaterialsManagerProps)
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from(BUCKET_ID)
+        .from(bucketId)
         .getPublicUrl(filePath);
 
       const newMaterial: Omit<WorkshopMaterial, 'id' | 'created_at'> = {
