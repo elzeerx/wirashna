@@ -1,13 +1,14 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Edit, CreditCard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, ActivityItem as ActivityItemType, RecentActivitiesProps } from "./types";
-import { ActivityItem } from "./ActivityItem";
+import { UserPlus, Edit, CreditCard } from "lucide-react";
+
+import { Activity, ActivityItem, RecentActivitiesProps } from "./types";
+import { ActivityItem as ActivityItemComponent } from "./ActivityItem";
 
 export function RecentActivities({ 
   title = "النشاطات الأخيرة", 
@@ -145,5 +146,13 @@ export function RecentActivities({
   );
 }
 
-// Required default export for React.lazy
+// Default export for React.lazy
 export default RecentActivities;
+
+// Re-export types for external use
+export type { 
+  RecentActivitiesProps, 
+  Activity, 
+  ActivityItem 
+} from "./types";
+
