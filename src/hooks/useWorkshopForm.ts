@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Workshop } from "@/types/supabase";
 import { WorkshopFormData, WorkshopDate } from "@/types/workshop";
+import { Json } from "@/integrations/supabase/types";
 
 interface UseWorkshopFormProps {
   initialData?: Partial<Workshop>;
@@ -23,6 +24,26 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
   const [coverImage, setCoverImage] = useState<string | null>(
     initialData?.cover_image || null
   );
+  
+  // Convert JSON dates to WorkshopDate[] format if needed
+  const getInitialDates = (): WorkshopDate[] => {
+    if (!initialData?.dates) return [];
+    
+    try {
+      // Handle when dates is already a properly formatted array
+      if (Array.isArray(initialData.dates)) {
+        // Check if it has the expected format
+        const firstItem = initialData.dates[0];
+        if (firstItem && typeof firstItem === 'object' && 'date' in firstItem && 'time' in firstItem) {
+          return initialData.dates as unknown as WorkshopDate[];
+        }
+      }
+      return [];
+    } catch (error) {
+      console.error("Error parsing workshop dates:", error);
+      return [];
+    }
+  };
   
   // Initialize form with default values or initial data
   const form = useForm<WorkshopFormData>({
@@ -48,7 +69,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       tempTime: "",
       duration: "1",
       sessionDuration: (initialData?.session_duration || 1).toString(),
-      dates: initialData?.dates as WorkshopDate[] || [],
+      dates: getInitialDates(),
     },
   });
 
@@ -101,9 +122,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     });
     
     return () => {
-      if (subscription && typeof subscription === 'function') {
-        subscription();
-      }
+      subscription.unsubscribe();
     };
   }, [form, coverImage, instructorImage]);
 

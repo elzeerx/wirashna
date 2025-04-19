@@ -1,4 +1,5 @@
 
+import React from "react";
 import { FormSection } from "./FormSection";
 import { Button } from "@/components/ui/button";
 import { Plus, X, CalendarIcon } from "lucide-react";
