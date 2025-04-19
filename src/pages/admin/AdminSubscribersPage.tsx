@@ -1,8 +1,9 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { UserProfile } from "@/types/supabase";
+import { UserProfile } from "@/types/database";
 import { supabase } from "@/integrations/supabase/client";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
+import { AddUserDialog } from "@/components/admin/subscribers/AddUserDialog";
 import {
   Table,
   TableBody,
@@ -14,7 +15,7 @@ import {
 import { format } from "date-fns";
 
 const AdminSubscribersPage = () => {
-  const { data: subscribers, isLoading } = useQuery({
+  const { data: subscribers, isLoading, refetch } = useQuery({
     queryKey: ['subscribers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,9 +32,12 @@ const AdminSubscribersPage = () => {
   return (
     <AdminDashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-1">المشتركين</h2>
-          <p className="text-gray-500">إدارة حسابات المشتركين في المنصة</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold mb-1">المشتركين</h2>
+            <p className="text-gray-500">إدارة حسابات المشتركين في المنصة</p>
+          </div>
+          <AddUserDialog onUserAdded={refetch} />
         </div>
 
         {isLoading ? (
@@ -55,7 +59,7 @@ const AdminSubscribersPage = () => {
                   <TableRow key={subscriber.id}>
                     <TableCell>{subscriber.full_name || 'غير محدد'}</TableCell>
                     <TableCell>
-                      {format(new Date(subscriber.created_at), 'dd/MM/yyyy')}
+                      {format(new Date(subscriber.created_at || ''), 'dd/MM/yyyy')}
                     </TableCell>
                     <TableCell>
                       <span className="px-2 py-1 text-sm rounded-full bg-green-100 text-green-700">
