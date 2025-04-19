@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -26,6 +25,7 @@ const EditWorkshopPage = lazy(() => import("@/pages/admin/EditWorkshopPage"));
 const SystemRepairPage = lazy(() => import("@/pages/admin/SystemRepairPage"));
 const AdminSubscribersPage = lazy(() => import("@/pages/admin/AdminSubscribersPage"));
 const AdminPaymentsPage = lazy(() => import("@/pages/admin/AdminPaymentsPage"));
+const AdminSettingsPage = lazy(() => import("@/pages/admin/AdminSettingsPage"));
 
 // Subscriber routes
 const SubscriberWorkshops = lazy(() => import("@/pages/SubscriberWorkshops"));
@@ -104,6 +104,14 @@ function App() {
             element={
               <ProtectedRoute condition={isAdmin || isSupervisor}>
                 <AdminPaymentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/admin/settings" 
+            element={
+              <ProtectedRoute condition={isAdmin || isSupervisor}>
+                <AdminSettingsPage />
               </ProtectedRoute>
             }
           />
