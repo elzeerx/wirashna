@@ -16,7 +16,7 @@ import { useWorkshopDates } from "@/hooks/useWorkshopDates";
 
 export const DateTimeSection = () => {
   const form = useFormContext();
-  const { dates, addDate, removeDate } = useWorkshopDates(form.getValues("dates") || []);
+  const { dates, setDates, addDate, removeDate } = useWorkshopDates(form.getValues("dates") || []);
 
   const handleAddDate = () => {
     const tempDate = form.getValues("tempDate");
@@ -37,6 +37,11 @@ export const DateTimeSection = () => {
   };
 
   const selectedDate = form.watch("tempDate");
+
+  // Sync dates with form
+  React.useEffect(() => {
+    form.setValue("dates", dates);
+  }, [dates, form]);
 
   return (
     <div className="space-y-6">

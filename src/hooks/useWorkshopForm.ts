@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Workshop } from "@/types/supabase";
-import { WorkshopFormData } from "@/types/workshop";
+import { WorkshopFormData, WorkshopDate } from "@/types/workshop";
 
 interface UseWorkshopFormProps {
   initialData?: Partial<Workshop>;
@@ -46,8 +47,8 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       tempDate: null,
       tempTime: "",
       duration: "1",
-      sessionDuration: initialData?.session_duration?.toString() || "1",
-      dates: [],
+      sessionDuration: (initialData?.session_duration || 1).toString(),
+      dates: initialData?.dates as WorkshopDate[] || [],
     },
   });
 
@@ -63,7 +64,6 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
     data.available_seats = Number(data.available_seats);
     data.total_seats = Number(data.total_seats);
     data.price = Number(data.price);
-    data.session_duration = Number(data.sessionDuration);
     
     // Make sure image URLs from state are included in submission
     if (coverImage && !data.cover_image) {
@@ -81,6 +81,9 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
 
     // Clean up temporary date selection fields
     const { tempDate, tempTime, sessionDuration, duration, ...cleanedData } = data;
+    
+    // Convert sessionDuration to number
+    cleanedData.session_duration = Number(sessionDuration);
     
     console.log("Final form data to submit:", cleanedData);
     onSubmit(cleanedData);
