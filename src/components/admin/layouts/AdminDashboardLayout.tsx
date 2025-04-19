@@ -1,8 +1,6 @@
 
-import React from 'react';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AdminDashboardLoading } from "./AdminDashboardLoading";
-import { AdminDashboardContent } from "./AdminDashboardContent";
+import { MainLayout } from "@/components/layouts/MainLayout";
+import { AdminSidebar } from "./AdminSidebar";
 
 interface AdminDashboardLayoutProps {
   children?: React.ReactNode;
@@ -10,10 +8,23 @@ interface AdminDashboardLayoutProps {
 }
 
 const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLayoutProps) => {
+  if (isLoading) {
+    return <MainLayout>
+      <div className="wirashna-container py-12 flex justify-center items-center">
+        <div className="wirashna-loader"></div>
+      </div>
+    </MainLayout>;
+  }
+
   return (
-    <SidebarProvider>
-      {isLoading ? <AdminDashboardLoading /> : <AdminDashboardContent>{children}</AdminDashboardContent>}
-    </SidebarProvider>
+    <MainLayout>
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        <AdminSidebar />
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </div>
+    </MainLayout>
   );
 };
 
