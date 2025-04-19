@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -31,25 +30,6 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
     navigate("/");
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
-          <div className="wirashna-container mx-auto px-4 py-3 flex items-center justify-between">
-            <Link to="/" className="flex items-center">
-              <img src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" alt="Wirashna" className="h-12" />
-            </Link>
-          </div>
-        </nav>
-        <main className="flex-grow pt-24">
-          <div className="wirashna-container py-12 flex justify-center items-center">
-            <div className="wirashna-loader"></div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   const sidebarItems = [
     { icon: <LayoutDashboard size={20} />, label: "لوحة التحكم", path: "/admin" },
     { icon: <CalendarDays size={20} />, label: "إدارة الورش", path: "/admin/workshops" },
@@ -61,27 +41,39 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Header */}
       <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
         <div className="wirashna-container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <img src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" alt="Wirashna" className="h-12" />
           </Link>
           
-          {user && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">مدير النظام</span>
-              <div className="w-8 h-8 rounded-full bg-wirashna-accent text-white flex items-center justify-center">
-                {user?.email?.charAt(0).toUpperCase() || "A"}
+          <div className="flex items-center space-x-8 space-x-reverse">
+            <Link to="/" className="text-foreground hover:text-wirashna-accent transition-colors">
+              الرئيسية
+            </Link>
+            <Link to="/about" className="text-foreground hover:text-wirashna-accent transition-colors">
+              عن ورشنا
+            </Link>
+            <Link to="/workshops" className="text-foreground hover:text-wirashna-accent transition-colors">
+              الورش
+            </Link>
+            <Link to="/contact" className="text-foreground hover:text-wirashna-accent transition-colors">
+              تواصل معنا
+            </Link>
+            
+            {user && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">مدير النظام</span>
+                <div className="w-8 h-8 rounded-full bg-wirashna-accent text-white flex items-center justify-center">
+                  {user?.email?.charAt(0).toUpperCase() || "A"}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </nav>
       
-      {/* Sidebar and Main Content */}
       <div className="flex flex-1 pt-16">
-        {/* Sidebar */}
         <div 
           className={cn(
             "fixed right-0 top-16 h-full bg-white shadow-sm transition-all duration-300 z-40",
@@ -89,7 +81,6 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
           )}
         >
           <div className="p-4 flex flex-col h-full">
-            {/* Sidebar toggle */}
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="absolute top-4 -left-3 bg-white rounded-full border border-gray-200 p-1 shadow-sm"
@@ -97,7 +88,6 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
               {collapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
             </button>
             
-            {/* Sidebar items */}
             <div className="space-y-1 pt-4">
               {sidebarItems.map((item, index) => (
                 <Link
@@ -115,7 +105,6 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
               ))}
             </div>
             
-            {/* Logout button */}
             <div className="mt-auto">
               <Button 
                 variant="outline"
@@ -129,7 +118,6 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
           </div>
         </div>
         
-        {/* Main content */}
         <main className={cn(
           "flex-grow transition-all duration-300",
           collapsed ? "mr-16" : "mr-64"
