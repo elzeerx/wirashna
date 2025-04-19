@@ -62,8 +62,8 @@ const WorkshopDetail = () => {
   }
 
   // تحديد مواعيد الورشة - إما من حقل dates أو من البيانات الأساسية
-  const workshopDates: WorkshopDate[] = workshop.dates 
-    ? (workshop.dates as unknown as WorkshopDate[]) 
+  const workshopDates: WorkshopDate[] = workshop.dates && Array.isArray(workshop.dates) 
+    ? workshop.dates as WorkshopDate[]
     : [{
         date: workshop.date,
         time: workshop.time,
