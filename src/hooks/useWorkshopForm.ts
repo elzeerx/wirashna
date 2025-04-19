@@ -88,7 +88,7 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
 
   // Sync images with form values if needed
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
+    const subscription = form.watch((value: any, { name }: { name?: string }) => {
       if (name === 'cover_image' && value.cover_image !== coverImage) {
         setCoverImage(value.cover_image || null);
       }
@@ -97,7 +97,11 @@ export const useWorkshopForm = (props?: Partial<UseWorkshopFormProps>) => {
       }
     });
     
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription && typeof subscription === 'function') {
+        subscription();
+      }
+    };
   }, [form, coverImage, instructorImage]);
 
   return {

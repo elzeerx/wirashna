@@ -82,6 +82,15 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
   }
 };
 
+export const updateRegistrationStatus = async (id: string, status: string, payment_status: string) => {
+  const { error } = await supabase
+    .from('workshop_registrations')
+    .update({ status, payment_status })
+    .eq('id', id);
+
+  if (error) throw error;
+};
+
 export * from './registrationManagement';
 export * from './registrationStatus';
 export * from './registrationSeats';
