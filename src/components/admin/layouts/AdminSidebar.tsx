@@ -7,6 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, 
@@ -28,9 +29,10 @@ const menuItems = [
 
 export function AdminSidebar() {
   const location = useLocation();
+  const { state } = useSidebar();
 
   return (
-    <Sidebar>
+    <Sidebar side="right" className="fixed right-0 z-40 bg-white h-full border-l">
       <SidebarHeader className="p-4">
         <h2 className="text-lg font-semibold">لوحة الإدارة</h2>
       </SidebarHeader>
@@ -48,7 +50,7 @@ export function AdminSidebar() {
                   <Link
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-3 py-2",
+                      "flex items-center gap-3 py-2 text-gray-500 hover:text-primary-500",
                       isActive && "font-semibold text-primary-600 dark:text-primary-400"
                     )}
                   >

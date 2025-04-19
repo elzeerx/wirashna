@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { AdminSidebar } from "./AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -27,7 +27,7 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
       <MainLayout>
         <div className="flex min-h-[calc(100vh-4rem)]">
           <AdminSidebar />
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 lg:pr-64">
             {children}
           </main>
         </div>
@@ -37,4 +37,3 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
 };
 
 export default AdminDashboardLayout;
-

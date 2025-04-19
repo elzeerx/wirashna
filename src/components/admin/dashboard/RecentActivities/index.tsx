@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, CreditCard } from "lucide-react";
+import SkeletonLoader from "@/components/ui/skeleton-loader";
 
 import { Activity, ActivityItem, RecentActivitiesProps } from "./types";
 import { ActivityItem as ActivityItemComponent } from "./ActivityItem";
@@ -129,9 +130,7 @@ export function RecentActivities({
       </CardHeader>
       <CardContent>
         {isLoading && !providedActivities ? (
-          <div className="flex justify-center py-4">
-            <div className="wirashna-loader"></div>
-          </div>
+          <SkeletonLoader count={3} height="h-16" />
         ) : error && !providedActivities ? (
           <p className="text-sm text-red-500 py-2">خطأ في تحميل النشاطات. حاول مرة أخرى لاحقًا.</p>
         ) : (
