@@ -18,7 +18,7 @@ export interface WorkshopDate {
 }
 
 // Form data interface extending Workshop type
-export interface WorkshopFormData extends Omit<Workshop, 'date' | 'time'> {
+export interface WorkshopFormData extends Omit<Workshop, 'date' | 'time' | 'dates'> {
   dates: WorkshopDate[];
   tempDate: Date | null;
   tempTime: string;
