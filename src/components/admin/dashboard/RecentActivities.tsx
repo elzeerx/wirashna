@@ -16,7 +16,12 @@ interface Activity {
   icon: string;
 }
 
-export function RecentActivities() {
+interface RecentActivitiesProps {
+  title?: string;
+  onViewAll?: () => void;
+}
+
+export function RecentActivities({ title = "النشاطات الأخيرة", onViewAll }: RecentActivitiesProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const { toast } = useToast();
 
@@ -78,10 +83,12 @@ export function RecentActivities() {
   return (
     <Card className="border-none shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">النشاطات الأخيرة</CardTitle>
-        <Button variant="ghost" className="text-sm">
-          عرض الكل
-        </Button>
+        <CardTitle className="text-xl">{title}</CardTitle>
+        {onViewAll && (
+          <Button variant="ghost" className="text-sm" onClick={onViewAll}>
+            عرض الكل
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -106,3 +113,6 @@ export function RecentActivities() {
     </Card>
   );
 }
+
+// Add default export to resolve the lazy loading issue
+export default RecentActivities;
