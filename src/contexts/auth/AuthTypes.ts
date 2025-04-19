@@ -1,6 +1,5 @@
-
 import { Session, User } from "@supabase/supabase-js";
-import { UserProfile } from "@/types/supabase";
+import { UserProfile } from "@/types/database";
 
 export type AuthContextType = {
   session: Session | null;
