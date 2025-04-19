@@ -14,7 +14,7 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
     return (
       <SidebarProvider>
         <MainLayout>
-          <div className="pt-20 flex justify-center items-center">
+          <div className="pt-10 flex justify-center items-center">
             <div className="wirashna-loader"></div>
           </div>
         </MainLayout>
