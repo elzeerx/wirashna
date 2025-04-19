@@ -1,10 +1,7 @@
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  LogOut, 
   Search, 
   Bell, 
   LayoutDashboard, 
@@ -14,7 +11,8 @@ import {
   Settings,
   Wrench,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,13 +37,18 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navbar />
+        <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+          <div className="wirashna-container mx-auto px-4 py-3 flex items-center justify-between">
+            <Link to="/" className="flex items-center">
+              <img src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" alt="Wirashna" className="h-12" />
+            </Link>
+          </div>
+        </nav>
         <main className="flex-grow pt-24">
           <div className="wirashna-container py-12 flex justify-center items-center">
             <div className="wirashna-loader"></div>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
@@ -62,11 +65,11 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm z-50 fixed w-full top-0">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center">
-            <Link to="/" className="text-wirashna-primary font-bold text-xl">ورشنا</Link>
-          </div>
+      <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
+        <div className="wirashna-container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center">
+            <img src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" alt="Wirashna" className="h-12" />
+          </Link>
           
           <div className="flex-1 mx-8">
             <div className="relative max-w-md mx-auto">
@@ -87,13 +90,13 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
             
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">مدير النظام</span>
-              <div className="w-8 h-8 rounded-full bg-wirashna-primary text-white flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-wirashna-accent text-white flex items-center justify-center">
                 {user?.email?.charAt(0).toUpperCase() || "A"}
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </nav>
       
       {/* Sidebar and Main Content */}
       <div className="flex flex-1 pt-16">
@@ -121,8 +124,8 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
                   to={item.path}
                   className={cn(
                     "flex items-center gap-3 p-3 rounded-md transition-colors",
-                    "hover:bg-wirashna-primary/10 text-gray-700",
-                    window.location.pathname === item.path && "bg-wirashna-primary text-white hover:bg-wirashna-primary/90"
+                    "hover:bg-wirashna-accent/10 text-gray-700",
+                    window.location.pathname === item.path && "bg-wirashna-accent text-white hover:bg-wirashna-accent/90"
                   )}
                 >
                   <span>{item.icon}</span>
