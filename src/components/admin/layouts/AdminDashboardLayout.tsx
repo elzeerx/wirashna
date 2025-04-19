@@ -27,9 +27,7 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
       <MainLayout>
         <div className="flex min-h-[calc(100vh-4rem)]">
           <AdminSidebar />
-          <main className="flex-1 p-6 pt-20 md:pr-64">
-            {children}
-          </main>
+          <main className="pt-20 md:pr-64 flex-1">{children}</main>
         </div>
       </MainLayout>
     </SidebarProvider>
