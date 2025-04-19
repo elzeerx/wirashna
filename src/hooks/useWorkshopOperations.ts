@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Workshop } from "@/types/supabase";
 import { createWorkshop, updateWorkshop, deleteWorkshop, fetchWorkshops } from "@/services/workshops";
+import { Json } from "@/integrations/supabase/types";
 
 interface UseWorkshopOperationsProps {
   onWorkshopsUpdated: (workshops: Workshop[]) => void;
@@ -15,11 +15,21 @@ export const useWorkshopOperations = ({ onWorkshopsUpdated }: UseWorkshopOperati
   const handleCreate = async (workshopData: any) => {
     setIsLoading(true);
     try {
-      console.log("Creating workshop:", workshopData);
-      await createWorkshop({
-        ...workshopData,
+      console.log("Creating workshop with data:", workshopData);
+      
+      // Extract dates and create payload
+      const { dates, ...rest } = workshopData;
+      const payload = {
+        ...rest,
+        dates: dates as unknown as Json,
+        // Keep first date/time for backward compatibility
+        date: dates[0]?.date || "",
+        time: dates[0]?.time || "",
         available_seats: workshopData.total_seats,
-      });
+      };
+
+      console.log("Workshop payload:", payload);
+      const workshop = await createWorkshop(payload);
       
       toast({
         title: "تم إنشاء الورشة بنجاح",

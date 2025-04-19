@@ -1,4 +1,6 @@
 
+import { Json } from "@/integrations/supabase/types";
+
 export interface WorkshopDate {
   date: string;
   time: string;
@@ -30,4 +32,13 @@ export interface WorkshopFormData {
   duration: string;
   sessionDuration: string;
   dates: WorkshopDate[];
+  session_duration?: number;
+}
+
+// Type for workshop data after form processing
+export interface WorkshopPayload extends Omit<WorkshopFormData, 'tempDate' | 'tempTime' | 'duration' | 'sessionDuration' | 'dates'> {
+  dates: Json;
+  date: string;
+  time: string;
+  session_duration: number;
 }
