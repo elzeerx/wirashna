@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { UserProfile } from "@/types/database";
+import { UserProfile } from "@/types/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 import { AddUserDialog } from "@/components/admin/subscribers/AddUserDialog";
