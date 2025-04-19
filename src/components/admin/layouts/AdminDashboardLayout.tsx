@@ -2,8 +2,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  Search, 
-  Bell, 
   LayoutDashboard, 
   CalendarDays, 
   Users, 
@@ -15,7 +13,6 @@ import {
   LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useNavigate, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -71,30 +68,14 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
             <img src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" alt="Wirashna" className="h-12" />
           </Link>
           
-          <div className="flex-1 mx-8">
-            <div className="relative max-w-md mx-auto">
-              <Input 
-                type="text" 
-                placeholder="بحث..." 
-                className="pl-10 pr-4 py-2 rounded-full border border-gray-300 w-full"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Bell className="text-gray-500 cursor-pointer" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-2 h-2"></span>
-            </div>
-            
+          {user && (
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">مدير النظام</span>
               <div className="w-8 h-8 rounded-full bg-wirashna-accent text-white flex items-center justify-center">
                 {user?.email?.charAt(0).toUpperCase() || "A"}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </nav>
       
