@@ -364,6 +364,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      dashboard_recent_activity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          type: string
+          title: string
+          description: string
+          created_at: string
+          icon: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
