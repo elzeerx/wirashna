@@ -1,8 +1,10 @@
+
 import React from "react";
 import { FormSection } from "./FormSection";
 import { ImageUploader } from "./ImageUploader";
 import { useFormContext } from "react-hook-form";
 import { useWorkshopForm } from "@/hooks/useWorkshopForm";
+import { BUCKETS } from "@/integrations/supabase/storage";
 
 export const InstructorSection = () => {
   const { instructorImage, setInstructorImage } = useWorkshopForm();
@@ -39,7 +41,7 @@ export const InstructorSection = () => {
             name="instructor_image"
             label="صورة المدرب"
             required
-            prefix="instructors"
+            bucketType="INSTRUCTOR_IMAGES"
             initialImageUrl={instructorImage || undefined}
             onImageUploaded={handleImageUploaded}
           />
@@ -56,3 +58,4 @@ export const InstructorSection = () => {
     </div>
   );
 };
+
