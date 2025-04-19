@@ -3,6 +3,7 @@ import { FormSection } from "./FormSection";
 import { ImageUploader } from "./ImageUploader";
 import { useFormContext } from "react-hook-form";
 import { useWorkshopForm } from "@/hooks/useWorkshopForm";
+import { BUCKETS } from "@/integrations/supabase/storage";
 
 export const BasicInfoSection = () => {
   const { coverImage, setCoverImage } = useWorkshopForm();
@@ -33,7 +34,7 @@ export const BasicInfoSection = () => {
           label="صورة الغلاف"
           required={true}
           initialImageUrl={coverImage || undefined}
-          prefix="covers"
+          bucketType="WORKSHOP_COVERS"
           onImageUploaded={handleImageUploaded}
         />
       </div>
