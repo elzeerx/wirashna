@@ -1,4 +1,3 @@
-
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -143,57 +142,66 @@ const AdminDashboardPage = () => {
 
   return (
     <AdminDashboardLayout>
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-bold mb-1">القائمة الرئيسية</h2>
-          <p className="text-gray-500">مرحباً بك في لوحة التحكم</p>
+      <div className="grid grid-cols-1 gap-8 p-6 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3">
+        <div className="md:col-span-3 lg:col-span-3 xl:col-span-3">
+          <h2 className="text-2xl font-bold mb-4">القائمة الرئيسية</h2>
+          <p className="text-gray-500 mb-4">مرحباً بك في لوحة التحكم</p>
         </div>
 
         <Suspense fallback={<SkeletonLoader count={4} className="h-24" />}>
-          <StatisticsOverview 
-            stats={[
-              { 
-                title: 'إجمالي الورش',
-                value: totalWorkshops,
-                icon: <CalendarDays className="text-white" />,
-                color: 'bg-blue-500',
-                bgClass: 'bg-blue-100'
-              },
-              { 
-                title: 'المشتركين النشطين',
-                value: totalParticipants,
-                icon: <Users className="text-white" />,
-                color: 'bg-green-500',
-                bgClass: 'bg-green-100'
-              },
-              { 
-                title: 'إجمالي المبيعات',
-                value: `${totalRevenue.toFixed(0)} د.ك`,
-                icon: <DollarSign className="text-white" />,
-                color: 'bg-amber-500',
-                bgClass: 'bg-amber-100'
-              },
-              { 
-                title: 'معدل الإكتمال',
-                value: `${completionRate}%`,
-                icon: <BarChart3 className="text-white" />,
-                color: 'bg-purple-500',
-                bgClass: 'bg-purple-100'
-              }
-            ]}
-          />
+          <div className="md:col-span-3 lg:col-span-3 xl:col-span-3">
+            <StatisticsOverview 
+              stats={[
+                { 
+                  title: 'إجمالي الورش',
+                  value: totalWorkshops,
+                  icon: <CalendarDays className="text-white" />,
+                  color: 'bg-blue-500',
+                  bgClass: 'bg-blue-100'
+                },
+                { 
+                  title: 'المشتركين النشطين',
+                  value: totalParticipants,
+                  icon: <Users className="text-white" />,
+                  color: 'bg-green-500',
+                  bgClass: 'bg-green-100'
+                },
+                { 
+                  title: 'إجمالي المبيعات',
+                  value: `${totalRevenue.toFixed(0)} د.ك`,
+                  icon: <DollarSign className="text-white" />,
+                  color: 'bg-amber-500',
+                  bgClass: 'bg-amber-100'
+                },
+                { 
+                  title: 'معدل الإكتمال',
+                  value: `${completionRate}%`,
+                  icon: <BarChart3 className="text-white" />,
+                  color: 'bg-purple-500',
+                  bgClass: 'bg-purple-100'
+                }
+              ]}
+            />
+          </div>
         </Suspense>
 
         <Suspense fallback={<SkeletonLoader count={1} className="h-48" />}>
-          <QuickActions title="إجراءات سريعة" actions={quickActions} />
+          <div className="md:col-span-2 lg:col-span-2 xl:col-span-2">
+            <QuickActions 
+              title="إجراءات سريعة" 
+              actions={quickActions} 
+            />
+          </div>
         </Suspense>
 
         <Suspense fallback={<SkeletonLoader count={1} className="h-64" />}>
-          <RecentActivities 
-            title="النشاطات الأخيرة" 
-            activities={recentActivities} 
-            onViewAll={() => navigate('/admin')} 
-          />
+          <div className="md:col-span-1 lg:col-span-1 xl:col-span-1">
+            <RecentActivities 
+              title="النشاطات الأخيرة" 
+              activities={recentActivities} 
+              onViewAll={() => navigate('/admin')} 
+            />
+          </div>
         </Suspense>
       </div>
     </AdminDashboardLayout>
