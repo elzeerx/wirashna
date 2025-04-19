@@ -1,4 +1,3 @@
-
 import React from "react";
 import { FormSection } from "./FormSection";
 import { ImageUploader } from "./ImageUploader";
@@ -10,7 +9,6 @@ export const InstructorSection = () => {
   const { setValue, watch } = useFormContext();
   const currentInstructorImage = watch("instructor_image");
 
-  // Sync instructorImage with form value if they get out of sync
   React.useEffect(() => {
     if (currentInstructorImage !== instructorImage) {
       setInstructorImage(currentInstructorImage);
@@ -41,7 +39,7 @@ export const InstructorSection = () => {
             name="instructor_image"
             label="صورة المدرب"
             required
-            bucketId="instructor-images"
+            prefix="instructors"
             initialImageUrl={instructorImage || undefined}
             onImageUploaded={handleImageUploaded}
           />

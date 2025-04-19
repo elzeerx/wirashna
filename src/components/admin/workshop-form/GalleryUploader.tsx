@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Upload, X, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { BUCKET_ID, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
 
 interface GalleryUploaderProps {
   name: string;
@@ -16,15 +16,12 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   
-  // Get the current value from the form
   const gallery = watch(name) as string[] || [];
 
-  // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: "خطأ في رفع الملف",
@@ -34,7 +31,6 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "خطأ في رفع الملف",
@@ -47,16 +43,14 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
     try {
       setIsUploading(true);
 
-      // Generate a unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileExt = file.name.split('.').pop() || '';
+      const fileName = getRandomFileName(fileExt);
+      const filePath = getStoragePath('gallery', fileName);
       
-      console.log(`Uploading gallery image to workshop-images bucket, path: ${filePath}`);
+      console.log(`Uploading gallery image to ${BUCKET_ID} bucket, path: ${filePath}`);
       
-      // Upload the file to Supabase Storage
       const { data, error } = await supabase.storage
-        .from('workshop-images')
+        .from(BUCKET_ID)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -67,14 +61,12 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
         throw error;
       }
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('workshop-images')
+        .from(BUCKET_ID)
         .getPublicUrl(filePath);
 
       console.log("Uploaded gallery image URL:", publicUrl);
 
-      // Add the new image URL to the gallery array
       const updatedGallery = [...gallery, publicUrl];
       setValue(name, updatedGallery, { shouldValidate: true, shouldDirty: true });
 
@@ -94,7 +86,6 @@ export const GalleryUploader = ({ name, label }: GalleryUploaderProps) => {
     }
   };
 
-  // Remove an image from the gallery
   const handleRemoveImage = (index: number) => {
     const updatedGallery = [...gallery];
     updatedGallery.splice(index, 1);

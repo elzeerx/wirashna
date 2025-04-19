@@ -1,4 +1,3 @@
-
 import React from "react";
 import { FormSection } from "./FormSection";
 import { ImageUploader } from "./ImageUploader";
@@ -34,7 +33,7 @@ export const BasicInfoSection = () => {
           label="صورة الغلاف"
           required={true}
           initialImageUrl={coverImage || undefined}
-          bucketId="workshop-covers"
+          prefix="covers"
           onImageUploaded={handleImageUploaded}
         />
       </div>

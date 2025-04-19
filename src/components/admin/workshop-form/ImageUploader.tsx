@@ -1,17 +1,17 @@
-
 import { useState, useEffect } from "react";
 import { Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { BUCKET_ID, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
 
 interface ImageUploaderProps {
   name: string;
   label: string;
   required?: boolean;
   initialImageUrl?: string;
-  bucketId: 'workshop-covers' | 'instructor-images' | 'workshop-images';
+  prefix: string;
   onImageUploaded?: (url: string) => void;
 }
 
@@ -20,7 +20,7 @@ export const ImageUploader = ({
   label, 
   required = false, 
   initialImageUrl,
-  bucketId,
+  prefix,
   onImageUploaded 
 }: ImageUploaderProps) => {
   const { register, setValue, watch } = useFormContext();
@@ -28,18 +28,15 @@ export const ImageUploader = ({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
-  // Get the current value from the form
   const currentValue = watch(name);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initialImageUrl);
   
-  // Sync with form value
   useEffect(() => {
     if (currentValue && currentValue !== imageUrl) {
       setImageUrl(currentValue);
     }
   }, [currentValue, imageUrl]);
   
-  // Sync with initialImageUrl
   useEffect(() => {
     if (initialImageUrl && initialImageUrl !== imageUrl && !currentValue) {
       setImageUrl(initialImageUrl);
@@ -47,12 +44,10 @@ export const ImageUploader = ({
     }
   }, [initialImageUrl, imageUrl, setValue, name, currentValue]);
 
-  // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: "خطأ في رفع الملف",
@@ -62,7 +57,6 @@ export const ImageUploader = ({
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "خطأ في رفع الملف",
@@ -76,16 +70,14 @@ export const ImageUploader = ({
       setIsUploading(true);
       setUploadProgress(0);
 
-      // Generate a unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileExt = file.name.split('.').pop() || '';
+      const fileName = getRandomFileName(fileExt);
+      const filePath = getStoragePath(prefix, fileName);
       
-      console.log(`Uploading to bucket: ${bucketId}, path: ${filePath}`);
+      console.log(`Uploading image to ${BUCKET_ID} bucket, path: ${filePath}`);
       
-      // Upload the file to specified Supabase Storage bucket
       const { data, error } = await supabase.storage
-        .from(bucketId)
+        .from(BUCKET_ID)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -96,23 +88,15 @@ export const ImageUploader = ({
         throw error;
       }
 
-      // Manually set upload progress to 100% since we can't track it with Supabase's client
-      setUploadProgress(100);
-
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
-        .from(bucketId)
+        .from(BUCKET_ID)
         .getPublicUrl(filePath);
 
       console.log("Uploaded image URL:", publicUrl);
 
-      // Update the state
       setImageUrl(publicUrl);
-      
-      // Update the form value
       setValue(name, publicUrl, { shouldValidate: true, shouldDirty: true });
-
-      // Call the callback if provided
+      
       if (onImageUploaded) {
         onImageUploaded(publicUrl);
       }
@@ -133,7 +117,6 @@ export const ImageUploader = ({
     }
   };
 
-  // Remove the current image
   const handleRemoveImage = () => {
     setImageUrl(undefined);
     setValue(name, "", { shouldValidate: true, shouldDirty: true });

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus, FileText, Trash2, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopMaterial } from "@/types/supabase";
 import { fetchWorkshopMaterials, addWorkshopMaterial, deleteWorkshopMaterial } from "@/services/materialService";
+import { BUCKET_ID, getRandomFileName, getStoragePath } from "@/integrations/supabase/storage";
 
 interface WorkshopMaterialsManagerProps {
   workshopId: string;
@@ -68,13 +68,12 @@ const WorkshopMaterialsManager = ({ workshopId }: WorkshopMaterialsManagerProps)
     try {
       setIsUploading(true);
       
-      // Upload file to Supabase Storage
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}-${Date.now()}.${fileExt}`;
-      const filePath = `materials/${workshopId}/${fileName}`;
+      const fileExt = selectedFile.name.split('.').pop() || '';
+      const fileName = getRandomFileName(fileExt);
+      const filePath = getStoragePath(`materials/${workshopId}`, fileName);
       
       const { data: fileData, error: uploadError } = await supabase.storage
-        .from('workshop-materials')
+        .from(BUCKET_ID)
         .upload(filePath, selectedFile, {
           cacheControl: '3600',
           upsert: false
@@ -84,12 +83,10 @@ const WorkshopMaterialsManager = ({ workshopId }: WorkshopMaterialsManagerProps)
         throw uploadError;
       }
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('workshop-materials')
+        .from(BUCKET_ID)
         .getPublicUrl(filePath);
 
-      // Add material to database
       const newMaterial: Omit<WorkshopMaterial, 'id' | 'created_at'> = {
         workshop_id: workshopId,
         title: materialTitle,
@@ -99,13 +96,11 @@ const WorkshopMaterialsManager = ({ workshopId }: WorkshopMaterialsManagerProps)
 
       await addWorkshopMaterial(newMaterial);
       
-      // Reset form and close dialog
       setMaterialTitle("");
       setMaterialDescription("");
       setSelectedFile(null);
       setIsAddDialogOpen(false);
       
-      // Reload materials
       await loadMaterials();
       
       toast({
