@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { AdminSidebar } from "./AdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -14,7 +14,7 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
     return (
       <SidebarProvider>
         <MainLayout>
-          <div className="wirashna-container py-12 flex justify-center items-center">
+          <div className="pt-20 flex justify-center items-center">
             <div className="wirashna-loader"></div>
           </div>
         </MainLayout>
@@ -27,7 +27,7 @@ const AdminDashboardLayout = ({ children, isLoading = false }: AdminDashboardLay
       <MainLayout>
         <div className="flex min-h-[calc(100vh-4rem)]">
           <AdminSidebar />
-          <main className="flex-1 p-6 lg:pr-64">
+          <main className="flex-1 p-6 pt-20 md:pr-64">
             {children}
           </main>
         </div>

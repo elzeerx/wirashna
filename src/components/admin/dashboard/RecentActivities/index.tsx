@@ -72,7 +72,6 @@ export function RecentActivities({
         };
       } catch (err) {
         console.error('Error setting up realtime subscription:', err);
-        // Don't throw here, just log the error
       }
     }
   }, [providedActivities]);
@@ -90,7 +89,6 @@ export function RecentActivities({
     }
   };
 
-  // Use provided activities if available, otherwise use fetched activities
   const mapFetchedActivities = (): ActivityItem[] => {
     return fetchedActivities.map(activity => ({
       id: activity.id,
