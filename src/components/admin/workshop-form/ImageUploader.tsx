@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useFormContext } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,23 +28,33 @@ export const ImageUploader = ({
   const { register, setValue, watch } = useFormContext();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [storedImages, setStoredImages] = useState<string[]>([]);
+  const [isStorageDialogOpen, setIsStorageDialogOpen] = useState(false);
   
   const currentValue = watch(name);
   const [imageUrl, setImageUrl] = useState<string | undefined>(initialImageUrl);
   
   useEffect(() => {
-    if (currentValue && currentValue !== imageUrl) {
-      setImageUrl(currentValue);
-    }
-  }, [currentValue, imageUrl]);
-  
-  useEffect(() => {
-    if (initialImageUrl && initialImageUrl !== imageUrl && !currentValue) {
-      setImageUrl(initialImageUrl);
-      setValue(name, initialImageUrl, { shouldValidate: true });
-    }
-  }, [initialImageUrl, imageUrl, setValue, name, currentValue]);
+    // Fetch stored images from the specified bucket
+    const fetchStoredImages = async () => {
+      const { data, error } = await supabase.storage
+        .from(BUCKETS[bucketType])
+        .list();
+      
+      if (error) {
+        console.error("Error fetching stored images:", error);
+        return;
+      }
+
+      const publicUrls = data.map(file => 
+        supabase.storage.from(BUCKETS[bucketType]).getPublicUrl(file.name).data.publicUrl
+      );
+      
+      setStoredImages(publicUrls);
+    };
+
+    fetchStoredImages();
+  }, [bucketType]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -68,14 +80,11 @@ export const ImageUploader = ({
 
     try {
       setIsUploading(true);
-      setUploadProgress(0);
 
       const fileExt = file.name.split('.').pop() || '';
       const fileName = getRandomFileName(fileExt);
       const bucketId = BUCKETS[bucketType];
       const filePath = getStoragePath(bucketType.toLowerCase().replace('_', '-'), fileName);
-      
-      console.log(`Uploading image to ${bucketId} bucket, path: ${filePath}`);
       
       const { data, error } = await supabase.storage
         .from(bucketId)
@@ -93,8 +102,6 @@ export const ImageUploader = ({
         .from(bucketId)
         .getPublicUrl(filePath);
 
-      console.log("Uploaded image URL:", publicUrl);
-
       setImageUrl(publicUrl);
       setValue(name, publicUrl, { shouldValidate: true, shouldDirty: true });
       
@@ -102,9 +109,12 @@ export const ImageUploader = ({
         onImageUploaded(publicUrl);
       }
 
+      // Update stored images list
+      setStoredImages(prev => [...prev, publicUrl]);
+
       toast({
         title: "تم رفع الصورة بنجاح",
-        description: "تم رفع الصورة وإضافتها إلى الورشة",
+        description: "تم رفع الصورة وإضافتها إلى المخزن",
       });
     } catch (error: any) {
       console.error("Error uploading file:", error);
@@ -116,6 +126,17 @@ export const ImageUploader = ({
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleSelectFromStorage = (selectedImage: string) => {
+    setImageUrl(selectedImage);
+    setValue(name, selectedImage, { shouldValidate: true, shouldDirty: true });
+    
+    if (onImageUploaded) {
+      onImageUploaded(selectedImage);
+    }
+
+    setIsStorageDialogOpen(false);
   };
 
   const handleRemoveImage = () => {
@@ -153,7 +174,6 @@ export const ImageUploader = ({
             {isUploading ? (
               <div className="flex flex-col items-center space-y-2">
                 <Loader2 className="h-8 w-8 text-gray-500 animate-spin" />
-                <span className="text-sm text-gray-500">{uploadProgress}%</span>
               </div>
             ) : (
               <>
@@ -164,26 +184,66 @@ export const ImageUploader = ({
           </div>
         )}
         
-        <input
-          id={name}
-          type="file"
-          className="hidden"
-          onChange={handleFileUpload}
-          accept="image/*"
-          disabled={isUploading}
-        />
-        
-        {!isUploading && !imageUrl && (
+        <div className="flex space-x-2 w-full">
+          <input
+            id={name}
+            type="file"
+            className="hidden"
+            onChange={handleFileUpload}
+            accept="image/*"
+            disabled={isUploading}
+          />
+          
           <Button 
             type="button" 
             variant="outline" 
             onClick={() => document.getElementById(name)?.click()}
-            className="w-full"
+            className="flex-1"
+            disabled={isUploading}
           >
             <Upload size={16} className="ml-2" />
-            اختر صورة
+            رفع صورة
           </Button>
-        )}
+
+          <Dialog open={isStorageDialogOpen} onOpenChange={setIsStorageDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="flex-1"
+                disabled={isUploading || storedImages.length === 0}
+              >
+                <Folder size={16} className="ml-2" />
+                اختر من المخزن
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>اختر صورة من المخزن</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-3 gap-4 max-h-[400px] overflow-y-auto">
+                {storedImages.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className="cursor-pointer hover:opacity-75 transition-opacity"
+                    onClick={() => handleSelectFromStorage(image)}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`Stored Image ${index + 1}`} 
+                      className="w-full h-32 object-cover rounded-md"
+                    />
+                  </div>
+                ))}
+              </div>
+              {storedImages.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  لا توجد صور في المخزن
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <input 
           type="hidden" 
