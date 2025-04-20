@@ -44,7 +44,9 @@ export const AuthCard = () => {
   const handleGoogleSignIn = async () => {
     setError(null);
     try {
+      console.log("Starting Google sign in process");
       await signInWithGoogle();
+      // No navigation here as OAuth will redirect the page
     } catch (error: any) {
       console.error("Google authentication error:", error);
       setError("حدث خطأ أثناء تسجيل الدخول بواسطة جوجل");

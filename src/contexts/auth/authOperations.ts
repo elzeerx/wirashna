@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/types/supabase";
 import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
@@ -143,6 +142,9 @@ export const signInWithGoogleOperation = async (
       provider: 'google',
       options: {
         redirectTo: `${currentOrigin}/login`,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     });
     if (error) throw error;
