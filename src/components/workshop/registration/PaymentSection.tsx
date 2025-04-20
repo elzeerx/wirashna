@@ -1,27 +1,19 @@
+
 import { CreditCard } from "lucide-react";
+
 type PaymentSectionProps = {
   workshopPrice: number;
 };
+
 const PaymentSection = ({
   workshopPrice
 }: PaymentSectionProps) => {
-  const VAT_RATE = 0.05; // 5% VAT
-  const vatAmount = workshopPrice * VAT_RATE;
-  const total = workshopPrice + vatAmount;
   return <div className="py-4">
       <h3 className="text-lg font-semibold mb-4">ملخص الطلب</h3>
       <div className="space-y-2 mb-4">
-        <div className="flex justify-between">
-          <span>سعر الورشة</span>
-          <span>{workshopPrice} د.ك</span>
-        </div>
-        <div className="flex justify-between text-gray-600">
-          <span>ضريبة القيمة المضافة</span>
-          <span>{vatAmount} د.ك</span>
-        </div>
-        <div className="flex justify-between font-bold pt-2 border-t">
+        <div className="flex justify-between font-bold">
           <span>المجموع</span>
-          <span>{total} د.ك</span>
+          <span>{workshopPrice} د.ك</span>
         </div>
       </div>
       
@@ -31,12 +23,18 @@ const PaymentSection = ({
       </div>
 
       <div className="flex justify-center">
-        <img alt="Payment methods" onError={e => {
-        const imgElement = e.target as HTMLImageElement;
-        imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
-        imgElement.alt = "Payment methods placeholder";
-      }} src="/lovable-uploads/9acf5425-9eca-4aa7-aa10-99bb75b7b7ad.png" className="h-8 max-w-full object-contain" />
+        <img 
+          alt="Payment methods" 
+          src="/lovable-uploads/9acf5425-9eca-4aa7-aa10-99bb75b7b7ad.png" 
+          className="h-8 max-w-full object-contain mx-auto"
+          onError={(e) => {
+            const imgElement = e.target as HTMLImageElement;
+            imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
+            imgElement.alt = "Payment methods placeholder";
+          }}
+        />
       </div>
     </div>;
 };
+
 export default PaymentSection;
