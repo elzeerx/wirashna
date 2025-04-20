@@ -52,7 +52,8 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
 
   const { handleSubmit, isLoading } = useFormSubmission({
     onSubmit: async (data: AddUserForm) => {
-      const { error: signUpError } = await supabase.auth.signUp({
+      // First create the auth user
+      const { error: signUpError, data: authData } = await supabase.auth.signUp({
         email: data.email,
         password: Math.random().toString(36).slice(-12),
         options: {
@@ -64,14 +65,24 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
 
       if (signUpError) throw signUpError;
 
-      // Fix the type error by using explicit casting and proper table field access
+      // Then update the user profile
+      // First get the user ID by email
+      const { data: userData, error: userError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', authData.user?.id)
+        .single();
+
+      if (userError) throw userError;
+
+      // Now update the profile with the correct ID
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .update({ 
-          role: data.role, 
-          is_admin: data.role === 'admin' 
+        .update({
+          role: data.role,
+          is_admin: data.role === 'admin'
         })
-        .eq('email', data.email);
+        .eq('id', userData.id);
 
       if (profileError) throw profileError;
 
