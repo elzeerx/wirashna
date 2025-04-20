@@ -1,19 +1,28 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { UserFormData } from "../UserDetailsForm";
 
 export const useRegistrationValidation = () => {
   const { toast } = useToast();
 
   const validateRegistration = (workshopId?: string, userId?: string) => {
-    if (!workshopId || !userId) {
+    if (!workshopId) {
       toast({
         title: "خطأ في التسجيل",
-        description: "يرجى تسجيل الدخول والتأكد من اختيار ورشة صحيحة",
+        description: "لم يتم تحديد الورشة المطلوبة",
         variant: "destructive",
       });
       return false;
     }
+
+    if (!userId) {
+      toast({
+        title: "خطأ في التسجيل",
+        description: "يرجى تسجيل الدخول قبل محاولة التسجيل في الورشة",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     return true;
   };
 

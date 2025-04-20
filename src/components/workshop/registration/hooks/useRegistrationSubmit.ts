@@ -6,6 +6,7 @@ import { UserFormData } from "../UserDetailsForm";
 import { useRegistrationValidation } from "./useRegistrationValidation";
 import { useRegistrationHandler } from "./useRegistrationHandler";
 import { usePaymentHandler } from "./usePaymentHandler";
+import { useAuth } from "@/contexts/AuthContext";
 
 type UseRegistrationSubmitProps = {
   workshopId?: string;
@@ -20,10 +21,11 @@ export const useRegistrationSubmit = ({
 }: UseRegistrationSubmitProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { validateRegistration } = useRegistrationValidation();
   
-  const userId = "user?.id"; // This will be replaced by the actual user ID from auth context
+  const userId = user?.id || "";
   
   const { handleRegistration, isProcessing: isRegistrationProcessing } = 
     useRegistrationHandler({ workshopId: workshopId!, userId, isRetry });
@@ -32,6 +34,16 @@ export const useRegistrationSubmit = ({
     usePaymentHandler({ workshopId: workshopId!, userId, price: workshopPrice, isRetry });
 
   const handleSubmit = async (values: UserFormData) => {
+    if (!userId) {
+      toast({
+        title: "خطأ في التسجيل",
+        description: "يرجى تسجيل الدخول قبل محاولة التسجيل في الورشة",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     if (!validateRegistration(workshopId, userId)) {
       return;
     }
@@ -52,7 +64,7 @@ export const useRegistrationSubmit = ({
 
       if (workshopPrice > 0) {
         await handlePayment({
-          name: values.fullName, // Changed from 'fullName' to 'name' to match UserDetails type
+          name: values.fullName,
           email: values.email,
           phone: values.phone
         });
