@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { User, Edit, Trash2, UserCheck, UserX, Search } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -51,7 +50,7 @@ const AdminUserManagement = () => {
         .select('*');
 
       if (error) throw error;
-      setUsers(data || []);
+      setUsers((data || []) as UserProfile[]);
     } catch (error: any) {
       console.error("Error fetching users:", error);
       toast({
@@ -71,10 +70,10 @@ const AdminUserManagement = () => {
       const { error } = await supabase
         .from('user_profiles')
         .update({ 
-          role: selectedRole as any,
+          role: selectedRole as 'admin' | 'supervisor' | 'subscriber',
           is_admin: selectedRole === 'admin'
-        })
-        .eq('id', selectedUser.id);
+        } as any)
+        .eq('id', selectedUser.id as string);
 
       if (error) throw error;
       
@@ -158,7 +157,7 @@ const AdminUserManagement = () => {
                 {filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center py-8 text-gray-500">
-                      لا يوجد مستخدمين متطابقين مع معايير البحث
+                      لا يوجد مستخدمين متطابقين مع معايير ا��بحث
                     </TableCell>
                   </TableRow>
                 ) : (

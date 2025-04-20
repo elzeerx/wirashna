@@ -37,7 +37,8 @@ export const fetchUserProfile = async (userId: string): Promise<{
     
     // If we have user data
     if (data) {
-      const userProfile = data as UserProfile;
+      // Convert the data to UserProfile type
+      const userProfile = data as unknown as UserProfile;
       const isAdmin = userProfile.is_admin || userProfile.role === 'admin';
       const isSupervisor = userProfile.role === 'supervisor';
       const userRole = userProfile.role;

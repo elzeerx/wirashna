@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { z } from "zod";
@@ -47,7 +48,7 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
       full_name: '',
       role: 'subscriber'
     }
-  } as const);
+  });
 
   const { handleSubmit, isLoading } = useFormSubmission({
     onSubmit: async (data: AddUserForm) => {
@@ -65,8 +66,8 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
 
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .update({ role: data.role })
-        .eq('email', data.email);
+        .update({ role: data.role } as any)
+        .eq('email', data.email as any);
 
       if (profileError) throw profileError;
 

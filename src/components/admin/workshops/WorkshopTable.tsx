@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Eye, Edit, Trash2, ClipboardList, FileText, Check, X } from "lucide-react";
@@ -34,8 +33,8 @@ const WorkshopTable = ({
       
       const { error } = await supabase
         .from("workshops")
-        .update({ registration_closed: !workshop.registration_closed })
-        .eq("id", workshop.id);
+        .update({ registration_closed: !workshop.registration_closed } as any)
+        .eq("id", workshop.id as any);
       
       if (error) {
         throw error;
@@ -87,72 +86,82 @@ const WorkshopTable = ({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {workshops.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                لا توجد ورش متاحة
-              </td>
-            </tr>
-          ) : (
-            workshops.map((workshop) => {
-              const primaryDate = workshop.date ?? workshop.dates?.[0]?.date;
-              const primaryTime = workshop.time ?? workshop.dates?.[0]?.time;
-
-              return (
-                <tr key={workshop.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {workshop.title}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {primaryDate ? formatDate(primaryDate, "dd/MM/yyyy") : "—"} {primaryTime || "—"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {workshop.available_seats} / {workshop.total_seats}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {workshop.price} KWD
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <Switch
-                        checked={!workshop.registration_closed}
-                        onCheckedChange={() => handleToggleRegistration(workshop)}
-                        disabled={updatingWorkshop === workshop.id}
-                      />
-                      <span className="mr-2">
-                        {workshop.registration_closed ? 'مغلق' : 'مفتوح'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 space-x-reverse">
-                    <Button variant="ghost" size="icon" onClick={() => onView(workshop.id)}>
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(workshop)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(workshop)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                    {onViewRegistrations && (
-                      <Button variant="ghost" size="icon" onClick={() => onViewRegistrations(workshop)}>
-                        <ClipboardList className="w-4 h-4" />
-                      </Button>
-                    )}
-                    {onManageMaterials && (
-                      <Button variant="ghost" size="icon" onClick={() => onManageMaterials(workshop)}>
-                        <FileText className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
+        <TableBody workshopsList={workshops} onView={onView} onEdit={onEdit} onDelete={onDelete} onViewRegistrations={onViewRegistrations} onManageMaterials={onManageMaterials} handleToggleRegistration={handleToggleRegistration} updatingWorkshop={updatingWorkshop} />
       </table>
     </div>
+  );
+};
+
+const TableBody = ({ workshopsList, onView, onEdit, onDelete, onViewRegistrations, onManageMaterials, handleToggleRegistration, updatingWorkshop }) => {
+  if (workshopsList.length === 0) {
+    return (
+      <tbody>
+        <tr>
+          <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+            لا توجد ورش متاحة
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+  
+  return (
+    <tbody className="bg-white divide-y divide-gray-200">
+      {workshopsList.map((workshop) => {
+        const primaryDate = workshop.date ?? workshop.dates?.[0]?.date;
+        const primaryTime = workshop.time ?? workshop.dates?.[0]?.time;
+
+        return (
+          <tr key={workshop.id} className="hover:bg-gray-50">
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {workshop.title}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {primaryDate ? formatDate(primaryDate, "dd/MM/yyyy") : "—"} {primaryTime || "—"}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {workshop.available_seats} / {workshop.total_seats}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {workshop.price} KWD
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <div className="flex items-center">
+                <Switch
+                  checked={!workshop.registration_closed}
+                  onCheckedChange={() => handleToggleRegistration(workshop)}
+                  disabled={updatingWorkshop === workshop.id}
+                />
+                <span className="mr-2">
+                  {workshop.registration_closed ? 'مغلق' : 'مفتوح'}
+                </span>
+              </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 space-x-reverse">
+              <Button variant="ghost" size="icon" onClick={() => onView(workshop.id)}>
+                <Eye className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onEdit(workshop)}>
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onDelete(workshop)}>
+                <Trash2 className="w-4 h-4" />
+              </Button>
+              {onViewRegistrations && (
+                <Button variant="ghost" size="icon" onClick={() => onViewRegistrations(workshop)}>
+                  <ClipboardList className="w-4 h-4" />
+                </Button>
+              )}
+              {onManageMaterials && (
+                <Button variant="ghost" size="icon" onClick={() => onManageMaterials(workshop)}>
+                  <FileText className="w-4 h-4" />
+                </Button>
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
   );
 };
 
