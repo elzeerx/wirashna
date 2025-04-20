@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getOAuthConfig } from "@/integrations/supabase/client";
 import { UserProfile } from "@/types/supabase";
 import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
 
@@ -131,7 +130,7 @@ export const signUpOperation = async (
   }
 };
 
-// Sign in with Google operation
+// Sign in with Google operation - Updated to use the getOAuthConfig()
 export const signInWithGoogleOperation = async (
   toast: (options: ToastOptions) => void,
   setIsLoading: (isLoading: boolean) => void
@@ -139,14 +138,9 @@ export const signInWithGoogleOperation = async (
   try {
     setIsLoading(true);
     
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        queryParams: {
-          prompt: 'select_account',
-        },
-      },
-    });
+    const authConfig = getOAuthConfig();
+    const { error } = await supabase.auth.signInWithOAuth(authConfig);
+    
     if (error) throw error;
   } catch (error: any) {
     toast({

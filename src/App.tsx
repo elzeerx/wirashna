@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,6 +17,7 @@ const PaymentCallback = lazy(() => import("@/pages/PaymentCallback"));
 const AboutPage = lazy(() => import("@/pages/About"));
 const ContactPage = lazy(() => import("@/pages/Contact"));
 const PageNotFound = lazy(() => import("@/pages/NotFound"));
+const AuthCallback = lazy(() => import("@/pages/auth/AuthCallback"));
 
 // Admin routes
 const AdminDashboardPage = lazy(() => import("@/pages/admin/AdminDashboardPage"));
@@ -49,6 +51,7 @@ function App() {
           <Route path="/payment/callback" element={<PaymentCallback />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           
           {/* Admin routes */}
           <Route 

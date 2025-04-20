@@ -20,28 +20,34 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Add redirect configuration to the auth callbacks
-const authCallbacks = {
-  onAuthStateChange: (event: string) => {
-    if (event === 'SIGNED_IN') {
-      // Get the current URL
-      const currentUrl = window.location.href;
-      
-      // Determine whether we're in localhost or production
-      const redirectUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080/auth/callback'
-        : 'https://wirashna.com/auth/callback';
-        
-      // Set the redirect URL in the supabase auth configuration
-      supabase.auth.setSession({
-        refresh_token: '',
-        access_token: '',
-      });
-    }
+// Configure proper auth callback redirection
+const getRedirectUrl = () => {
+  const currentHost = window.location.hostname;
+  
+  // Check if we're in development or production
+  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    return `${window.location.protocol}//${window.location.host}/auth/callback`;
+  } else {
+    // For production environments - adapt if you have a custom domain
+    return `${window.location.protocol}//${window.location.host}/auth/callback`;
   }
 };
 
-// Subscribe to auth changes
+// Set up auth state change listener
 if (typeof window !== 'undefined') {
-  supabase.auth.onAuthStateChange(authCallbacks.onAuthStateChange);
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN') {
+      console.log('User signed in, configured redirect URL:', getRedirectUrl());
+    }
+  });
 }
+
+// Configure auth settings for OAuth providers
+export const getOAuthConfig = () => {
+  return {
+    provider: 'google',
+    options: {
+      redirectTo: getRedirectUrl()
+    }
+  };
+};
