@@ -122,8 +122,7 @@ export const fetchUserRegistrationCounts = async (): Promise<Record<string, numb
   try {
     const { data, error } = await supabase
       .from('workshop_registrations')
-      .select('user_id')
-      .select();
+      .select('user_id');
     
     if (error) {
       console.error("Error fetching registration counts:", error);
@@ -175,15 +174,19 @@ export const findOrphanedRegistrations = async (): Promise<WorkshopRegistration[
 // Find duplicate registrations (same user_id and workshop_id)
 export const findDuplicateRegistrations = async (): Promise<any[]> => {
   try {
-    // Using a custom function that was defined in SQL migrations
+    // Fix 1: Use a direct query instead of RPC
     const { data, error } = await supabase
-      .rpc('find_duplicate_registrations');
+      .from('workshop_registrations')
+      .select('user_id, workshop_id, count(*)')
+      .group('user_id, workshop_id')
+      .having('count(*)', 'gt', 1);
     
     if (error) {
       console.error("Error finding duplicate registrations:", error);
       throw error;
     }
     
+    // Fix 2: Ensure we always return an array
     return data || [];
   } catch (error) {
     console.error("Error in findDuplicateRegistrations:", error);
