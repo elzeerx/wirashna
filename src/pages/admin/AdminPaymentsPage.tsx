@@ -84,7 +84,7 @@ const AdminPaymentsPage = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(payment.created_at), 'dd/MM/yyyy')}
+                      {format(new Date(payment.created_at || ''), 'dd/MM/yyyy')}
                     </TableCell>
                   </TableRow>
                 ))}

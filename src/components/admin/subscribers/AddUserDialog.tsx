@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { z } from "zod";
@@ -66,7 +65,7 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
 
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .update({ role: data.role } as any)
+        .update({ role: data.role, is_admin: data.role === 'admin' } as any)
         .eq('email', data.email as any);
 
       if (profileError) throw profileError;

@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, ClipboardList, FileText, Check, X } from "lucide-react";
+import { Eye, Edit, Trash2, ClipboardList, FileText } from "lucide-react";
 import { Workshop } from "@/types/supabase";
 import { formatDate } from "@/utils/dateUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -86,13 +87,31 @@ const WorkshopTable = ({
             </th>
           </tr>
         </thead>
-        <TableBody workshopsList={workshops} onView={onView} onEdit={onEdit} onDelete={onDelete} onViewRegistrations={onViewRegistrations} onManageMaterials={onManageMaterials} handleToggleRegistration={handleToggleRegistration} updatingWorkshop={updatingWorkshop} />
+        <TableBody 
+          workshopsList={workshops} 
+          onView={onView} 
+          onEdit={onEdit} 
+          onDelete={onDelete} 
+          onViewRegistrations={onViewRegistrations} 
+          onManageMaterials={onManageMaterials} 
+          handleToggleRegistration={handleToggleRegistration} 
+          updatingWorkshop={updatingWorkshop} 
+        />
       </table>
     </div>
   );
 };
 
-const TableBody = ({ workshopsList, onView, onEdit, onDelete, onViewRegistrations, onManageMaterials, handleToggleRegistration, updatingWorkshop }) => {
+const TableBody = ({ 
+  workshopsList, 
+  onView, 
+  onEdit, 
+  onDelete, 
+  onViewRegistrations, 
+  onManageMaterials, 
+  handleToggleRegistration, 
+  updatingWorkshop 
+}) => {
   if (workshopsList.length === 0) {
     return (
       <tbody>

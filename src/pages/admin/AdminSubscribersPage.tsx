@@ -25,7 +25,7 @@ const AdminSubscribersPage = () => {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      return data as UserProfile[];
+      return data as unknown as UserProfile[];
     }
   });
 

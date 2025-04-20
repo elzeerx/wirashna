@@ -50,7 +50,7 @@ const AdminUserManagement = () => {
         .select('*');
 
       if (error) throw error;
-      setUsers((data || []) as UserProfile[]);
+      setUsers(data as unknown as UserProfile[]);
     } catch (error: any) {
       console.error("Error fetching users:", error);
       toast({
@@ -73,7 +73,7 @@ const AdminUserManagement = () => {
           role: selectedRole as 'admin' | 'supervisor' | 'subscriber',
           is_admin: selectedRole === 'admin'
         } as any)
-        .eq('id', selectedUser.id as string);
+        .eq('id', selectedUser.id as any);
 
       if (error) throw error;
       
