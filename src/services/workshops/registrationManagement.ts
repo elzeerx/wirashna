@@ -174,20 +174,40 @@ export const findOrphanedRegistrations = async (): Promise<WorkshopRegistration[
 // Find duplicate registrations (same user_id and workshop_id)
 export const findDuplicateRegistrations = async (): Promise<any[]> => {
   try {
-    // Fix 1: Use a direct query instead of RPC
+    // Supabase JS client doesn't support GROUP BY directly in the same way as raw SQL
+    // Instead, we'll fetch all registrations and do the grouping in JS
     const { data, error } = await supabase
       .from('workshop_registrations')
-      .select('user_id, workshop_id, count(*)')
-      .group('user_id, workshop_id')
-      .having('count(*)', 'gt', 1);
+      .select('user_id, workshop_id');
     
     if (error) {
-      console.error("Error finding duplicate registrations:", error);
+      console.error("Error fetching registrations for duplicate check:", error);
       throw error;
     }
     
-    // Fix 2: Ensure we always return an array
-    return data || [];
+    // Group registrations by user_id + workshop_id combination
+    const groupedRegistrations = new Map<string, number>();
+    
+    data?.forEach(reg => {
+      const key = `${reg.user_id}-${reg.workshop_id}`;
+      groupedRegistrations.set(key, (groupedRegistrations.get(key) || 0) + 1);
+    });
+    
+    // Find combinations with more than one registration
+    const duplicates = [];
+    
+    for (const [key, count] of groupedRegistrations.entries()) {
+      if (count > 1) {
+        const [userId, workshopId] = key.split('-');
+        duplicates.push({
+          user_id: userId,
+          workshop_id: workshopId,
+          count: count
+        });
+      }
+    }
+    
+    return duplicates;
   } catch (error) {
     console.error("Error in findDuplicateRegistrations:", error);
     return [];
