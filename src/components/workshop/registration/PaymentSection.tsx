@@ -33,19 +33,20 @@ const PaymentSection = ({ workshopPrice }: PaymentSectionProps) => {
         <span>طريقة الدفع: بطاقة ائتمان (كي نت / ماستركارد / فيزا)</span>
       </div>
 
-      <img 
-        src="/tap-payment-methods.png" 
-        alt="Payment methods" 
-        className="h-8 mx-auto object-contain max-w-full"
-        onError={(e) => {
-          const imgElement = e.target as HTMLImageElement;
-          imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
-          imgElement.alt = "Payment methods placeholder";
-        }}
-      />
+      <div className="flex justify-center">
+        <img 
+          src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" 
+          alt="Payment methods" 
+          className="h-8 object-contain max-w-full"
+          onError={(e) => {
+            const imgElement = e.target as HTMLImageElement;
+            imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
+            imgElement.alt = "Payment methods placeholder";
+          }}
+        />
+      </div>
     </div>
   );
 };
 
 export default PaymentSection;
-
