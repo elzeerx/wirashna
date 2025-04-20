@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { z } from "zod";
@@ -41,15 +40,14 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
   });
   const { toast } = useToast();
 
-  // Use form without generic to avoid TS2589 error
   const form = useForm({
     resolver: zodResolver(addUserSchema),
     defaultValues: {
       email: '',
       full_name: '',
-      role: 'subscriber' as const
+      role: 'subscriber'
     }
-  });
+  } as const);
 
   const { handleSubmit, isLoading } = useFormSubmission({
     onSubmit: async (data: AddUserForm) => {
