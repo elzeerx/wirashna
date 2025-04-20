@@ -35,11 +35,17 @@ const PaymentSection = ({ workshopPrice }: PaymentSectionProps) => {
 
       <img 
         src="/tap-payment-methods.png" 
-        alt="Payment methods"
-        className="h-8"
+        alt="Payment methods" 
+        className="h-8 mx-auto object-contain max-w-full"
+        onError={(e) => {
+          const imgElement = e.target as HTMLImageElement;
+          imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
+          imgElement.alt = "Payment methods placeholder";
+        }}
       />
     </div>
   );
 };
 
 export default PaymentSection;
+
