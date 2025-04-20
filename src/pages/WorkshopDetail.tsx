@@ -113,7 +113,7 @@ const WorkshopDetail = () => {
             </div>
 
             {/* Mobile Registration Component - Only visible on mobile, now only at the bottom */}
-            <div className="mt-12">
+            <div className="mt-12 lg:hidden">
               <MobileRegistration
                 workshopId={workshop.id}
                 dates={workshopDates}
