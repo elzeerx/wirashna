@@ -27,7 +27,6 @@ const WorkshopTable = ({
   const { toast } = useToast();
   const [updatingWorkshop, setUpdatingWorkshop] = useState<string | null>(null);
 
-  // Handler for toggling registration status
   const handleToggleRegistration = async (workshop: Workshop) => {
     try {
       setUpdatingWorkshop(workshop.id);
@@ -48,7 +47,6 @@ const WorkshopTable = ({
           : "تم إغلاق التسجيل للورشة بنجاح",
       });
       
-      // Update the workshop in the UI
       workshop.registration_closed = !workshop.registration_closed;
       
     } catch (error) {
@@ -96,55 +94,60 @@ const WorkshopTable = ({
               </td>
             </tr>
           ) : (
-            workshops.map((workshop) => (
-              <tr key={workshop.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {workshop.title}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(workshop.date)} {workshop.time}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {workshop.available_seats} / {workshop.total_seats}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {workshop.price} KWD
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <Switch
-                      checked={!workshop.registration_closed}
-                      onCheckedChange={() => handleToggleRegistration(workshop)}
-                      disabled={updatingWorkshop === workshop.id}
-                    />
-                    <span className="mr-2">
-                      {workshop.registration_closed ? 'مغلق' : 'مفتوح'}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 space-x-reverse">
-                  <Button variant="ghost" size="icon" onClick={() => onView(workshop.id)}>
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onEdit(workshop)}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => onDelete(workshop)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                  {onViewRegistrations && (
-                    <Button variant="ghost" size="icon" onClick={() => onViewRegistrations(workshop)}>
-                      <ClipboardList className="w-4 h-4" />
+            workshops.map((workshop) => {
+              const primaryDate = workshop.date ?? workshop.dates?.[0]?.date;
+              const primaryTime = workshop.time ?? workshop.dates?.[0]?.time;
+
+              return (
+                <tr key={workshop.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {workshop.title}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {primaryDate ? formatDate(primaryDate, "dd/MM/yyyy") : "—"} {primaryTime || "—"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {workshop.available_seats} / {workshop.total_seats}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {workshop.price} KWD
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <Switch
+                        checked={!workshop.registration_closed}
+                        onCheckedChange={() => handleToggleRegistration(workshop)}
+                        disabled={updatingWorkshop === workshop.id}
+                      />
+                      <span className="mr-2">
+                        {workshop.registration_closed ? 'مغلق' : 'مفتوح'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 space-x-reverse">
+                    <Button variant="ghost" size="icon" onClick={() => onView(workshop.id)}>
+                      <Eye className="w-4 h-4" />
                     </Button>
-                  )}
-                  {onManageMaterials && (
-                    <Button variant="ghost" size="icon" onClick={() => onManageMaterials(workshop)}>
-                      <FileText className="w-4 h-4" />
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(workshop)}>
+                      <Edit className="w-4 h-4" />
                     </Button>
-                  )}
-                </td>
-              </tr>
-            ))
+                    <Button variant="ghost" size="icon" onClick={() => onDelete(workshop)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    {onViewRegistrations && (
+                      <Button variant="ghost" size="icon" onClick={() => onViewRegistrations(workshop)}>
+                        <ClipboardList className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {onManageMaterials && (
+                      <Button variant="ghost" size="icon" onClick={() => onManageMaterials(workshop)}>
+                        <FileText className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
