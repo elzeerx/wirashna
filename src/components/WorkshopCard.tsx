@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -38,11 +37,9 @@ const WorkshopCard = ({
           alt={title}
           className="w-full h-48 object-cover"
         />
-        {status && (
+        {status === 'قريباً' && (
           <Badge 
-            className={`absolute top-4 right-4 ${
-              status === 'قريباً' ? 'bg-amber-500' : 'bg-emerald-500'
-            }`}
+            className="absolute top-4 right-4 bg-amber-500"
           >
             {status}
           </Badge>

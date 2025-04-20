@@ -1,6 +1,5 @@
 
 import { Calendar, Clock, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Workshop } from "@/types/supabase";
 
 type WorkshopPreviewProps = {
@@ -18,9 +17,7 @@ const WorkshopPreview = ({ workshop }: WorkshopPreviewProps) => {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">{workshop.title}</h1>
-          {workshop.available_seats > 0 && (
-            <Badge className="bg-emerald-500">متاح</Badge>
-          )}
+          {/* Removed the badge */}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
           <div className="flex items-center gap-2">
