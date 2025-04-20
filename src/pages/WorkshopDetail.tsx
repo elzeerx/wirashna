@@ -84,17 +84,6 @@ const WorkshopDetail = () => {
           />
 
           <div className="wirashna-container py-12">
-            {/* Mobile Registration Component - Only visible on mobile */}
-            <MobileRegistration
-              workshopId={workshop.id}
-              dates={workshopDates}
-              venue={workshop.venue}
-              location={workshop.location}
-              availableSeats={workshop.available_seats}
-              totalSeats={workshop.total_seats}
-              price={workshop.price}
-            />
-            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className="lg:col-span-2 space-y-8">
                 <WorkshopDescription description={workshop.long_description || workshop.short_description} />
@@ -122,6 +111,19 @@ const WorkshopDetail = () => {
                 />
               </div>
             </div>
+
+            {/* Mobile Registration Component - Only visible on mobile, now only at the bottom */}
+            <div className="mt-12">
+              <MobileRegistration
+                workshopId={workshop.id}
+                dates={workshopDates}
+                venue={workshop.venue}
+                location={workshop.location}
+                availableSeats={workshop.available_seats}
+                totalSeats={workshop.total_seats}
+                price={workshop.price}
+              />
+            </div>
           </div>
         </main>
       </ErrorBoundary>
@@ -131,3 +133,4 @@ const WorkshopDetail = () => {
 };
 
 export default WorkshopDetail;
+
