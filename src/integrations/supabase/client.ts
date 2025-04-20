@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { Provider } from '@supabase/supabase-js';
 
 const SUPABASE_URL = "https://dxgscdegcjhejmqcvajc.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR4Z3NjZGVnY2poZWptcWN2YWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQzODc4NzYsImV4cCI6MjA1OTk2Mzg3Nn0.iW0Gev-EYC_cGWdNT1F-7QRdDn-fjIi7VG0R6EQiw8g";
@@ -45,7 +46,7 @@ if (typeof window !== 'undefined') {
 // Configure auth settings for OAuth providers
 export const getOAuthConfig = () => {
   return {
-    provider: 'google',
+    provider: 'google' as Provider,
     options: {
       redirectTo: getRedirectUrl()
     }
