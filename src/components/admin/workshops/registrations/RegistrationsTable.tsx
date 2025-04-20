@@ -26,6 +26,7 @@ interface RegistrationsTableProps {
   onEdit: (registration: WorkshopRegistration) => void;
   onDelete: (registration: WorkshopRegistration) => void;
   onReset: (registration: WorkshopRegistration) => void;
+  workshopClosed?: boolean;
 }
 
 // Memoize the table cell to prevent re-renders
@@ -39,7 +40,8 @@ const RegistrationsTable = memo(({
   registrations, 
   onEdit, 
   onDelete,
-  onReset
+  onReset,
+  workshopClosed = false
 }: RegistrationsTableProps) => {
   // Format date for display using memoization to avoid recalculating
   const formatDate = useCallback((dateString: string) => {
@@ -95,53 +97,59 @@ const RegistrationsTable = memo(({
               </MemoizedTableCell>
             </TableRow>
           ) : (
-            registrations.map((registration) => (
-              <TableRow key={registration.id}>
-                <MemoizedTableCell>{registration.full_name}</MemoizedTableCell>
-                <MemoizedTableCell>{registration.email}</MemoizedTableCell>
-                <MemoizedTableCell dir="ltr">{registration.phone || "-"}</MemoizedTableCell>
-                <MemoizedTableCell>{formatDate(registration.created_at)}</MemoizedTableCell>
-                <MemoizedTableCell>
-                  <MemoizedStatusBadge status={registration.status} type="status" />
-                </MemoizedTableCell>
-                <MemoizedTableCell>
-                  <MemoizedStatusBadge paymentStatus={registration.payment_status} type="payment" />
-                </MemoizedTableCell>
-                <MemoizedTableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="h-8 w-8 p-0" 
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span className="sr-only">فتح القائمة</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleEdit(registration)}>
-                        <Edit className="ml-2 h-4 w-4" />
-                        تعديل
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleReset(registration)}>
-                        <RotateCcw className="ml-2 h-4 w-4" />
-                        إعادة ضبط التسجيل
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={handleDelete(registration)}
-                        className="text-red-600"
-                      >
-                        <Trash2 className="ml-2 h-4 w-4" />
-                        حذف
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </MemoizedTableCell>
-              </TableRow>
-            ))
+            registrations.map((registration) => {
+              // Determine if this row should be grayed out
+              const isGrayedOut = workshopClosed;
+              const rowClassName = isGrayedOut ? "opacity-60" : "";
+              
+              return (
+                <TableRow key={registration.id} className={rowClassName}>
+                  <MemoizedTableCell>{registration.full_name}</MemoizedTableCell>
+                  <MemoizedTableCell>{registration.email}</MemoizedTableCell>
+                  <MemoizedTableCell dir="ltr">{registration.phone || "-"}</MemoizedTableCell>
+                  <MemoizedTableCell>{formatDate(registration.created_at)}</MemoizedTableCell>
+                  <MemoizedTableCell>
+                    <MemoizedStatusBadge status={registration.status} type="status" />
+                  </MemoizedTableCell>
+                  <MemoizedTableCell>
+                    <MemoizedStatusBadge paymentStatus={registration.payment_status} type="payment" />
+                  </MemoizedTableCell>
+                  <MemoizedTableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          className="h-8 w-8 p-0" 
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="sr-only">فتح القائمة</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>الإجراءات</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleEdit(registration)}>
+                          <Edit className="ml-2 h-4 w-4" />
+                          تعديل
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleReset(registration)}>
+                          <RotateCcw className="ml-2 h-4 w-4" />
+                          إعادة ضبط التسجيل
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={handleDelete(registration)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="ml-2 h-4 w-4" />
+                          حذف
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </MemoizedTableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>

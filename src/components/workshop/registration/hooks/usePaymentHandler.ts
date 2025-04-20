@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createTapPayment } from "@/services/payment";
 import { useToast } from "@/hooks/use-toast";
 import { UserDetails } from "@/services/payment/types";
+import { supabase } from "@/integrations/supabase/client";
 
 type PaymentHandlerProps = {
   workshopId: string;
@@ -14,14 +15,48 @@ type PaymentHandlerProps = {
 
 export const usePaymentHandler = ({ workshopId, userId, price, isRetry }: PaymentHandlerProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isWorkshopClosed, setIsWorkshopClosed] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check if workshop registration is closed
+  useEffect(() => {
+    const checkWorkshopStatus = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('workshops')
+          .select('registration_closed')
+          .eq('id', workshopId)
+          .maybeSingle();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setIsWorkshopClosed(data.registration_closed === true);
+        }
+      } catch (error) {
+        console.error("Error checking workshop status:", error);
+      }
+    };
+    
+    checkWorkshopStatus();
+  }, [workshopId]);
 
   const handlePayment = async (customerDetails: UserDetails) => {
     if (!userId) {
       toast({
         title: "خطأ في عملية الدفع",
         description: "يرجى تسجيل الدخول قبل المتابعة",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Check if workshop is closed
+    if (isWorkshopClosed) {
+      toast({
+        title: "التسجيل مغلق",
+        description: "عذراً، التسجيل مغلق لهذه الورشة",
         variant: "destructive",
       });
       return false;
@@ -65,5 +100,5 @@ export const usePaymentHandler = ({ workshopId, userId, price, isRetry }: Paymen
     }
   };
 
-  return { handlePayment, isProcessing };
+  return { handlePayment, isProcessing, isWorkshopClosed };
 };

@@ -27,7 +27,12 @@ export const useWorkshopRegistrations = () => {
           fetchUserCertificates(user.id)
         ]);
         
-        setRegistrations(registrationsData);
+        // Remove any duplicate registrations (same workshop_id)
+        const uniqueRegistrations = Array.from(
+          new Map(registrationsData.map(reg => [reg.workshop_id, reg])).values()
+        );
+        
+        setRegistrations(uniqueRegistrations);
         setCertificates(certificatesData);
       } catch (error) {
         console.error("Error loading user data:", error);

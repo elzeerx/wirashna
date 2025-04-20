@@ -9,6 +9,8 @@ import ResetRegistrationDialog from "./ResetRegistrationDialog";
 import { useRegistrationsList } from "./hooks/useRegistrationsList";
 import { Suspense, useCallback } from "react";
 import { WorkshopRegistration } from "@/types/supabase";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface WorkshopRegistrationsListProps {
   workshopId: string;
@@ -19,6 +21,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
     filteredRegistrations,
     isLoading,
     isProcessing,
+    workshopClosed,
     statusFilter,
     setStatusFilter,
     paymentStatusFilter,
@@ -109,6 +112,15 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
       </CardHeader>
       
       <CardContent>
+        {workshopClosed && (
+          <Alert variant="warning" className="mb-4 bg-amber-50 border-amber-200">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              التسجيل مغلق لهذه الورشة. لن يتمكن المستخدمون من التسجيل حتى يتم إعادة فتح التسجيل.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <div className={`space-y-4 ${isProcessing ? 'opacity-70 pointer-events-none' : ''}`}>
           <RegistrationFilters
             searchQuery={searchQuery}
@@ -126,6 +138,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
               onEdit={handleTableEditRegistration}
               onDelete={handleTableDeleteRegistration}
               onReset={handleTableResetRegistration}
+              workshopClosed={workshopClosed}
             />
           </Suspense>
         </div>

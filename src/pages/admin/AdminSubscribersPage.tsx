@@ -16,9 +16,12 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
+import { fetchUserRegistrationCounts } from "@/services/workshops";
+import { Badge } from "@/components/ui/badge";
 
 const AdminSubscribersPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({});
 
   const { data: subscribers, isLoading, refetch } = useQuery({
     queryKey: ['subscribers'],
@@ -30,6 +33,10 @@ const AdminSubscribersPage = () => {
           .order('created_at', { ascending: false });
           
         if (error) throw error;
+        
+        // Get registration counts for all users
+        const counts = await fetchUserRegistrationCounts();
+        setRegistrationCounts(counts);
         
         // Display all users (not just those with subscriber role)
         // This ensures we see newly registered users regardless of role
@@ -82,6 +89,7 @@ const AdminSubscribersPage = () => {
                     <TableHead>الإسم</TableHead>
                     <TableHead>البريد الإلكتروني</TableHead>
                     <TableHead>تاريخ التسجيل</TableHead>
+                    <TableHead>الورش المسجلة</TableHead>
                     <TableHead>الحالة</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -92,6 +100,17 @@ const AdminSubscribersPage = () => {
                       <TableCell>{subscriber.email || 'غير محدد'}</TableCell>
                       <TableCell>
                         {format(new Date(subscriber.created_at || ''), 'dd/MM/yyyy')}
+                      </TableCell>
+                      <TableCell>
+                        {registrationCounts[subscriber.id] ? (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+                            {registrationCounts[subscriber.id]}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-gray-500">
+                            0
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <span className="px-2 py-1 text-sm rounded-full bg-green-100 text-green-700">
