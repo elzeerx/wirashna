@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkshopRegistration } from "@/types/supabase";
@@ -22,7 +21,7 @@ export const useRegistrationOperations = (
       // Log what's happening for debugging
       console.log("Updating registration:", registrationId, "with data:", data);
       
-      const updatedRegistration = await updateRegistrationStatus(registrationId, data, null);
+      const updatedRegistration = await updateRegistrationStatus(registrationId, data);
       
       // Recalculate seats if status or payment status is being updated
       if (data.status || data.payment_status) {

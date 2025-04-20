@@ -3,6 +3,39 @@ import { WorkshopRegistration } from "@/types/supabase";
 
 export const registerForWorkshop = async (registration: Omit<WorkshopRegistration, 'id' | 'created_at' | 'updated_at' | 'status' | 'payment_status' | 'payment_id' | 'admin_notes'>): Promise<WorkshopRegistration> => {
   try {
+    // First check if registration is closed for this workshop
+    const { data: workshop, error: workshopError } = await supabase
+      .from('workshops')
+      .select('id, date, time, registration_closed')
+      .eq('id', registration.workshop_id)
+      .single();
+
+    if (workshopError) {
+      console.error("Error fetching workshop:", workshopError);
+      throw workshopError;
+    }
+
+    // Check if registration is closed (manually or automatically 24h before start)
+    if (workshop) {
+      if (workshop.registration_closed) {
+        const closedError = new Error("التسجيل مغلق لهذه الورشة");
+        closedError.name = "RegistrationClosedError";
+        throw closedError;
+      }
+
+      // Check if it's less than 24 hours before the workshop starts
+      const workshopDate = new Date(`${workshop.date}T${workshop.time}`);
+      const now = new Date();
+      const timeDiff = workshopDate.getTime() - now.getTime();
+      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      
+      if (hoursDiff <= 24) {
+        const closedError = new Error("التسجيل مغلق لاقتراب موعد الورشة");
+        closedError.name = "RegistrationClosedError";
+        throw closedError;
+      }
+    }
+
     // First check if this user already has a registration for this workshop
     const { data: existingRegistration, error: checkError } = await supabase
       .from('workshop_registrations')

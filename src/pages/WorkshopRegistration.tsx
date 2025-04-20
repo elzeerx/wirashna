@@ -65,6 +65,21 @@ const WorkshopRegistration = () => {
     fetchWorkshop();
   }, [location, toast]);
 
+  // Check if registration is closed (manual or automatic 24h before start)
+  const isRegistrationClosed = (workshop: Workshop) => {
+    if (workshop.registration_closed) {
+      return true;
+    }
+    
+    // Check if it's less than 24 hours before the workshop starts
+    const workshopDate = new Date(`${workshop.date}T${workshop.time}`);
+    const now = new Date();
+    const timeDiff = workshopDate.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    
+    return hoursDiff <= 24;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -93,6 +108,16 @@ const WorkshopRegistration = () => {
 
               {!user ? (
                 <LoginPrompt />
+              ) : selectedWorkshop && isRegistrationClosed(selectedWorkshop) ? (
+                <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+                  <h3 className="text-xl font-bold mb-4 text-red-600">التسجيل مغلق</h3>
+                  <p className="mb-2">
+                    عذراً، تم إغلاق التسجيل لهذه الورشة.
+                  </p>
+                  <p>
+                    قد يكون ذلك بسبب اقتراب موعد الورشة أو بقرار من الإدارة.
+                  </p>
+                </div>
               ) : (
                 <div className="bg-white rounded-lg shadow-sm p-6">
                   <RegistrationForm 

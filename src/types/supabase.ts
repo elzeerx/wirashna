@@ -15,7 +15,9 @@ export type UserProfile = {
   updated_at?: string;
 };
 export type WorkshopMaterial = Tables<'workshop_materials'>;
-export type Workshop = Tables<'workshops'>;
+export type Workshop = Tables<'workshops'> & {
+  registration_closed?: boolean; // Add the new field
+};
 export type WorkshopRegistration = Tables<'workshop_registrations'>;
 export type WorkshopCertificate = Tables<'workshop_certificates'>;
 export type Activity = Tables<'payment_logs'>;

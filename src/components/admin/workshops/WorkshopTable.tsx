@@ -1,16 +1,11 @@
-
-import React from "react";
-import { Workshop } from "@/types/supabase";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash2, Users, FileText } from "lucide-react";
+import { Eye, Edit, Trash2, ClipboardList, FileText, Check, X } from "lucide-react";
+import { Workshop } from "@/types/supabase";
+import { formatDate } from "@/utils/dateUtils";
+import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WorkshopTableProps {
   workshops: Workshop[];
@@ -21,111 +16,138 @@ interface WorkshopTableProps {
   onManageMaterials?: (workshop: Workshop) => void;
 }
 
-const WorkshopTable = ({ 
-  workshops, 
-  onView, 
-  onEdit, 
-  onDelete, 
+const WorkshopTable = ({
+  workshops,
+  onView,
+  onEdit,
+  onDelete,
   onViewRegistrations,
   onManageMaterials
 }: WorkshopTableProps) => {
+  const { toast } = useToast();
+  const [updatingWorkshop, setUpdatingWorkshop] = useState<string | null>(null);
+
+  // Handler for toggling registration status
+  const handleToggleRegistration = async (workshop: Workshop) => {
+    try {
+      setUpdatingWorkshop(workshop.id);
+      
+      const { error } = await supabase
+        .from("workshops")
+        .update({ registration_closed: !workshop.registration_closed })
+        .eq("id", workshop.id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "تم تحديث حالة التسجيل",
+        description: workshop.registration_closed 
+          ? "تم فتح التسجيل للورشة بنجاح" 
+          : "تم إغلاق التسجيل للورشة بنجاح",
+      });
+      
+      // Update the workshop in the UI
+      workshop.registration_closed = !workshop.registration_closed;
+      
+    } catch (error) {
+      console.error("Error updating workshop registration status:", error);
+      toast({
+        title: "خطأ في تحديث حالة التسجيل",
+        description: "حدث خطأ أثناء تحديث حالة التسجيل. الرجاء المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingWorkshop(null);
+    }
+  };
+
   return (
-    <div className="rounded-md border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">الصورة</TableHead>
-            <TableHead>العنوان</TableHead>
-            <TableHead>التاريخ</TableHead>
-            <TableHead>الوقت</TableHead>
-            <TableHead>المكان</TableHead>
-            <TableHead>المقاعد المتاحة</TableHead>
-            <TableHead className="text-left">الإجراءات</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {workshops.map((workshop) => (
-            <TableRow key={workshop.id}>
-              <TableCell>
-                {workshop.cover_image ? (
-                  <img
-                    src={workshop.cover_image}
-                    alt={workshop.title}
-                    className="w-16 h-16 object-cover rounded-md"
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
-                    لا توجد صورة
+    <div className="overflow-x-auto border rounded-lg">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              عنوان الورشة
+            </th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              التاريخ
+            </th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              المقاعد
+            </th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              السعر
+            </th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              التسجيل
+            </th>
+            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              الإجراءات
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {workshops.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                لا توجد ورش متاحة
+              </td>
+            </tr>
+          ) : (
+            workshops.map((workshop) => (
+              <tr key={workshop.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {workshop.title}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatDate(workshop.date)} {workshop.time}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {workshop.available_seats} / {workshop.total_seats}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {workshop.price} KWD
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex items-center">
+                    <Switch
+                      checked={!workshop.registration_closed}
+                      onCheckedChange={() => handleToggleRegistration(workshop)}
+                      disabled={updatingWorkshop === workshop.id}
+                    />
+                    <span className="mr-2">
+                      {workshop.registration_closed ? 'مغلق' : 'مفتوح'}
+                    </span>
                   </div>
-                )}
-              </TableCell>
-              <TableCell className="font-medium">{workshop.title}</TableCell>
-              <TableCell>{workshop.date}</TableCell>
-              <TableCell>{workshop.time}</TableCell>
-              <TableCell>{workshop.venue}</TableCell>
-              <TableCell>
-                {workshop.available_seats} / {workshop.total_seats}
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2 space-x-reverse">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onView(workshop.id)}
-                  >
-                    <Eye className="h-4 w-4" />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 space-x-reverse">
+                  <Button variant="ghost" size="icon" onClick={() => onView(workshop.id)}>
+                    <Eye className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(workshop)}
-                  >
-                    <Edit className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" onClick={() => onEdit(workshop)}>
+                    <Edit className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-500"
-                    onClick={() => onDelete(workshop)}
-                  >
-                    <Trash2 className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" onClick={() => onDelete(workshop)}>
+                    <Trash2 className="w-4 h-4" />
                   </Button>
-                  
                   {onViewRegistrations && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-blue-500"
-                      onClick={() => onViewRegistrations(workshop)}
-                    >
-                      <Users className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" onClick={() => onViewRegistrations(workshop)}>
+                      <ClipboardList className="w-4 h-4" />
                     </Button>
                   )}
-                  
                   {onManageMaterials && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-green-500"
-                      onClick={() => onManageMaterials(workshop)}
-                    >
-                      <FileText className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" onClick={() => onManageMaterials(workshop)}>
+                      <FileText className="w-4 h-4" />
                     </Button>
                   )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          
-          {workshops.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={7} className="text-center py-10 text-gray-500">
-                لا توجد ورش متاحة حالياً
-              </TableCell>
-            </TableRow>
+                </td>
+              </tr>
+            ))
           )}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 };
