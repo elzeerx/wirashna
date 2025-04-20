@@ -1,3 +1,4 @@
+
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ const WorkshopSidebar = ({
           </Button>
         ) : (
           <Button asChild className="w-full wirashna-btn-primary">
-            <Link to={`/workshop-registration?id=${workshopId}`}>سجّل ��لآن</Link>
+            <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
           </Button>
         )}
       </div>
