@@ -55,3 +55,6 @@ export const calculateDurationHours = (startTime: string, endTime: string): numb
     return 0;
   }
 };
+
+// Add the missing formatDate export
+export const formatDate = format;
