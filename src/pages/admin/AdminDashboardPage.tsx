@@ -17,9 +17,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  fetchAllRegistrations,
   fetchWorkshops,
 } from "@/services/workshops";
+import { fetchUserRegistrations } from "@/services/workshopService";
 import { UserProfile, Workshop, WorkshopRegistration } from "@/types/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
@@ -33,18 +33,15 @@ const AdminDashboardPage = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [workshopsData, registrationsData] = await Promise.all([
-          fetchWorkshops(),
-          fetchAllRegistrations()
-        ]);
+        const workshopsData = await fetchWorkshops();
+        const registrationsData = await fetchUserRegistrations('');
       
-      // Add missing properties required by the Workshop type
-      const processedWorkshops = workshopsData.map(w => ({
-        ...w,
-        start_date: w.date,
-        end_date: w.date,
-        status: 'active' as const
-      }));
+        const processedWorkshops = workshopsData.map(w => ({
+          ...w,
+          start_date: w.date,
+          end_date: w.date,
+          status: 'active' as const
+        }));
       
         setWorkshops(processedWorkshops);
         setRegistrations(registrationsData);
@@ -171,7 +168,7 @@ const AdminDashboardPage = () => {
                     {users?.slice(0, 5).map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>{user.full_name || "غير محدد"}</TableCell>
-                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.email || "غير محدد"}</TableCell>
                         <TableCell>
                           {format(new Date(user.created_at || ''), "dd/MM/yyyy")}
                         </TableCell>

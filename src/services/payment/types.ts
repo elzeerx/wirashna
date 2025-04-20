@@ -1,5 +1,5 @@
 
-// We'll redefine these types directly instead of importing from database
+// Define types directly instead of importing from database
 export interface UserDetails {
   name: string;
   email: string;

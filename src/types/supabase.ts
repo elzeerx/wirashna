@@ -2,7 +2,18 @@
 import { type Database } from "@/integrations/supabase/types";
 
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
-export type UserProfile = Tables<'user_profiles'>;
+export type UserProfile = {
+  id: string;
+  user_id?: string;
+  email?: string; 
+  phone?: string;
+  full_name?: string;
+  role: 'admin' | 'supervisor' | 'subscriber';
+  is_admin?: boolean;
+  status?: 'active' | 'suspended' | 'pending';
+  created_at: string;
+  updated_at?: string;
+};
 export type WorkshopMaterial = Tables<'workshop_materials'>;
 export type Workshop = Tables<'workshops'>;
 export type WorkshopRegistration = Tables<'workshop_registrations'>;
