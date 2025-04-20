@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import AdminWorkshopForm from "@/components/admin/AdminWorkshopForm";
+import { Json } from "@/integrations/supabase/types";
 
 const CreateWorkshopPage = () => {
   const navigate = useNavigate();
@@ -47,14 +48,13 @@ const CreateWorkshopPage = () => {
       setIsSubmitting(true);
       console.log("Submitting workshop data:", data);
       
-      // Submit each date as a separate workshop
-      for (const dateInfo of data.dates) {
-        await createWorkshop({
-          ...data,
-          date: dateInfo.date,
-          time: dateInfo.time,
-        });
-      }
+      // Create single workshop with all dates
+      await createWorkshop({
+        ...data,
+        date: data.dates[0].date, // Store first session date
+        time: data.dates[0].time, // Store first session time
+        dates: data.dates as unknown as Json // Store all dates
+      });
       
       toast({
         title: "تم إنشاء الورشة بنجاح",
