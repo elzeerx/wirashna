@@ -36,7 +36,7 @@ const WorkshopSidebar = ({
     : "يوم واحد";
 
   return (
-    <div className="wirashna-card sticky top-24">
+    <div className="wirashna-card sticky top-24 lg:block hidden">
       <h3 className="text-xl font-bold mb-4">تفاصيل الورشة</h3>
       
       <div className="space-y-6">
@@ -88,7 +88,7 @@ const WorkshopSidebar = ({
           </Button>
         ) : (
           <Button asChild className="w-full wirashna-btn-primary">
-            <Link to={`/workshop-registration?id=${workshopId}`}>سجّل الآن</Link>
+            <Link to={`/workshop-registration?id=${workshopId}`}>سجّل ��لآن</Link>
           </Button>
         )}
       </div>
