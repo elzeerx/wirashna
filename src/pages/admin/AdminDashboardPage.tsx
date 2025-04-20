@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -64,7 +65,8 @@ const AdminDashboardPage = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as UserProfile[];
+      // Fix type casting using unknown as intermediate type
+      return (data as unknown) as UserProfile[];
     },
   });
 

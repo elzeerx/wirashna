@@ -16,11 +16,32 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       storage: localStorage,
-      // In production this will be https://wirashna.com/auth/callback
-      // In development this will be http://localhost:8080/auth/callback
-      redirectTo: typeof window !== 'undefined' && window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080/auth/callback'
-        : 'https://wirashna.com/auth/callback'
     }
   }
 );
+
+// Add redirect configuration to the auth callbacks
+const authCallbacks = {
+  onAuthStateChange: (event: string) => {
+    if (event === 'SIGNED_IN') {
+      // Get the current URL
+      const currentUrl = window.location.href;
+      
+      // Determine whether we're in localhost or production
+      const redirectUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost' 
+        ? 'http://localhost:8080/auth/callback'
+        : 'https://wirashna.com/auth/callback';
+        
+      // Set the redirect URL in the supabase auth configuration
+      supabase.auth.setSession({
+        refresh_token: '',
+        access_token: '',
+      });
+    }
+  }
+};
+
+// Subscribe to auth changes
+if (typeof window !== 'undefined') {
+  supabase.auth.onAuthStateChange(authCallbacks.onAuthStateChange);
+}

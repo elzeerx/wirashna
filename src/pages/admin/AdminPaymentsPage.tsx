@@ -29,7 +29,8 @@ const AdminPaymentsPage = () => {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      return data as (WorkshopRegistration & { workshops: { title: string; price: number } })[];
+      // Fix type casting using unknown as intermediate type
+      return (data as unknown) as (WorkshopRegistration & { workshops: { title: string; price: number } })[];
     }
   });
 
