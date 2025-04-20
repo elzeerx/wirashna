@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopRegistration } from "@/types/supabase";
 
@@ -115,13 +116,16 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
   }
 };
 
-export const updateRegistrationStatus = async (id: string, status: string, payment_status: string) => {
-  const { error } = await supabase
+export const updateRegistrationStatus = async (id: string, data: Partial<WorkshopRegistration>) => {
+  const { data: result, error } = await supabase
     .from('workshop_registrations')
-    .update({ status, payment_status })
-    .eq('id', id);
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
 
   if (error) throw error;
+  return result as WorkshopRegistration;
 };
 
 export * from './registrationManagement';
