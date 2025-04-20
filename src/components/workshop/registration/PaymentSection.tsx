@@ -1,17 +1,14 @@
-
 import { CreditCard } from "lucide-react";
-
 type PaymentSectionProps = {
   workshopPrice: number;
 };
-
-const PaymentSection = ({ workshopPrice }: PaymentSectionProps) => {
+const PaymentSection = ({
+  workshopPrice
+}: PaymentSectionProps) => {
   const VAT_RATE = 0.05; // 5% VAT
   const vatAmount = workshopPrice * VAT_RATE;
   const total = workshopPrice + vatAmount;
-
-  return (
-    <div className="py-4">
+  return <div className="py-4">
       <h3 className="text-lg font-semibold mb-4">ملخص الطلب</h3>
       <div className="space-y-2 mb-4">
         <div className="flex justify-between">
@@ -34,19 +31,12 @@ const PaymentSection = ({ workshopPrice }: PaymentSectionProps) => {
       </div>
 
       <div className="flex justify-center">
-        <img 
-          src="/lovable-uploads/eaaf22e5-909c-451f-8c7c-3993be15b82c.png" 
-          alt="Payment methods" 
-          className="h-8 object-contain max-w-full"
-          onError={(e) => {
-            const imgElement = e.target as HTMLImageElement;
-            imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
-            imgElement.alt = "Payment methods placeholder";
-          }}
-        />
+        <img alt="Payment methods" onError={e => {
+        const imgElement = e.target as HTMLImageElement;
+        imgElement.src = "https://via.placeholder.com/200x50?text=Payment+Methods";
+        imgElement.alt = "Payment methods placeholder";
+      }} src="/lovable-uploads/9acf5425-9eca-4aa7-aa10-99bb75b7b7ad.png" className="h-8 max-w-full object-contain" />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PaymentSection;
