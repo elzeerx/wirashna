@@ -1,6 +1,9 @@
 
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -21,11 +24,13 @@ import {
 } from "@/components/ui/select";
 import { useFormSubmission } from "@/hooks/useFormSubmission";
 
-interface AddUserForm {
-  email: string;
-  full_name: string;
-  role: 'admin' | 'supervisor' | 'subscriber';
-}
+const addUserSchema = z.object({
+  email: z.string().email(),
+  full_name: z.string().min(1),
+  role: z.enum(['admin', 'supervisor', 'subscriber'])
+});
+
+type AddUserForm = z.infer<typeof addUserSchema>;
 
 export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
