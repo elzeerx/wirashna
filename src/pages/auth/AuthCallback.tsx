@@ -11,26 +11,44 @@ const AuthCallback = () => {
   useEffect(() => {
     // Handle the OAuth callback
     const handleAuthCallback = async () => {
-      // The hash fragment contains session tokens that Supabase needs to process
-      const { error } = await supabase.auth.getSession();
+      console.log("Auth callback page loaded, processing authentication...");
       
-      if (error) {
-        console.error('Error during auth callback:', error);
+      try {
+        // The hash fragment contains session tokens that Supabase needs to process
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error during auth callback:', error);
+          toast({
+            title: "خطأ في المصادقة",
+            description: "حدث خطأ أثناء تسجيل الدخول. الرجاء المحاولة مرة أخرى.",
+            variant: "destructive",
+          });
+          navigate('/login');
+          return;
+        }
+        
+        if (data.session) {
+          console.log("Authentication successful, redirecting to home page");
+          // Redirect to home page or dashboard
+          toast({
+            title: "تم تسجيل الدخول بنجاح",
+            description: "مرحبًا بك في منصة ورشنا",
+          });
+          navigate('/');
+        } else {
+          console.log("No session found, redirecting to login page");
+          navigate('/login');
+        }
+      } catch (err) {
+        console.error("Exception in auth callback:", err);
         toast({
-          title: "خطأ في المصادقة",
-          description: "حدث خطأ أثناء تسجيل الدخول. الرجاء المحاولة مرة أخرى.",
+          title: "خطأ غير متوقع",
+          description: "حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى.",
           variant: "destructive",
         });
         navigate('/login');
-        return;
       }
-      
-      // Redirect to home page or dashboard
-      toast({
-        title: "تم تسجيل الدخول بنجاح",
-        description: "مرحبًا بك في منصة ورشنا",
-      });
-      navigate('/');
     };
 
     handleAuthCallback();

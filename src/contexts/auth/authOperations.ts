@@ -131,7 +131,7 @@ export const signUpOperation = async (
   }
 };
 
-// Sign in with Google operation - Updated to use proper typing for provider
+// Sign in with Google operation
 export const signInWithGoogleOperation = async (
   toast: (options: ToastOptions) => void,
   setIsLoading: (isLoading: boolean) => void
@@ -139,12 +139,14 @@ export const signInWithGoogleOperation = async (
   try {
     setIsLoading(true);
     
-    const authConfig = getOAuthConfig();
+    // Get the dynamic redirect URL from the current window location
+    const { provider, options } = getOAuthConfig();
+    
+    console.log("Google auth redirect URL:", options.redirectTo);
+    
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google' as Provider,
-      options: {
-        redirectTo: authConfig.options.redirectTo
-      }
+      provider: provider as Provider,
+      options: options
     });
     
     if (error) throw error;

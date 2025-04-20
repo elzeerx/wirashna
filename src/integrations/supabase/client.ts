@@ -23,15 +23,12 @@ export const supabase = createClient<Database>(
 
 // Configure proper auth callback redirection
 const getRedirectUrl = () => {
-  const currentHost = window.location.hostname;
+  // Always use the current window location for constructing the redirect URL
+  // This ensures it works in all environments (local, production, preview)
+  const protocol = window.location.protocol;
+  const host = window.location.host;
   
-  // Check if we're in development or production
-  if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
-    return `${window.location.protocol}//${window.location.host}/auth/callback`;
-  } else {
-    // For production environments - adapt if you have a custom domain
-    return `${window.location.protocol}//${window.location.host}/auth/callback`;
-  }
+  return `${protocol}//${host}/auth/callback`;
 };
 
 // Set up auth state change listener
