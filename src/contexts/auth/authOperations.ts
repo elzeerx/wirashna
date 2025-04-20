@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/types/supabase";
 import { type ToastActionElement, type ToastProps } from "@/components/ui/toast";
@@ -136,12 +137,10 @@ export const signInWithGoogleOperation = async (
 ): Promise<void> => {
   try {
     setIsLoading(true);
-    const currentOrigin = window.location.origin;
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${currentOrigin}/login`,
         queryParams: {
           prompt: 'select_account',
         },
