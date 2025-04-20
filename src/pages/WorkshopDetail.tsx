@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import WorkshopDescription from "@/components/workshop/WorkshopDescription";
 import WorkshopGallery from "@/components/workshop/WorkshopGallery";
 import InstructorCard from "@/components/workshop/InstructorCard";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import MobileRegistration from "@/components/workshop/MobileRegistration";
 import { useLoadingState } from "@/hooks/useLoadingState";
 import { Workshop } from "@/types/supabase";
 import { WorkshopDate } from "@/types/workshop";
@@ -82,6 +84,17 @@ const WorkshopDetail = () => {
           />
 
           <div className="wirashna-container py-12">
+            {/* Mobile Registration Component - Only visible on mobile */}
+            <MobileRegistration
+              workshopId={workshop.id}
+              dates={workshopDates}
+              venue={workshop.venue}
+              location={workshop.location}
+              availableSeats={workshop.available_seats}
+              totalSeats={workshop.total_seats}
+              price={workshop.price}
+            />
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className="lg:col-span-2 space-y-8">
                 <WorkshopDescription description={workshop.long_description || workshop.short_description} />

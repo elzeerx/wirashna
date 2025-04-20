@@ -1,48 +1,35 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { fetchWorkshopById } from "@/services/workshops";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { WorkshopDate } from "@/types/workshop";
 
 type MobileRegistrationProps = {
   workshopId: string;
+  dates: WorkshopDate[];
+  venue: string;
+  location: string;
+  availableSeats: number;
+  totalSeats: number;
+  price: string | number;
 };
 
-const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
-  const [workshop, setWorkshop] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const isMobile = useIsMobile();
+const MobileRegistration = ({
+  workshopId,
+  dates,
+  venue,
+  location,
+  availableSeats,
+  totalSeats,
+  price
+}: MobileRegistrationProps) => {
+  const isSoldOut = availableSeats <= 0;
+  const formattedPrice = typeof price === 'number' ? `${price.toFixed(2)} د.ك` : price;
   
-  useEffect(() => {
-    const fetchWorkshopDetails = async () => {
-      try {
-        const workshopData = await fetchWorkshopById(workshopId);
-        if (workshopData) {
-          setWorkshop(workshopData);
-        }
-      } catch (error) {
-        console.error("Error fetching workshop details:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchWorkshopDetails();
-  }, [workshopId]);
-  
-  const isSoldOut = workshop?.available_seats !== null && workshop?.available_seats <= 0;
-
-  if (!isMobile || isLoading || !workshop) {
-    return null;
-  }
-
-  const uniqueDays = workshop.dates 
-    ? new Set(workshop.dates.map((d: any) => d.date)).size
-    : 1;
-    
+  // Calculate number of unique days
+  const uniqueDays = new Set(dates.map(date => date.date)).size;
   const workshopDuration = uniqueDays > 1 
     ? `${uniqueDays} أيام` 
     : "يوم واحد";
@@ -57,7 +44,7 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
             <Calendar size={18} className="ml-3 text-wirashna-accent" />
             <div>
               <p className="font-medium">المواعيد ({workshopDuration})</p>
-              {workshop.dates?.map((date: any, index: number) => (
+              {dates.map((date, index) => (
                 <Badge key={index} variant="secondary" className="block text-right mt-2">
                   {date.date} - {date.displayTime}
                 </Badge>
@@ -66,19 +53,11 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
           </div>
           
           <div className="flex items-center mb-4">
-            <Clock size={18} className="ml-3 text-wirashna-accent" />
-            <div>
-              <p className="font-medium">الوقت</p>
-              <p className="text-gray-600">{workshop.time}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center mb-4">
             <MapPin size={18} className="ml-3 text-wirashna-accent" />
             <div>
               <p className="font-medium">المكان</p>
-              <p className="text-gray-600">{workshop.venue}</p>
-              <p className="text-gray-600 text-sm">{workshop.location}</p>
+              <p className="text-gray-600">{venue}</p>
+              <p className="text-gray-600 text-sm">{location}</p>
             </div>
           </div>
           
@@ -86,17 +65,15 @@ const MobileRegistration = ({ workshopId }: MobileRegistrationProps) => {
             <Users size={18} className="ml-3 text-wirashna-accent" />
             <div>
               <p className="font-medium">المقاعد المتاحة</p>
-              <p className={`text-gray-600 ${workshop.available_seats <= 5 ? 'text-red-500 font-bold' : ''}`}>
-                {workshop.available_seats} / {workshop.total_seats}
+              <p className={`text-gray-600 ${availableSeats <= 5 ? 'text-red-500 font-bold' : ''}`}>
+                {availableSeats} / {totalSeats}
               </p>
             </div>
           </div>
           
           <div className="mb-8">
             <p className="font-medium">السعر</p>
-            <p className="text-lg font-bold text-wirashna-accent">
-              {typeof workshop.price === 'number' ? `${workshop.price.toFixed(2)} د.ك` : workshop.price}
-            </p>
+            <p className="text-lg font-bold text-wirashna-accent">{formattedPrice}</p>
           </div>
 
           <h3 className="text-xl font-bold mb-4">سجل في الورشة</h3>
