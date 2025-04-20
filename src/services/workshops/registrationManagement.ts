@@ -122,10 +122,8 @@ export const fetchUserRegistrationCounts = async (): Promise<Record<string, numb
   try {
     const { data, error } = await supabase
       .from('workshop_registrations')
-      .select('user_id, count')
-      .select()
-      .count()
-      .group('user_id');
+      .select('user_id')
+      .select();
     
     if (error) {
       console.error("Error fetching registration counts:", error);
@@ -134,9 +132,18 @@ export const fetchUserRegistrationCounts = async (): Promise<Record<string, numb
     
     // Transform to a map of user_id -> count
     const countMap: Record<string, number> = {};
-    data?.forEach(item => {
-      countMap[item.user_id] = parseInt(item.count);
-    });
+    
+    // Group by user_id and count occurrences
+    if (data) {
+      data.forEach(item => {
+        if (item.user_id) {
+          if (!countMap[item.user_id]) {
+            countMap[item.user_id] = 0;
+          }
+          countMap[item.user_id]++;
+        }
+      });
+    }
     
     return countMap;
   } catch (error) {
@@ -168,6 +175,7 @@ export const findOrphanedRegistrations = async (): Promise<WorkshopRegistration[
 // Find duplicate registrations (same user_id and workshop_id)
 export const findDuplicateRegistrations = async (): Promise<any[]> => {
   try {
+    // Using a custom function that was defined in SQL migrations
     const { data, error } = await supabase
       .rpc('find_duplicate_registrations');
     
