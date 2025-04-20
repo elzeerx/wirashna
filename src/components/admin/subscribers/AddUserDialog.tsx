@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
 import { z } from "zod";
@@ -63,10 +64,14 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
 
       if (signUpError) throw signUpError;
 
+      // Fix the type error by using explicit casting and proper table field access
       const { error: profileError } = await supabase
         .from('user_profiles')
-        .update({ role: data.role, is_admin: data.role === 'admin' } as any)
-        .eq('email', data.email as any);
+        .update({ 
+          role: data.role, 
+          is_admin: data.role === 'admin' 
+        })
+        .eq('email', data.email);
 
       if (profileError) throw profileError;
 
