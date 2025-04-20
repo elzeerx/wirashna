@@ -37,9 +37,9 @@ export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
   const { toast } = useToast();
 
   const { handleSubmit, isLoading } = useFormSubmission({
-    onSubmit: async (data: AddUserForm) => {
+    onSubmit: async (data: Record<string, any>) => {
       const { error: signUpError } = await supabase.auth.signUp({
-        email: data.email,
+        email: data.email as string,
         password: Math.random().toString(36).slice(-12),
         options: {
           data: {

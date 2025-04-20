@@ -1,203 +1,191 @@
-import { useState, useEffect, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { Workshop } from "@/types/database";
-import { fetchWorkshops } from "@/services/workshops";
-import { supabase } from "@/integrations/supabase/client";
-import SkeletonLoader from "@/components/ui/skeleton-loader";
-import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
-  BarChart3,
-  Users,
-  CalendarDays,
-  DollarSign,
-  UserPlus,
-  Plus,
-  FileText,
-  AlertTriangle,
-  CreditCard,
-  PencilRuler
-} from "lucide-react";
-
-// Lazy load components
-const StatisticsOverview = lazy(() => import("@/components/admin/dashboard/StatisticsOverview"));
-const RecentActivities = lazy(() => import("@/components/admin/dashboard/RecentActivities"));
-const QuickActions = lazy(() => import("@/components/admin/dashboard/QuickActions"));
-
-interface Activity {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  created_at: string;
-  icon: string;
-}
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  fetchAllRegistrations,
+  fetchWorkshops,
+} from "@/services/workshops";
+import { UserProfile, Workshop, WorkshopRegistration } from "@/types/supabase";
+import { supabase } from "@/integrations/supabase/client";
+import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
 
 const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [registrations, setRegistrations] = useState<WorkshopRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const { isAdmin } = useAuth();
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const workshopsData = await fetchWorkshops();
-        setWorkshops(workshopsData);
-
-        const { data: activitiesData, error } = await supabase
-          .rpc('dashboard_recent_activity');
-
-        if (error) {
-          throw error;
-        }
-
-        setActivities(activitiesData);
+        const [workshopsData, registrationsData] = await Promise.all([
+          fetchWorkshops(),
+          fetchAllRegistrations()
+        ]);
+      
+      // Add missing properties required by the Workshop type
+      const processedWorkshops = workshopsData.map(w => ({
+        ...w,
+        start_date: w.date,
+        end_date: w.date,
+        status: 'active' as const
+      }));
+      
+        setWorkshops(processedWorkshops);
+        setRegistrations(registrationsData);
       } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        toast({
-          title: "خطأ في تحميل البيانات",
-          description: "حدث خطأ أثناء تحميل بيانات لوحة التحكم. الرجاء المحاولة مرة أخرى.",
-          variant: "destructive",
-        });
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadData();
-  }, [toast]);
+    fetchData();
+  }, []);
 
-  useEffect(() => {
-    if (!isAdmin && !isLoading) {
-      navigate("/");
-      toast({
-        title: "غير مصرح",
-        description: "ليس لديك صلاحية للوصول إلى هذه الصفحة",
-        variant: "destructive",
-      });
-    }
-  }, [isAdmin, isLoading, navigate, toast]);
+  const { data: users, isLoading: isUsersLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-  if (isLoading) {
-    return (
-      <AdminDashboardLayout isLoading={true} />
-    );
-  }
-
-  const totalWorkshops = workshops.length;
-  const totalParticipants = workshops.reduce((sum, workshop) => 
-    sum + (workshop.total_seats - workshop.available_seats), 0);
-  const totalRevenue = workshops.reduce((sum, workshop) => 
-    sum + (workshop.price * (workshop.total_seats - workshop.available_seats)), 0);
-  const completionRate = workshops.length > 0 
-    ? Math.round((totalParticipants / workshops.reduce((sum, w) => sum + w.total_seats, 0)) * 100) 
-    : 0;
-
-  const quickActions = [
-    {
-      id: '1',
-      title: 'تقارير النظام',
-      icon: <AlertTriangle size={24} />,
-      color: 'bg-red-100 text-red-600',
-      onClick: () => navigate('/admin/system-repair')
+      if (error) throw error;
+      return data as UserProfile[];
     },
-    {
-      id: '2',
-      title: 'تقرير المبيعات',
-      icon: <FileText size={24} />,
-      color: 'bg-amber-100 text-amber-600',
-      onClick: () => navigate('/admin')
-    },
-    {
-      id: '3',
-      title: 'إضافة مشترك',
-      icon: <UserPlus size={24} />,
-      color: 'bg-green-100 text-green-600',
-      onClick: () => navigate('/admin/subscribers')
-    },
-    {
-      id: '4',
-      title: 'إضافة ورشة جديدة',
-      icon: <Plus size={24} />,
-      color: 'bg-blue-100 text-blue-600',
-      onClick: () => navigate('/admin/workshops/create')
-    }
-  ];
+  });
+
+  const totalRevenue = workshops.reduce((sum, workshop) => sum + workshop.price * (workshop.total_seats - workshop.available_seats), 0);
 
   return (
     <AdminDashboardLayout>
       <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-bold mb-1">القائمة الرئيسية</h2>
-          <p className="text-gray-500">مرحباً بك في لوحة التحكم</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>إجمالي الورش</CardTitle>
+              <CardDescription>عدد الورشات المتوفرة في المنصة</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold">{workshops.length}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>إجمالي المستخدمين</CardTitle>
+              <CardDescription>عدد المستخدمين المسجلين في المنصة</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold">{users?.length || 0}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>إجمالي التسجيلات</CardTitle>
+              <CardDescription>عدد التسجيلات في الورش المختلفة</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold">{registrations.length}</CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>إجمالي الإيرادات</CardTitle>
+              <CardDescription>إجمالي الإيرادات المتوقعة من الورش</CardDescription>
+            </CardHeader>
+            <CardContent className="text-2xl font-bold">{totalRevenue} KWD</CardContent>
+          </Card>
         </div>
 
-        <Suspense fallback={<SkeletonLoader count={4} className="h-24" />}>
-          <StatisticsOverview 
-            stats={[
-              { 
-                title: 'إجمالي الورش',
-                value: totalWorkshops,
-                icon: <CalendarDays className="text-white" />,
-                color: 'bg-blue-500',
-                bgClass: 'bg-blue-100'
-              },
-              { 
-                title: 'المشتركين النشطين',
-                value: totalParticipants,
-                icon: <Users className="text-white" />,
-                color: 'bg-green-500',
-                bgClass: 'bg-green-100'
-              },
-              { 
-                title: 'إجمالي المبيعات',
-                value: `${totalRevenue.toFixed(0)} د.ك`,
-                icon: <DollarSign className="text-white" />,
-                color: 'bg-amber-500',
-                bgClass: 'bg-amber-100'
-              },
-              { 
-                title: 'معدل الإكتمال',
-                value: `${completionRate}%`,
-                icon: <BarChart3 className="text-white" />,
-                color: 'bg-purple-500',
-                bgClass: 'bg-purple-100'
-              }
-            ]}
-          />
-        </Suspense>
+        <div className="grid grid-cols-1 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>أحدث الورش</CardTitle>
+              <CardDescription>آخر الورش التي تمت إضافتها</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="wirashna-loader"></div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>اسم الورشة</TableHead>
+                      <TableHead>تاريخ الإنشاء</TableHead>
+                      <TableHead>السعر</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {workshops.slice(0, 5).map((workshop) => (
+                      <TableRow key={workshop.id}>
+                        <TableCell>{workshop.title}</TableCell>
+                        <TableCell>
+                          {format(new Date(workshop.created_at), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell>{workshop.price} KWD</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-        <Suspense fallback={<SkeletonLoader count={1} className="h-48" />}>
-          <QuickActions title="إجراءات سريعة" actions={quickActions} />
-        </Suspense>
-
-        <Suspense fallback={<SkeletonLoader count={1} className="h-64" />}>
-          <RecentActivities 
-            title="النشاطات الأخيرة" 
-            activities={activities.map(activity => ({
-              ...activity,
-              icon: getLucideIcon(activity.icon)
-            }))} 
-            onViewAll={() => navigate('/admin')} 
-          />
-        </Suspense>
+        <div className="grid grid-cols-1 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>أحدث المستخدمين</CardTitle>
+              <CardDescription>آخر المستخدمين الذين قاموا بالتسجيل</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isUsersLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="wirashna-loader"></div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>اسم المستخدم</TableHead>
+                      <TableHead>البريد الإلكتروني</TableHead>
+                      <TableHead>تاريخ التسجيل</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users?.slice(0, 5).map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.full_name || "غير محدد"}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          {format(new Date(user.created_at || ''), "dd/MM/yyyy")}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AdminDashboardLayout>
   );
-};
-
-const getLucideIcon = (iconName: string) => {
-  const icons = {
-    'user-plus': <UserPlus className="text-green-500" />,
-    'credit-card': <CreditCard className="text-blue-500" />,
-    'edit': <PencilRuler className="text-amber-500" />
-  };
-  return icons[iconName as keyof typeof icons] || <Users className="text-gray-500" />;
 };
 
 export default AdminDashboardPage;

@@ -1,32 +1,47 @@
-
 // Common database types
 export interface Workshop {
   id: string;
   title: string;
-  description?: string;
-  start_date: string;
-  end_date: string;
-  location?: string;
-  price: number;
+  short_description: string;
+  long_description?: string;
+  venue: string;
+  location: string;
   total_seats: number;
   available_seats: number;
-  instructor_name?: string;
-  image_url?: string;
-  status: 'active' | 'cancelled' | 'completed' | 'draft';
+  price: number;
+  instructor: string;
+  instructor_bio?: string;
+  instructor_image?: string;
+  cover_image?: string;
+  gallery?: string[];
+  benefits?: string[];
+  requirements?: string[];
+  objectives?: string[];
+  target_audience?: string[];
+  date: string;
+  time: string;
+  end_time?: string;
+  dates?: any;
+  session_duration?: number;
   created_at: string;
   updated_at: string;
+  // These fields are used for type compatibility
+  start_date?: string;
+  end_date?: string;
+  status?: 'active' | 'cancelled' | 'completed' | 'draft';
 }
 
 export interface UserProfile {
   id: string;
-  user_id: string;
+  user_id?: string;
   full_name?: string;
-  email: string;
+  email?: string;
   phone?: string;
   role: 'admin' | 'supervisor' | 'subscriber';
-  status: 'active' | 'suspended' | 'pending';
+  is_admin?: boolean;
+  status?: 'active' | 'suspended' | 'pending';
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface WorkshopRegistration {
@@ -74,3 +89,11 @@ export interface Activity {
   icon: string;
   created_at: string;
 }
+
+// Re-export payment types
+export type { 
+  UserDetails, 
+  PaymentResult, 
+  PaymentCallbackQuery,
+  PaymentLogData 
+} from '@/services/payment/types';

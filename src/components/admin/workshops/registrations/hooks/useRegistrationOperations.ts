@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WorkshopRegistration } from "@/types/supabase";
@@ -27,7 +26,9 @@ export const useRegistrationOperations = (
       // Recalculate seats if status or payment status is being updated
       if (data.status || data.payment_status) {
         try {
-          await recalculateWorkshopSeats(updatedRegistration.workshop_id);
+          if (updatedRegistration && updatedRegistration.workshop_id) {
+            await recalculateWorkshopSeats(updatedRegistration.workshop_id);
+          }
         } catch (recalcError) {
           console.error("Error recalculating seats after update:", recalcError);
           // Continue despite the error - we don't want to fail the entire operation
