@@ -12,24 +12,64 @@ export class RegistrationService {
   }
 
   async updateRegistrationStatus(workshopId: string, userId: string, paymentId: string, status: string = 'paid') {
-    const { data, error } = await this.supabase
-      .from("workshop_registrations")
-      .update({ 
-        payment_status: status,
-        status: "confirmed",
-        payment_id: paymentId,
-        updated_at: new Date().toISOString()
-      })
-      .eq("workshop_id", workshopId)
-      .eq("user_id", userId)
-      .in("payment_status", ["processing", "unpaid", "failed"]);
+    try {
+      console.log(`Updating registration for workshopId: ${workshopId}, userId: ${userId}, paymentId: ${paymentId}`);
+      
+      // First, check if a user profile exists
+      const { data: userProfile, error: profileError } = await this.supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+      
+      // If no profile exists, try to create one
+      if (profileError || !userProfile) {
+        console.log(`No user profile found for ${userId}, attempting to create one`);
+        
+        // Get user data from auth.users
+        const { data: user, error: userError } = await this.supabase.auth.admin.getUserById(userId);
+        
+        if (!userError && user) {
+          // Create a new profile
+          await this.supabase
+            .from("user_profiles")
+            .insert({
+              id: userId,
+              full_name: user.user.user_metadata?.full_name || user.user.email,
+              email: user.user.email,
+              role: 'subscriber'
+            });
+          
+          console.log(`Created new user profile for ${userId}`);
+        } else {
+          console.error("Error getting user data:", userError);
+        }
+      }
+      
+      // Update the registration status
+      const { data, error } = await this.supabase
+        .from("workshop_registrations")
+        .update({ 
+          payment_status: status,
+          status: "confirmed",
+          payment_id: paymentId,
+          updated_at: new Date().toISOString()
+        })
+        .eq("workshop_id", workshopId)
+        .eq("user_id", userId)
+        .in("payment_status", ["processing", "unpaid", "failed"]);
 
-    if (error) {
-      console.error("Error updating registration:", error);
+      if (error) {
+        console.error("Error updating registration:", error);
+        throw error;
+      }
+
+      console.log(`Successfully updated registration status for ${userId}`);
+      return data;
+    } catch (error) {
+      console.error("Error in updateRegistrationStatus:", error);
       throw error;
     }
-
-    return data;
   }
 
   async recalculateWorkshopSeats(workshopId: string) {
@@ -71,4 +111,3 @@ export class RegistrationService {
     }
   }
 }
-

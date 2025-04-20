@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -20,7 +20,7 @@ import {
 import {
   fetchWorkshops,
 } from "@/services/workshops";
-import { fetchUserRegistrations } from "@/services/workshopService";
+import { fetchUserRegistrations } from "@/services/workshops";
 import { UserProfile, Workshop, WorkshopRegistration } from "@/types/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
@@ -30,47 +30,64 @@ const AdminDashboardPage = () => {
   const [registrations, setRegistrations] = useState<WorkshopRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const workshopsData = await fetchWorkshops();
-        const registrationsData = await fetchUserRegistrations('');
-      
-        const processedWorkshops = workshopsData.map(w => ({
-          ...w,
-          start_date: w.date,
-          end_date: w.date,
-          status: 'active' as const
-        }));
-      
-        setWorkshops(processedWorkshops);
-        setRegistrations(registrationsData);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+  // Refactor to use a callback to prevent unnecessary re-renders
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [workshopsData, registrationsData] = await Promise.all([
+        fetchWorkshops(),
+        fetchUserRegistrations('') // Pass empty string to fetch all registrations
+      ]);
+    
+      const processedWorkshops = workshopsData.map(w => ({
+        ...w,
+        start_date: w.date,
+        end_date: w.date,
+        status: 'active' as const
+      }));
+    
+      setWorkshops(processedWorkshops);
+      setRegistrations(registrationsData);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      // Set default values in case of error
+      setWorkshops([]);
+      setRegistrations([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const { data: users, isLoading: isUsersLoading } = useQuery({
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Fix user data fetching to handle errors gracefully
+  const { data: users = [], isLoading: isUsersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      // Fix type casting using unknown as intermediate type
-      return (data as unknown) as UserProfile[];
+        if (error) throw error;
+        return (data as unknown) as UserProfile[];
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+      }
     },
   });
 
-  const totalRevenue = workshops.reduce((sum, workshop) => sum + workshop.price * (workshop.total_seats - workshop.available_seats), 0);
+  const totalRevenue = workshops.reduce((sum, workshop) => 
+    sum + workshop.price * (workshop.total_seats - workshop.available_seats), 0);
+
+  // Create refresh function to manually refresh data
+  const handleRefreshData = () => {
+    fetchDashboardData();
+  };
 
   return (
     <AdminDashboardLayout>
@@ -120,7 +137,7 @@ const AdminDashboardPage = () => {
                 <div className="flex justify-center py-8">
                   <div className="wirashna-loader"></div>
                 </div>
-              ) : (
+              ) : workshops.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -141,6 +158,8 @@ const AdminDashboardPage = () => {
                     ))}
                   </TableBody>
                 </Table>
+              ) : (
+                <div className="py-4 text-center text-gray-500">لا توجد ورش حالياً</div>
               )}
             </CardContent>
           </Card>
@@ -157,7 +176,7 @@ const AdminDashboardPage = () => {
                 <div className="flex justify-center py-8">
                   <div className="wirashna-loader"></div>
                 </div>
-              ) : (
+              ) : users?.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -178,6 +197,8 @@ const AdminDashboardPage = () => {
                     ))}
                   </TableBody>
                 </Table>
+              ) : (
+                <div className="py-4 text-center text-gray-500">لا يوجد مستخدمين حالياً</div>
               )}
             </CardContent>
           </Card>

@@ -1,19 +1,24 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchUserRegistrations } from "@/services/workshopService";
+import { fetchUserRegistrations } from "@/services/workshops";
 import { fetchUserCertificates } from "@/services/certificateService";
 import { WorkshopRegistration } from "@/types/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 export const useWorkshopRegistrations = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [registrations, setRegistrations] = useState<(WorkshopRegistration & { workshops?: any })[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
-      if (!user) return;
+      if (!user || !user.id) {
+        setIsLoading(false);
+        return;
+      }
       
       try {
         setIsLoading(true);
@@ -26,13 +31,18 @@ export const useWorkshopRegistrations = () => {
         setCertificates(certificatesData);
       } catch (error) {
         console.error("Error loading user data:", error);
+        toast({
+          title: "خطأ في تحميل البيانات",
+          description: "حدث خطأ أثناء تحميل بيانات الورش. يرجى المحاولة مرة أخرى.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     loadData();
-  }, [user]);
+  }, [user, toast]);
 
   const today = new Date();
   const upcomingWorkshops = registrations.filter(reg => 

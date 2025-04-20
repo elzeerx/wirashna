@@ -1,52 +1,65 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createTapPayment } from "@/services/payment";
 import { useToast } from "@/hooks/use-toast";
-import { UserDetails } from "@/types/payment";
-import { recalculateWorkshopSeats } from "@/services/workshops";
-import { usePaymentErrors } from "./usePaymentErrors";
-import { usePaymentRedirect } from "./usePaymentRedirect";
+import { UserDetails } from "@/services/payment/types";
 
-interface PaymentHandlerProps {
+type PaymentHandlerProps = {
   workshopId: string;
   userId: string;
   price: number;
   isRetry: boolean;
-}
+};
 
-export const usePaymentHandler = ({ 
-  workshopId, 
-  userId, 
-  price, 
-  isRetry 
-}: PaymentHandlerProps) => {
-  const { toast } = useToast();
+export const usePaymentHandler = ({ workshopId, userId, price, isRetry }: PaymentHandlerProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { handlePaymentError } = usePaymentErrors(workshopId);
-  const { redirectToPayment } = usePaymentRedirect({ 
-    workshopId, 
-    userId, 
-    price, 
-    isRetry 
-  });
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handlePayment = async (values: UserDetails) => {
+  const handlePayment = async (customerDetails: UserDetails) => {
+    if (!userId) {
+      toast({
+        title: "خطأ في عملية الدفع",
+        description: "يرجى تسجيل الدخول قبل المتابعة",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     setIsProcessing(true);
     try {
-      const paymentResult = await redirectToPayment(values);
+      console.log("Starting payment process for workshop:", workshopId, "User:", userId, "Price:", price);
       
-      if (!paymentResult) {
-        await recalculateWorkshopSeats(workshopId);
+      const result = await createTapPayment(
+        price, 
+        workshopId, 
+        userId, 
+        customerDetails,
+        isRetry
+      );
+      
+      if (result.success && result.redirect_url) {
+        console.log("Payment initiated successfully. Redirecting to payment gateway.");
+        window.location.href = result.redirect_url;
+        return true;
+      } else {
+        console.error("Payment initiation failed:", result.error);
         toast({
-          title: "خطأ في معالجة الدفع",
-          description: "حدث خطأ أثناء إنشاء عملية الدفع",
+          title: "خطأ في عملية الدفع",
+          description: result.error || "حدث خطأ أثناء تهيئة عملية الدفع. يرجى المحاولة مرة أخرى.",
           variant: "destructive",
         });
         return false;
       }
-      
-      return true;
-    } catch (error: any) {
-      return handlePaymentError(error);
+    } catch (error) {
+      console.error("Payment error:", error);
+      toast({
+        title: "خطأ في عملية الدفع",
+        description: "حدث خطأ غير متوقع أثناء معالجة الدفع. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+      return false;
     } finally {
       setIsProcessing(false);
     }

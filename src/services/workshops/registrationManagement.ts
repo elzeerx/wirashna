@@ -3,18 +3,30 @@ import { WorkshopRegistration } from "@/types/supabase";
 import { recalculateWorkshopSeats } from './registrationSeats';
 
 export const fetchUserRegistrations = async (userId: string): Promise<WorkshopRegistration[]> => {
-  const { data, error } = await supabase
-    .from('workshop_registrations')
-    .select('*, workshops(*)')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  try {
+    // Check if userId is provided - if not, fetch all registrations
+    const query = supabase
+      .from('workshop_registrations')
+      .select('*, workshops(*)')
+      .order('created_at', { ascending: false });
+    
+    // Only add the user filter if a valid userId is provided
+    if (userId && userId.trim() !== '') {
+      query.eq('user_id', userId);
+    }
+    
+    const { data, error } = await query;
 
-  if (error) {
-    console.error("Error fetching user registrations:", error);
-    throw error;
+    if (error) {
+      console.error("Error fetching registrations:", error);
+      throw error;
+    }
+
+    return (data || []) as WorkshopRegistration[];
+  } catch (error) {
+    console.error("Error in fetchUserRegistrations:", error);
+    return [];
   }
-
-  return (data || []) as WorkshopRegistration[];
 };
 
 export const fetchWorkshopRegistrations = async (workshopId: string): Promise<WorkshopRegistration[]> => {

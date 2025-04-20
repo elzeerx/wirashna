@@ -64,10 +64,11 @@ serve(async (req) => {
     });
     
     if (paymentData.status === "CAPTURED") {
-      const { workshopId, userId } = paymentData.metadata || {};
+      const { workshopId, userId, customerEmail, customerName } = paymentData.metadata || {};
       
       if (workshopId && userId) {
         console.log(`Updating registration for workshop: ${workshopId}, user: ${userId}`);
+        console.log(`Customer details - Email: ${customerEmail}, Name: ${customerName}`);
         
         const registrationService = new RegistrationService();
         
@@ -147,4 +148,3 @@ serve(async (req) => {
     );
   }
 });
-
