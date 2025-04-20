@@ -1,5 +1,5 @@
 
-import { LogIn } from "lucide-react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 
 interface GoogleSignInButtonProps {
@@ -15,7 +15,7 @@ export const GoogleSignInButton = ({
     <Button
       type="button"
       variant="outline"
-      className="w-full"
+      className="w-full flex items-center justify-center gap-2"
       onClick={onClick}
       disabled={isLoading}
     >
@@ -26,8 +26,12 @@ export const GoogleSignInButton = ({
         </span>
       ) : (
         <>
-          <LogIn className="mr-2" size={18} />
-          <span>تسجيل الدخول بواسطة جوجل</span>
+          <img 
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google_standard_ios.svg" 
+            alt="Google logo" 
+            className="h-5 w-5"
+          />
+          <span>تسجيل الدخول بواسطة Google</span>
         </>
       )}
     </Button>
