@@ -293,6 +293,7 @@ export type Database = {
           long_description: string | null
           objectives: string[] | null
           price: number
+          registration_closed: boolean | null
           requirements: string[] | null
           session_duration: number | null
           short_description: string
@@ -320,6 +321,7 @@ export type Database = {
           long_description?: string | null
           objectives?: string[] | null
           price: number
+          registration_closed?: boolean | null
           requirements?: string[] | null
           session_duration?: number | null
           short_description: string
@@ -347,6 +349,7 @@ export type Database = {
           long_description?: string | null
           objectives?: string[] | null
           price?: number
+          registration_closed?: boolean | null
           requirements?: string[] | null
           session_duration?: number | null
           short_description?: string
