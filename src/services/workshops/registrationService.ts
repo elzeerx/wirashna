@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { WorkshopRegistration } from "@/types/supabase";
 
@@ -39,7 +38,7 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
 
     // Using upsert pattern to handle potential duplicates
     console.log("Upserting registration for workshop:", registration.workshop_id, "and user:", registration.user_id);
-    
+
     const registrationData = {
       workshop_id: registration.workshop_id,
       user_id: registration.user_id,
@@ -52,22 +51,31 @@ export const registerForWorkshop = async (registration: Omit<WorkshopRegistratio
       updated_at: new Date().toISOString()
     };
 
-    // Using upsert with on_conflict to properly handle duplicates
-    const { data, error } = await supabase
+    // Upsert expects an array and doesn't support returning: just select after
+    const { error } = await supabase
       .from('workshop_registrations')
-      .upsert(registrationData, { 
-        onConflict: 'user_id,workshop_id',
-        returning: 'representation' 
-      })
-      .select()
-      .single();
+      .upsert([registrationData], { 
+        onConflict: 'user_id,workshop_id'
+      });
 
     if (error) {
       console.error("Error registering for workshop:", error);
       throw error;
     }
 
-    return data as WorkshopRegistration;
+    // Fetch the registration after upsert to return it
+    const { data: selected, error: selectError } = await supabase
+      .from('workshop_registrations')
+      .select('*')
+      .eq('user_id', registration.user_id)
+      .eq('workshop_id', registration.workshop_id)
+      .maybeSingle();
+
+    if (selectError) {
+      throw selectError;
+    }
+
+    return selected as WorkshopRegistration;
   } catch (error) {
     console.error("Registration service error:", error);
     throw error;

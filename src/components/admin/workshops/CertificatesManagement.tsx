@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, 
@@ -63,7 +62,6 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  // Fetch certificates for this workshop
   const { 
     data: certificates = [], 
     isLoading, 
@@ -76,7 +74,6 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
     }
   });
 
-  // Fetch registrations for this workshop to show users without certificates
   const { 
     data: registrations = [] 
   } = useQuery({
@@ -94,7 +91,6 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
     }
   });
 
-  // Find users who have paid for the workshop but don't have certificates yet
   const usersWithoutCertificates = registrations.filter(reg => {
     return !certificates.some(cert => cert.user_id === reg.user_id);
   });
@@ -119,47 +115,37 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
     setUploadProgress(0);
 
     try {
-      // Upload file to storage
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${workshopId}_${selectedUserId}_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('workshop-certificates')
-        .upload(filePath, selectedFile, {
-          onUploadProgress: (progress) => {
-            setUploadProgress((progress.loaded / progress.total) * 100);
-          },
-        });
+        .upload(filePath, selectedFile);
 
       if (uploadError) {
         throw uploadError;
       }
 
-      // Get the public URL
       const { data: publicUrlData } = supabase.storage
         .from('workshop-certificates')
         .getPublicUrl(filePath);
 
-      // Save certificate info to database
       await addCertificate(
         workshopId,
         selectedUserId,
         publicUrlData.publicUrl
       );
 
-      // Success
       toast({
         title: "تم بنجاح",
         description: "تم رفع الشهادة بنجاح",
       });
 
-      // Close dialog and refresh data
       setIsUploadDialogOpen(false);
       setSelectedFile(null);
       setSelectedUserId(null);
       refetch();
-
     } catch (error) {
       console.error("Error uploading certificate:", error);
       toast({
@@ -181,18 +167,15 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
     if (!selectedCertificate) return;
 
     try {
-      // Extract filename from URL
       const url = new URL(selectedCertificate.certificate_url);
       const filePath = url.pathname.split('/').pop();
 
-      // Delete from storage
       if (filePath) {
         await supabase.storage
           .from('workshop-certificates')
           .remove([filePath]);
       }
 
-      // Delete from database
       await deleteCertificate(selectedCertificate.id);
 
       toast({
@@ -289,7 +272,6 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
           </Alert>
         )}
 
-        {/* Upload Certificate Dialog */}
         <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -365,7 +347,6 @@ const CertificatesManagement = ({ workshopId }: CertificatesManagementProps) => 
           </DialogContent>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>

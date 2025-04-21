@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,9 @@ import { CheckCircle, AlertTriangle, RefreshCw, Wrench } from "lucide-react";
 import { 
   findDuplicateRegistrations, 
   findOrphanedRegistrations,
-  cleanupFailedRegistrations,
-  fixRegistrationStatus
+  fixRegistrationStatus,
 } from "@/services/workshops/registrationManagement";
+import { cleanupFailedRegistrations } from "@/services/workshops/registrationStatus";
 import { recalculateWorkshopSeats } from "@/services/workshops/registrationSeats";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";

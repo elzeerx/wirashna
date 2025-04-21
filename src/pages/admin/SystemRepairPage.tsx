@@ -1,10 +1,11 @@
 
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TapApiChecker from "@/components/admin/payment/TapApiChecker";
 import WorkshopRepairTool from "@/components/admin/workshops/WorkshopRepairTool";
 
+// Use a dummy string for 'all' workshops repair tool for now (full implementation will need to iterate over all workshops)
 const SystemRepairPage = () => {
   return (
     <AdminDashboardLayout>
@@ -31,7 +32,8 @@ const SystemRepairPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <WorkshopRepairTool />
+                {/* Pass a dummy workshopId for now */}
+                <WorkshopRepairTool workshopId="all" />
               </CardContent>
             </Card>
           </TabsContent>

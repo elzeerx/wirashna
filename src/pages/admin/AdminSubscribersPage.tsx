@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { UserProfile } from "@/types/supabase";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,7 +93,7 @@ const AdminSubscribersPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscribers?.map((subscriber) => (
+                  {subscribers?.map((subscriber: any) => (
                     <TableRow key={subscriber.id}>
                       <TableCell>{subscriber.full_name || 'غير محدد'}</TableCell>
                       <TableCell>{subscriber.email || 'غير محدد'}</TableCell>
