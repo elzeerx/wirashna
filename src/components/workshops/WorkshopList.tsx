@@ -86,10 +86,15 @@ const WorkshopList = ({ workshops, type, hasCertificate }: WorkshopListProps) =>
                   الشهادة
                 </Button>
                 
-                <Button variant="outline" size="sm">
-                  <FileText size={16} className="ml-1" />
-                  المواد
-                </Button>
+                <Link
+                  to={`/dashboard/materials?workshopId=${registration.workshop_id}`}
+                  className="text-wirashna-accent hover:underline"
+                >
+                  <Button variant="outline" size="sm">
+                    <FileText size={16} className="ml-1" />
+                    المواد
+                  </Button>
+                </Link>
                 
                 <Link 
                   to={`/workshops/${registration.workshop_id}`}
