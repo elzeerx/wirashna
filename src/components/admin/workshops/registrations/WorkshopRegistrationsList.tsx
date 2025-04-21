@@ -113,7 +113,7 @@ const WorkshopRegistrationsList = ({ workshopId }: WorkshopRegistrationsListProp
       
       <CardContent>
         {workshopClosed && (
-          <Alert variant="destructive" className="mb-4 bg-amber-50 border-amber-200">
+          <Alert variant="default" className="mb-4 bg-amber-50 border-amber-200">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               التسجيل مغلق لهذه الورشة. لن يتمكن المستخدمون من التسجيل حتى يتم إعادة فتح التسجيل.

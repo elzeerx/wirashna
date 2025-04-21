@@ -6,6 +6,7 @@ import { useWorkshopOperations } from "@/hooks/useWorkshopOperations";
 import { Workshop } from "@/types/supabase";
 import { WorkshopRegistrationsList } from "./registrations";
 import WorkshopRepairTool from "./WorkshopRepairTool";
+import CertificatesManagement from "./CertificatesManagement";
 
 interface AdminWorkshopManagementPanelProps {
   workshop: Workshop;
@@ -33,9 +34,10 @@ const AdminWorkshopManagementPanel = ({
 
   return (
     <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="details">تفاصيل الورشة</TabsTrigger>
         <TabsTrigger value="registrations">التسجيلات</TabsTrigger>
+        <TabsTrigger value="certificates">الشهادات</TabsTrigger>
         <TabsTrigger value="tools">أدوات الإصلاح</TabsTrigger>
       </TabsList>
 
@@ -49,6 +51,10 @@ const AdminWorkshopManagementPanel = ({
 
       <TabsContent value="registrations" className="mt-4">
         <WorkshopRegistrationsList workshopId={workshop.id} />
+      </TabsContent>
+      
+      <TabsContent value="certificates" className="mt-4">
+        <CertificatesManagement workshopId={workshop.id} />
       </TabsContent>
       
       <TabsContent value="tools" className="mt-4">

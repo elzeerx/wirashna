@@ -1,183 +1,198 @@
 
 import { useState } from "react";
-import { UserPlus } from "lucide-react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useFormSubmission } from "@/hooks/useFormSubmission";
+import { Label } from "@/components/ui/label";
+import { Plus, Loader2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-const addUserSchema = z.object({
-  email: z.string().email(),
-  full_name: z.string().min(1),
-  role: z.enum(['admin', 'supervisor', 'subscriber'])
+interface AddUserDialogProps {
+  onUserAdded?: () => void;
+}
+
+const formSchema = z.object({
+  fullName: z.string().min(2, {
+    message: "يجب أن يكون الاسم أكثر من حرفين",
+  }),
+  email: z.string().email({
+    message: "البريد الإلكتروني غير صحيح",
+  }),
+  password: z.string().min(6, {
+    message: "يجب أن تكون كلمة المرور أكثر من 6 أحرف",
+  }),
+  phone: z.string().optional(),
 });
 
-type AddUserForm = z.infer<typeof addUserSchema>;
-
-export function AddUserDialog({ onUserAdded }: { onUserAdded: () => void }) {
+export function AddUserDialog({ onUserAdded }: AddUserDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState<AddUserForm>({
-    email: '',
-    full_name: '',
-    role: 'subscriber'
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-
-  const form = useForm({
-    resolver: zodResolver(addUserSchema),
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      full_name: '',
-      role: 'subscriber'
-    }
+      fullName: "",
+      email: "",
+      password: "",
+      phone: "",
+    },
   });
 
-  const { handleSubmit, isLoading } = useFormSubmission({
-    onSubmit: async (data: AddUserForm) => {
-      // First create the auth user
-      const { error: signUpError, data: authData } = await supabase.auth.signUp({
-        email: data.email,
-        password: Math.random().toString(36).slice(-12),
-        options: {
-          data: {
-            full_name: data.full_name,
-          },
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Instead of signup, use admin create user to avoid session switch
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: {
+          email: values.email,
+          password: values.password,
+          full_name: values.fullName,
+          phone: values.phone || null,
+          send_email: true
         }
       });
-
-      if (signUpError) throw signUpError;
-
-      // Then update the user profile
-      // First get the user ID by email
-      const { data: userData, error: userError } = await supabase
-        .from('user_profiles')
-        .select('id')
-        .eq('id', authData.user?.id)
-        .single();
-
-      if (userError) throw userError;
-
-      // Now update the profile with the correct ID
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .update({
-          role: data.role,
-          is_admin: data.role === 'admin'
-        })
-        .eq('id', userData.id);
-
-      if (profileError) throw profileError;
-
-      setIsOpen(false);
-      onUserAdded();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       toast({
-        title: "تم إضافة المستخدم بنجاح",
-        description: "تم إرسال بريد إلكتروني للمستخدم لتعيين كلمة المرور",
+        title: "تم إنشاء المستخدم بنجاح",
+        description: "تم إرسال بريد إلكتروني للمستخدم مع معلومات تسجيل الدخول",
       });
-    },
-    errorMessage: "فشل في إضافة المستخدم",
-  });
+      
+      form.reset();
+      setIsOpen(false);
+      
+      if (onUserAdded) {
+        onUserAdded();
+      }
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      
+      let errorMessage = "حدث خطأ أثناء إنشاء المستخدم";
+      
+      if (error.message.includes("User already registered")) {
+        errorMessage = "البريد الإلكتروني مسجل بالفعل";
+      }
+      
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="mb-4">
-          <UserPlus className="ml-2 h-4 w-4" />
+        <Button className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
           إضافة مستخدم
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>إضافة مستخدم جديد</DialogTitle>
+          <DialogDescription>
+            أدخل بيانات المستخدم الجديد. سيتم إرسال بريد إلكتروني له تلقائياً.
+          </DialogDescription>
         </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit(formData);
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              البريد الإلكتروني
-            </label>
-            <Input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              placeholder="example@domain.com"
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>الاسم</FormLabel>
+                  <FormControl>
+                    <Input placeholder="أدخل اسم المستخدم" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              الاسم الكامل
-            </label>
-            <Input
-              required
-              value={formData.full_name}
-              onChange={(e) =>
-                setFormData({ ...formData, full_name: e.target.value })
-              }
-              placeholder="الاسم الكامل"
+            
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>البريد الإلكتروني</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="example@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              الدور
-            </label>
-            <Select
-              value={formData.role}
-              onValueChange={(value: 'admin' | 'supervisor' | 'subscriber') =>
-                setFormData({ ...formData, role: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="اختر الدور" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">مدير</SelectItem>
-                <SelectItem value="supervisor">مشرف</SelectItem>
-                <SelectItem value="subscriber">مشترك</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex justify-end space-x-2 space-x-reverse">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
-              إلغاء
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "جاري الإضافة..." : "إضافة"}
-            </Button>
-          </div>
-        </form>
+            
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>كلمة المرور</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="******" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>رقم الهاتف</FormLabel>
+                  <FormControl>
+                    <Input placeholder="اختياري" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    جاري الإضافة...
+                  </>
+                ) : (
+                  "إضافة المستخدم"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

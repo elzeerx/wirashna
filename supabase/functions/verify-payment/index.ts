@@ -64,11 +64,10 @@ serve(async (req) => {
     });
     
     if (paymentData.status === "CAPTURED") {
-      const { workshopId, userId, customerEmail, customerName } = paymentData.metadata || {};
+      const { workshopId, userId } = paymentData.metadata || {};
       
       if (workshopId && userId) {
         console.log(`Updating registration for workshop: ${workshopId}, user: ${userId}`);
-        console.log(`Customer details - Email: ${customerEmail}, Name: ${customerName}`);
         
         const registrationService = new RegistrationService();
         
@@ -107,6 +106,40 @@ serve(async (req) => {
         });
       }
     } else {
+      // Update registration status to failed if payment is not captured
+      const { workshopId, userId } = paymentData.metadata || {};
+      
+      if (workshopId && userId) {
+        console.log(`Marking registration as failed for workshop: ${workshopId}, user: ${userId}`);
+        
+        const registrationService = new RegistrationService();
+        
+        try {
+          await registrationService.markRegistrationFailed(workshopId, userId);
+          await registrationService.recalculateWorkshopSeats(workshopId);
+          
+          await logPaymentAction({
+            action: "mark_registration_failed",
+            status: "success",
+            payment_id: tap_id,
+            userId,
+            workshopId,
+            ip_address: ip
+          });
+        } catch (error) {
+          console.error("Error marking registration as failed:", error);
+          await logPaymentAction({
+            action: "mark_registration_failed",
+            status: "error",
+            payment_id: tap_id,
+            userId,
+            workshopId,
+            error_message: error.message,
+            ip_address: ip
+          });
+        }
+      }
+      
       console.log(`Payment not captured. Status: ${paymentData.status}`);
       await logPaymentAction({
         action: "payment_not_captured",

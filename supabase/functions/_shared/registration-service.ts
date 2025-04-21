@@ -46,7 +46,7 @@ export class RegistrationService {
         }
       }
       
-      // Update the registration status
+      // Update the registration status using upsert to handle potential duplicates
       const { data, error } = await this.supabase
         .from("workshop_registrations")
         .update({ 
@@ -68,6 +68,33 @@ export class RegistrationService {
       return data;
     } catch (error) {
       console.error("Error in updateRegistrationStatus:", error);
+      throw error;
+    }
+  }
+
+  async markRegistrationFailed(workshopId: string, userId: string) {
+    try {
+      console.log(`Marking registration as failed for workshopId: ${workshopId}, userId: ${userId}`);
+      
+      const { data, error } = await this.supabase
+        .from("workshop_registrations")
+        .update({ 
+          payment_status: "failed",
+          updated_at: new Date().toISOString()
+        })
+        .eq("workshop_id", workshopId)
+        .eq("user_id", userId)
+        .eq("payment_status", "processing");
+
+      if (error) {
+        console.error("Error marking registration as failed:", error);
+        throw error;
+      }
+
+      console.log(`Successfully marked registration as failed for ${userId}`);
+      return data;
+    } catch (error) {
+      console.error("Error in markRegistrationFailed:", error);
       throw error;
     }
   }
@@ -95,6 +122,8 @@ export class RegistrationService {
       const totalSeats = workshop.total_seats;
       const confirmedRegistrations = count || 0;
       const availableSeats = Math.max(0, totalSeats - confirmedRegistrations);
+      
+      console.log(`Workshop ${workshopId} stats: Total=${totalSeats}, Confirmed=${confirmedRegistrations}, Available=${availableSeats}`);
       
       const { error: updateError } = await this.supabase
         .from('workshops')

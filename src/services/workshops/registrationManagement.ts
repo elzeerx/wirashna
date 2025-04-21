@@ -122,20 +122,20 @@ export const fetchUserRegistrationCounts = async (): Promise<Record<string, numb
   try {
     const { data, error } = await supabase
       .from('workshop_registrations')
-      .select('user_id');
+      .select('user_id, payment_status');
     
     if (error) {
       console.error("Error fetching registration counts:", error);
       throw error;
     }
     
-    // Transform to a map of user_id -> count
+    // Transform to a map of user_id -> count, only counting paid registrations
     const countMap: Record<string, number> = {};
     
-    // Group by user_id and count occurrences
+    // Group by user_id and count occurrences of paid registrations
     if (data) {
       data.forEach(item => {
-        if (item.user_id) {
+        if (item.user_id && item.payment_status === 'paid') {
           if (!countMap[item.user_id]) {
             countMap[item.user_id] = 0;
           }
@@ -211,5 +211,131 @@ export const findDuplicateRegistrations = async (): Promise<any[]> => {
   } catch (error) {
     console.error("Error in findDuplicateRegistrations:", error);
     return [];
+  }
+};
+
+// New function to fetch certificates for a user or workshop
+export const fetchCertificates = async (params: { userId?: string; workshopId?: string; }): Promise<any[]> => {
+  try {
+    const query = supabase
+      .from('workshop_certificates')
+      .select('*, workshops:workshop_id(*), registrations:registration_id(*)');
+    
+    if (params.userId) {
+      query.eq('user_id', params.userId);
+    }
+    
+    if (params.workshopId) {
+      query.eq('workshop_id', params.workshopId);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error("Error fetching certificates:", error);
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error("Error in fetchCertificates:", error);
+    return [];
+  }
+};
+
+// Add a certificate for a workshop registration
+export const addCertificate = async (
+  workshopId: string, 
+  userId: string, 
+  certificateUrl: string
+): Promise<any> => {
+  try {
+    // First find the registration ID for this user and workshop
+    const { data: registration, error: regError } = await supabase
+      .from('workshop_registrations')
+      .select('id')
+      .eq('workshop_id', workshopId)
+      .eq('user_id', userId)
+      .eq('payment_status', 'paid')
+      .maybeSingle();
+    
+    if (regError) {
+      console.error("Error finding registration:", regError);
+      throw regError;
+    }
+    
+    if (!registration) {
+      throw new Error("No paid registration found for this user and workshop");
+    }
+    
+    // Now insert the certificate
+    const { data, error } = await supabase
+      .from('workshop_certificates')
+      .insert({
+        registration_id: registration.id,
+        workshop_id: workshopId,
+        user_id: userId,
+        certificate_url: certificateUrl
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error adding certificate:", error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error in addCertificate:", error);
+    throw error;
+  }
+};
+
+// Delete a certificate
+export const deleteCertificate = async (certificateId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('workshop_certificates')
+      .delete()
+      .eq('id', certificateId);
+    
+    if (error) {
+      console.error("Error deleting certificate:", error);
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error in deleteCertificate:", error);
+    throw error;
+  }
+};
+
+// Fix registration status and recalculate seats
+export const fixRegistrationStatus = async (workshopId: string): Promise<void> => {
+  try {
+    // Update registrations with processing status for more than 1 hour to failed
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+    
+    const { error } = await supabase
+      .from('workshop_registrations')
+      .update({ 
+        payment_status: 'failed',
+        updated_at: new Date().toISOString()
+      })
+      .eq('workshop_id', workshopId)
+      .eq('payment_status', 'processing')
+      .lt('created_at', oneHourAgo.toISOString());
+    
+    if (error) {
+      console.error("Error fixing registration status:", error);
+      throw error;
+    }
+    
+    // Recalculate seats
+    await recalculateWorkshopSeats(workshopId);
+  } catch (error) {
+    console.error("Error in fixRegistrationStatus:", error);
+    throw error;
   }
 };

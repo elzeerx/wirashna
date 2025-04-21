@@ -59,7 +59,27 @@ export const verifyTapPayment = async (tapId: string): Promise<PaymentResult> =>
       return { success: true, status: "CAPTURED" };
     }
     
-    // If payment wasn't captured, return the status
+    // If payment wasn't captured, set registration to failed
+    if (data.payment && data.payment.metadata && data.payment.metadata.userId && data.payment.metadata.workshopId) {
+      try {
+        // Update the registration to failed if the payment wasn't successful
+        await supabase
+          .from('workshop_registrations')
+          .update({
+            payment_status: 'failed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('workshop_id', data.payment.metadata.workshopId)
+          .eq('user_id', data.payment.metadata.userId)
+          .eq('payment_status', 'processing');
+        
+        // Recalculate seats after marking as failed
+        await recalculateWorkshopSeats(data.payment.metadata.workshopId);
+      } catch (updateError) {
+        console.error("Error updating registration to failed:", updateError);
+      }
+    }
+    
     await logPaymentAction({
       action: "client_verify_payment_not_captured",
       status: "warning",

@@ -1,11 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const recalculateWorkshopSeats = async (workshopId: string): Promise<void> => {
+export const recalculateWorkshopSeats = async (workshopId: string): Promise<boolean> => {
   try {
-    console.log(`Starting recalculation of seats for workshop ${workshopId}`);
+    console.log(`Recalculating seats for workshop ${workshopId}`);
     
-    // Get workshop details
+    // Get the workshop's total seats
     const { data: workshop, error: workshopError } = await supabase
       .from('workshops')
       .select('total_seats')
@@ -13,19 +13,19 @@ export const recalculateWorkshopSeats = async (workshopId: string): Promise<void
       .single();
     
     if (workshopError) {
-      console.error(`Error fetching workshop ${workshopId}:`, workshopError);
+      console.error(`Error getting workshop ${workshopId}:`, workshopError);
       throw workshopError;
     }
     
-    // Count confirmed and paid registrations only
+    // Count confirmed registrations with paid status
     const { count, error: countError } = await supabase
       .from('workshop_registrations')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('workshop_id', workshopId)
       .eq('payment_status', 'paid');
     
     if (countError) {
-      console.error(`Error counting confirmed registrations:`, countError);
+      console.error(`Error counting registrations for workshop ${workshopId}:`, countError);
       throw countError;
     }
     
@@ -33,22 +33,26 @@ export const recalculateWorkshopSeats = async (workshopId: string): Promise<void
     const confirmedRegistrations = count || 0;
     const availableSeats = Math.max(0, totalSeats - confirmedRegistrations);
     
-    console.log(`Workshop ${workshopId}: Total seats ${totalSeats}, Confirmed paid registrations ${confirmedRegistrations}, Available seats ${availableSeats}`);
+    console.log(`Workshop ${workshopId} stats:`, {
+      totalSeats,
+      confirmedRegistrations,
+      availableSeats
+    });
     
-    // Update workshop available seats
+    // Update the workshop's available seats
     const { error: updateError } = await supabase
       .from('workshops')
       .update({ available_seats: availableSeats })
       .eq('id', workshopId);
     
     if (updateError) {
-      console.error(`Error updating workshop available seats:`, updateError);
+      console.error(`Error updating available seats for workshop ${workshopId}:`, updateError);
       throw updateError;
     }
     
-    console.log(`Successfully recalculated available seats for workshop ${workshopId}`);
+    return true;
   } catch (error) {
-    console.error(`Error recalculating workshop seats:`, error);
+    console.error(`Error in recalculateWorkshopSeats:`, error);
     throw error;
   }
 };

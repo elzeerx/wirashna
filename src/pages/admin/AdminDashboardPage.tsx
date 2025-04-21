@@ -24,11 +24,14 @@ import { fetchUserRegistrations } from "@/services/workshops";
 import { UserProfile, Workshop, WorkshopRegistration } from "@/types/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import AdminDashboardLayout from "@/components/admin/layouts/AdminDashboardLayout";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 const AdminDashboardPage = () => {
   const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [registrations, setRegistrations] = useState<WorkshopRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Refactor to use a callback to prevent unnecessary re-renders
   const fetchDashboardData = useCallback(async () => {
@@ -47,7 +50,7 @@ const AdminDashboardPage = () => {
       }));
     
       setWorkshops(processedWorkshops);
-      setRegistrations(registrationsData);
+      setRegistrations(registrationsData.filter(r => r.payment_status === 'paid'));
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       // Set default values in case of error
@@ -62,36 +65,63 @@ const AdminDashboardPage = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Fix user data fetching to handle errors gracefully
-  const { data: users = [], isLoading: isUsersLoading } = useQuery({
-    queryKey: ["users"],
+  // Fetching latest users from user_profiles ordered by creation date
+  const { data: latestUsers = [], isLoading: isUsersLoading, refetch: refetchUsers } = useQuery({
+    queryKey: ["latest_users"],
     queryFn: async () => {
       try {
         const { data, error } = await supabase
           .from("user_profiles")
           .select("*")
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(5);
 
         if (error) throw error;
         return (data as unknown) as UserProfile[];
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching latest users:", error);
         return [];
       }
     },
   });
 
-  const totalRevenue = workshops.reduce((sum, workshop) => 
-    sum + workshop.price * (workshop.total_seats - workshop.available_seats), 0);
+  // Calculate total revenue from paid registrations
+  const totalRevenue = registrations
+    .filter(reg => reg.payment_status === 'paid')
+    .reduce((sum, reg) => {
+      const workshop = workshops.find(w => w.id === reg.workshop_id);
+      return sum + (workshop?.price || 0);
+    }, 0);
 
   // Create refresh function to manually refresh data
-  const handleRefreshData = () => {
-    fetchDashboardData();
+  const handleRefreshData = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchDashboardData(),
+        refetchUsers()
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
     <AdminDashboardLayout>
       <div className="space-y-8">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">لوحة المعلومات</h2>
+          <Button 
+            variant="outline" 
+            onClick={handleRefreshData}
+            disabled={refreshing}
+            className="flex gap-2 items-center"
+          >
+            <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+            تحديث البيانات
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader>
@@ -106,13 +136,13 @@ const AdminDashboardPage = () => {
               <CardTitle>إجمالي المستخدمين</CardTitle>
               <CardDescription>عدد المستخدمين المسجلين في المنصة</CardDescription>
             </CardHeader>
-            <CardContent className="text-2xl font-bold">{users?.length || 0}</CardContent>
+            <CardContent className="text-2xl font-bold">{latestUsers ? latestUsers.length : 0}</CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle>إجمالي التسجيلات</CardTitle>
-              <CardDescription>عدد التسجيلات في الورش المختلفة</CardDescription>
+              <CardDescription>عدد التسجيلات المؤكدة في الورش المختلفة</CardDescription>
             </CardHeader>
             <CardContent className="text-2xl font-bold">{registrations.length}</CardContent>
           </Card>
@@ -120,9 +150,9 @@ const AdminDashboardPage = () => {
           <Card>
             <CardHeader>
               <CardTitle>إجمالي الإيرادات</CardTitle>
-              <CardDescription>إجمالي الإيرادات المتوقعة من الورش</CardDescription>
+              <CardDescription>إجمالي الإيرادات من الورش</CardDescription>
             </CardHeader>
-            <CardContent className="text-2xl font-bold">{totalRevenue} KWD</CardContent>
+            <CardContent className="text-2xl font-bold">{totalRevenue.toFixed(2)} KWD</CardContent>
           </Card>
         </div>
 
@@ -176,7 +206,7 @@ const AdminDashboardPage = () => {
                 <div className="flex justify-center py-8">
                   <div className="wirashna-loader"></div>
                 </div>
-              ) : users?.length > 0 ? (
+              ) : latestUsers?.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -186,12 +216,12 @@ const AdminDashboardPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users?.slice(0, 5).map((user) => (
+                    {latestUsers?.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>{user.full_name || "غير محدد"}</TableCell>
                         <TableCell>{user.email || "غير محدد"}</TableCell>
                         <TableCell>
-                          {format(new Date(user.created_at || ''), "dd/MM/yyyy")}
+                          {user.created_at ? format(new Date(user.created_at), "dd/MM/yyyy") : "غير محدد"}
                         </TableCell>
                       </TableRow>
                     ))}
